@@ -31,6 +31,9 @@ public class Usuario {
     @Column(nullable = false)
     private RolUsuario rol;
 
+    @Column(nullable = false)
+    private boolean activo = true;
+
     public Usuario() {
     }
 
@@ -41,6 +44,17 @@ public class Usuario {
         this.centro = centro;
         this.institucion = institucion;
         this.rol = rol;
+        this.activo = true;
+    }
+
+    public Usuario(String nombre, String email, String password, Centro centro, InstitucionReceptora institucion, RolUsuario rol, boolean activo) {
+        this.nombre = nombre;
+        this.email = email;
+        this.password = password;
+        this.centro = centro;
+        this.institucion = institucion;
+        this.rol = rol;
+        this.activo = activo;
     }
 
     public Integer getId() {
@@ -97,5 +111,13 @@ public class Usuario {
 
     public void setRol(RolUsuario rol) {
         this.rol = rol;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }
