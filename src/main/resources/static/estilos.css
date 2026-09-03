@@ -1,0 +1,320 @@
+/* ==========================================================================
+   1. Variables Globales y Tema
+   ========================================================================== */
+:root {
+    --bg-light: #ffffff;
+    --bg-gray: #f3f4f6;
+    --text-dark: #1f2937;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --active-dark: #374151;
+    --danger: #ef4444;
+    --success: #10b981;
+}
+
+/* ==========================================================================
+   2. Reset y Tipografía Base
+   ========================================================================== */
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    color: var(--text-dark);
+    background-color: var(--bg-light);
+}
+
+h1,
+h2,
+h3,
+h4 {
+    color: var(--text-dark);
+}
+
+/* ==========================================================================
+   3. Layout Principal (Pantalla Dividida)
+   ========================================================================== */
+.left-panel {
+    flex: 1.2;
+    padding: 3rem 4rem;
+    background: var(--bg-light);
+    overflow-y: auto;
+}
+
+.right-panel {
+    flex: 0.8;
+    background: var(--bg-gray);
+    padding: 3rem 2rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* ==========================================================================
+   4. Navegación (Menú Desplegable)
+   ========================================================================== */
+.dropdown {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    z-index: 10;
+}
+
+.dropbtn {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-top: 0.5rem;
+}
+
+.dropdown-content a {
+    color: var(--text-dark);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.95rem;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--bg-gray);
+}
+
+/* ==========================================================================
+   5. Tarjetas de Selección (Grid y Cards)
+   ========================================================================== */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.category-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    background-color: var(--bg-light);
+}
+
+.category-card.active {
+    background-color: var(--active-dark);
+    color: white;
+    border-color: var(--active-dark);
+}
+
+/* Manejo del ícono de check "✓" */
+.category-card span:nth-child(2) {
+    display: none;
+}
+
+.category-card.active span:nth-child(2) {
+    display: block;
+}
+
+/* ==========================================================================
+   6. Formularios y Controles
+   ========================================================================== */
+.form-section {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.form-section.active {
+    display: block;
+}
+
+label {
+    display: block;
+    color: var(--text-dark);
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1rem;
+    background-color: var(--bg-light);
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--active-dark);
+}
+
+/* ==========================================================================
+   7. Botones
+   ========================================================================== */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn-primary {
+    background-color: var(--active-dark);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: white;
+    border: 1px solid var(--border);
+    color: var(--text-dark);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+}
+
+/* ==========================================================================
+   8. Componentes del Dashboard (Panel Derecho)
+   ========================================================================== */
+.info-card,
+.dashboard-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Iconos circulares */
+.circle-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--bg-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   9. Clases Utilitarias (Vitales para alinear y espaciar)
+   ========================================================================== */
+.text-muted {
+    color: var(--text-muted);
+}
+
+.text-sm {
+    font-size: 0.85rem;
+}
+
+.text-danger {
+    color: var(--danger);
+}
+
+.text-success {
+    color: var(--success);
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.mb-1-5 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+
+.mt-2 {
+    margin-top: 2rem;
+}
+
+.pb-1 {
+    padding-bottom: 1rem;
+}
+
+.border-bottom {
+    border-bottom: 1px solid var(--border);
+}
+
+.flex-1 {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Permite que el historial tenga scroll si crece mucho */
+
+.flex-gap-1 {
+    display: flex;
+    gap: 1rem;
+}
+
+.flex-center-gap-1 {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* ==========================================================================
+   10. Animaciones
+   ========================================================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

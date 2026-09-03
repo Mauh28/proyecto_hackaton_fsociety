@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Coordinador - Dashboard Global</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+    <!-- Panel Izquierdo: Configuración General -->
+    <div class="left-panel">
+        <h2>Panel de Coordinación</h2>
+        <p class="text-muted mb-2">Administra las campañas activas y la red de centros de acopio.</p>
+
+        <!-- Selector de Acción -->
+        <div class="category-grid" id="movementGrid">
+            <div class="category-card active" data-type="campana">
+                <span>Gestión de Campañas</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-type="centro">
+                <span>Gestión de Centros</span>
+                <span>✓</span>
+            </div>
+        </div>
+
+        <!-- Formularios Dinámicos -->
+        <div id="dynamicFields">
+
+            <!-- SECCIÓN 1: Formulario de Campañas -->
+            <div class="form-section active" id="sec-campana">
+                <div class="mb-1-5">
+                    <label for="nombreCampana" class="font-semibold">Nombre de la Campaña</label>
+                    <input type="text" id="nombreCampana" placeholder="Ej. Contingencia Huracán 2026" required>
+                </div>
+
+                <div class="flex-gap-1 mb-1-5">
+                    <div class="flex-1">
+                        <label for="fechaInicio" class="font-semibold">Fecha de Inicio</label>
+                        <input type="text" id="fechaInicio" placeholder="DD/MM/AAAA" required>
+                    </div>
+                    <div class="flex-1">
+                        <label for="fechaFin" class="font-semibold">Fecha de Fin</label>
+                        <input type="text" id="fechaFin" placeholder="DD/MM/AAAA">
+                    </div>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="estadoCampana" class="font-semibold">Estado de la Campaña</label>
+                    <select id="estadoCampana" required>
+                        <option value="activa">Activa (Recibiendo donaciones)</option>
+                        <option value="inactiva">Inactiva (Cerrada)</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-primary">Guardar Campaña</button>
+            </div>
+
+            <!-- SECCIÓN 2: Formulario de Centros de Acopio -->
+            <div class="form-section" id="sec-centro">
+                <div class="mb-1-5">
+                    <label for="nombreCentro" class="font-semibold">Nombre del Centro</label>
+                    <input type="text" id="nombreCentro" placeholder="Ej. Gimnasio Principal" required>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="institucionCentro" class="font-semibold">Institución Sede</label>
+                    <input type="text" id="institucionCentro" placeholder="Ej. Instituto Tecnológico de Ciudad Madero"
+                        required>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="encargadoCentro" class="font-semibold">Asignar Encargado</label>
+                    <select id="encargadoCentro" required>
+                        <option value="">Selecciona al responsable...</option>
+                        <option value="karina">Karina</option>
+                        <option value="hector">Hector</option>
+                        <option value="ale">Ale</option>
+                        <option value="mirari">Mirari</option>
+                        <option value="miguel">Miguel Matos</option>
+                    </select>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="campanaVinculada" class="font-semibold">Vincular a Campaña</label>
+                    <select id="campanaVinculada" required>
+                        <option value="huracan">Contingencia Huracán 2026</option>
+                        <option value="invierno">Campaña Invernal</option>
+                    </select>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="estadoCentro" class="font-semibold">Estado del Centro</label>
+                    <select id="estadoCentro" required>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-primary">Registrar Centro</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Dashboard Global -->
+    <div class="right-panel">
+
+        <!-- Navegación -->
+        <div class="dropdown">
+            <button type="button" class="dropbtn">Navegación ▾</button>
+            <div class="dropdown-content">
+                <a href="recepcion.html">Nueva Recepción (Voluntario)</a>
+                <a href="encargado.html">Panel de Encargado</a>
+                <a href="coordinador.html">Dashboard Global</a>
+            </div>
+        </div>
+
+        <h3 class="mt-0">Dashboard Global</h3>
+        <p class="text-muted text-sm mt-0 mb-2">Visibilidad total de la campaña activa.</p>
+
+        <!-- Métricas Maestras -->
+        <div class="dashboard-card mb-1-5">
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <h4>Stock Global</h4>
+                    <p>4,850</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Merma Total</h4>
+                    <p class="text-danger">34</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Centros Activos</h4>
+                    <p>4</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Art. Más Donado</h4>
+                    <p class="stat-text-alt">Agua (L)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparativa de Centros (Requisito MVP) -->
+        <div class="dashboard-card flex-1 mb-0">
+            <h4 class="mt-0 pb-1 border-bottom">Comparativa de Centros</h4>
+            <ul class="history-list">
+                <li>
+                    <div>
+                        <strong>Gimnasio ITCM</strong>
+                        <div class="text-muted text-sm">Encargado: Karina</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold">2,100</span>
+                        <div class="text-muted text-sm">artículos</div>
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <strong>Centro Comunitario Norte</strong>
+                        <div class="text-muted text-sm">Encargado: Miguel Matos</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold">1,450</span>
+                        <div class="text-muted text-sm">artículos</div>
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <strong>Auditorio Municipal</strong>
+                        <div class="text-muted text-sm">Encargado: Hector</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold">1,300</span>
+                        <div class="text-muted text-sm">artículos</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Script para cambiar entre formularios -->
+    <script>
+        const cards = document.querySelectorAll('.category-card[data-type]');
+        const formSections = document.querySelectorAll('.form-section');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                cards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                const type = card.getAttribute('data-type');
+
+                formSections.forEach(sec => sec.classList.remove('active'));
+                document.getElementById(`sec-${type}`).classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

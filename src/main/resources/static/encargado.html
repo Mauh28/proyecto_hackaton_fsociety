@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Encargado - Centro de Acopio</title>
+    <!-- Enlace al archivo CSS global -->
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+    <div class="left-panel">
+        <h2>Gestión de Inventario</h2>
+        <p class="text-muted mb-2">Selecciona el tipo de movimiento a registrar.</p>
+
+        <!-- Tipos de Movimientos del Encargado -->
+        <div class="category-grid" id="movementGrid">
+            <div class="category-card active" data-type="entrega">
+                <span>Entrega a Institución</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-type="transferencia">
+                <span>Transferencia (Salida)</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-type="merma">
+                <span>Registro de Merma</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-type="ajuste">
+                <span>Ajuste Manual</span>
+                <span>✓</span>
+            </div>
+        </div>
+
+        <!-- Campos comunes a todos los movimientos -->
+        <div class="mb-1-5">
+            <label for="itemSelect" class="font-semibold">Artículo</label>
+            <select id="itemSelect" required>
+                <option value="">Selecciona un artículo en stock...</option>
+                <option value="agua">Agua Embotellada (Litros) - Stock: 150</option>
+                <option value="arroz">Arroz (Kg) - Stock: 45</option>
+            </select>
+        </div>
+
+        <div class="mb-2">
+            <label for="inputQuantity" class="font-semibold">Cantidad</label>
+            <input type="number" id="inputQuantity" min="1" value="1" required>
+        </div>
+
+        <!-- Campos dinámicos según el tipo de movimiento seleccionado -->
+        <div id="dynamicFields">
+            <!-- Campos para Entrega -->
+            <div class="form-section active" id="sec-entrega">
+                <div class="mb-1-5">
+                    <label for="instSelect" class="font-semibold">Institución Receptora</label>
+                    <select id="instSelect" required>
+                        <option value="">Selecciona la institución...</option>
+                        <option value="cruz-roja">Cruz Roja</option>
+                        <option value="banco-alimentos">Banco de Alimentos</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-primary">Registrar Entrega</button>
+            </div>
+
+            <!-- Campos para Transferencia a otro centro -->
+            <div class="form-section" id="sec-transferencia">
+                <div class="mb-1-5">
+                    <label for="centroSelect" class="font-semibold">Centro Destino (Misma Campaña)</label>
+                    <select id="centroSelect" required>
+                        <option value="">Selecciona el centro destino...</option>
+                        <option value="centro-norte">Centro Comunitario Norte</option>
+                        <option value="escuela-sur">Escuela Primaria Sur</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-primary">Registrar Transferencia</button>
+            </div>
+
+            <!-- Campos para Merma (Motivo Obligatorio) -->
+            <div class="form-section" id="sec-merma">
+                <div class="mb-1-5">
+                    <label for="motivoMerma" class="font-semibold">Motivo Obligatorio</label>
+                    <select id="motivoMerma" required>
+                        <option value="">Selecciona el motivo...</option>
+                        <option value="caducidad">Caducidad</option>
+                        <option value="dano">Daño</option>
+                        <option value="perdida">Pérdida</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-primary">Descontar Merma</button>
+            </div>
+
+            <!-- Campos para Ajuste Manual -->
+            <div class="form-section" id="sec-ajuste">
+                <div class="mb-1-5">
+                    <label for="tipoAjuste" class="font-semibold">Tipo de Ajuste</label>
+                    <select id="tipoAjuste" required>
+                        <option value="resta">Reducir Stock (-)</option>
+                        <option value="suma">Incrementar Stock (+)</option>
+                    </select>
+                </div>
+                <div class="mb-1-5">
+                    <label for="motivoAjuste" class="font-semibold">Motivo de Corrección</label>
+                    <input type="text" id="motivoAjuste" placeholder="Ej. Error de conteo inicial" required>
+                </div>
+                <button type="button" class="btn btn-primary">Aplicar Ajuste</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Dashboard del Centro -->
+    <div class="right-panel">
+        <div class="dropdown">
+            <button type="button" class="dropbtn">Navegación ▾</button>
+            <div class="dropdown-content">
+                <a href="recepcion.html">Nueva Recepción (Voluntario)</a>
+                <a href="encargado.html">Panel de Encargado</a>
+                <a href="coordinador.html">Dashboard Global</a>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Métricas -->
+        <div class="dashboard-card mb-1-5">
+            <h3 class="mt-0">Dashboard: Centro Principal</h3>
+
+            <div class="stat-grid mt-2">
+                <div class="stat-box">
+                    <h4>Stock Total</h4>
+                    <p>1,204</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Mermas (Último mes)</h4>
+                    <p class="text-danger">12</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Historial -->
+
+        <div class="info-card flex-1">
+            <h4 class="mt-0 pb-1 border-bottom">Historial de Movimientos</h4>
+            <ul class="history-list">
+                <li>
+                    <div>
+                        <strong>Merma</strong> - Agua Embotellada
+                        <div class="text-muted text-sm">Daño (Actor: Encargado 1)</div>
+                    </div>
+                    <strong class="text-danger">-5</strong>
+                </li>
+                <li>
+                    <div>
+                        <strong>Transferencia</strong> - Arroz
+                        <div class="text-muted text-sm">Hacia Centro Norte (Actor: Encargado 1)</div>
+                    </div>
+                    <strong class="text-danger">-20</strong>
+                </li>
+                <li>
+                    <div>
+                        <strong>Recepción</strong> - Atún
+                        <div class="text-muted text-sm">Anónimo (Actor: Voluntario)</div>
+                    </div>
+                    <strong class="text-success">+50</strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Script para el comportamiento dinámico del formulario -->
+    <script>
+        // Seleccionamos solo las tarjetas que tienen el atributo data-type
+        const cards = document.querySelectorAll('.category-card[data-type]');
+        const formSections = document.querySelectorAll('.form-section');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                // 1. Limpiar estado activo de todas las tarjetas
+                cards.forEach(c => c.classList.remove('active'));
+
+                // 2. Activar la tarjeta seleccionada
+                card.classList.add('active');
+
+                // 3. Obtener el tipo de movimiento de la tarjeta seleccionada
+                const type = card.getAttribute('data-type');
+
+                // 4. Ocultar todos los sub-formularios
+                formSections.forEach(sec => sec.classList.remove('active'));
+
+                // 5. Mostrar solo el formulario que corresponde al movimiento seleccionado
+                document.getElementById(`sec-${type}`).classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

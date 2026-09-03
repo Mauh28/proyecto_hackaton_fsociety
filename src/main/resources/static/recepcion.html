@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Recepción</title>
+    <style>
+        /* Equivalente a un estilos.css global */
+        :root {
+            --bg-light: #ffffff;
+            --bg-gray: #f3f4f6;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --active-dark: #374151;
+            /* Color oscuro de las tarjetas seleccionadas */
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            color: var(--text-dark);
+        }
+
+        /* Columna Izquierda: Formulario */
+        .left-panel {
+            flex: 1;
+            padding: 4rem;
+            background: var(--bg-light);
+            overflow-y: auto;
+        }
+
+        /* Columna Derecha: Fondo e Info */
+        .right-panel {
+            flex: 1;
+            background: var(--bg-gray);
+            padding: 2rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Menú Desplegable */
+        .dropdown {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+        }
+
+        .dropbtn {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: var(--text-dark);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: var(--bg-gray);
+        }
+
+        /* Grid de Categorías (Estilo de la imagen) */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-card.active {
+            background-color: var(--active-dark);
+            color: white;
+            border-color: var(--active-dark);
+        }
+
+        /* Botones Base */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--active-dark);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border: 1px solid var(--border);
+            color: var(--text-dark);
+        }
+
+        /* Tarjeta de Información (Panel Derecho) */
+        .info-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            width: 80%;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        .text-muted {
+            color: var(--text-muted);
+        }
+
+        .text-sm {
+            font-size: 0.9rem;
+        }
+
+        .mb-1-5 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 2rem;
+        }
+
+        .mt-0 {
+            margin-top: 0;
+        }
+
+        .mt-2 {
+            margin-top: 2rem;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .flex-gap-1 {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .flex-center-gap-1 {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .circle-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: var(--bg-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-card span:nth-child(2) {
+            display: none;
+        }
+
+        .category-card.active span:nth-child(2) {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="left-panel">
+        <h2>Registrar Donación</h2>
+        <p class="text-muted mb-2">Selecciona la categoría del artículo recibido.</p>
+
+        <div class="category-grid" id="categoryGrid">
+            <!-- Categorías basadas en el documento del hackatón -->
+            <div class="category-card active" data-cat="no-perecedero">
+                <span>Alimento No Perecedero</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-cat="perecedero">
+                <span>Alimento Perecedero</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-cat="limpieza">
+                <span>Limpieza</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-cat="ropa">
+                <span>Ropa</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-cat="medicamento">
+                <span>Medicamento</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-cat="otro">
+                <span>Otro</span>
+                <span>✓</span>
+            </div>
+        </div>
+
+        <div class="mb-1-5">
+            <label for="inputQuantity" class="font-semibold">Cantidad o Peso</label>
+            <input type="number" id="inputQuantity" min="1" value="1">
+        </div>
+
+        <div class="mb-2">
+            <label for="inputDonor" class="font-semibold">Nombre del Donante (Opcional)</label>
+            <input type="text" id="inputDonor" placeholder="Dejar en blanco para donación anónima">
+        </div>
+
+        <div class="flex-gap-1">
+            <button type="button" class="btn btn-primary">Registrar</button>
+            <button type="button" class="btn btn-secondary">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="dropdown">
+            <button type="button" class="dropbtn">Navegación ▾</button>
+            <div class="dropdown-content">
+                <!-- Enlaces a los otros archivos HTML -->
+                <a href="recepcion.html">Nueva Recepción (Voluntario)</a>
+                <a href="encargado.html">Panel de Encargado</a>
+                <a href="coordinador.html">Dashboard Global</a>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3 class="mt-0">Resumen del Centro</h3>
+            <p class="text-muted">Stock actualizando en tiempo real.</p>
+            <div class="flex-center-gap-1 mt-2">
+                <div class="circle-icon">
+                    1</div>
+                <div>
+                    <strong>Campaña Activa</strong>
+                    <div class="text-muted text-sm">Huracán 2026</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica para alternar la selección de las tarjetas
+        const cards = document.querySelectorAll('.category-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                cards.forEach(c => {
+                    c.classList.remove('active');
+                });
+                card.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
