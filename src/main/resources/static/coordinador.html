@@ -112,10 +112,13 @@
         <!-- Navegación -->
         <div class="dropdown">
             <button type="button" class="dropbtn">Navegación ▾</button>
-            <div class="dropdown-content">
-                <a href="recepcion.html">Nueva Recepción (Voluntario)</a>
-                <a href="encargado.html">Panel de Encargado</a>
-                <a href="coordinador.html">Dashboard Global</a>
+            <div class="dropdown-content" id="navDropdown">
+                <!-- Visible para Voluntario, Encargado y Coordinador -->
+                <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción (Voluntario)</a>
+                <!-- Visible solo para Encargado y Coordinador -->
+                <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
+                <!-- Visible exclusivamente para el Coordinador General -->
+                <a href="coordinador.html" data-role="coordinador">Dashboard Global (Coordinador)</a>
             </div>
         </div>
 
@@ -198,6 +201,26 @@
                 document.getElementById(`sec-${type}`).classList.add('active');
             });
         });
+    </script>
+    <script>
+        // SIMULACIÓN DE LOGIN: Cambia esto por el rol activo de tu sesión ("voluntario", "encargado" o "coordinador")
+        const usuarioActual = "voluntario"; // Prueba cambiando a "encargado" o "coordinador"
+
+        // Control de visibilidad del menú desplegable basado en el rol
+        const links = document.querySelectorAll('#navDropdown a');
+
+        links.forEach(link => {
+            const rolesPermitidos = link.getAttribute('data-role');
+            if (!rolesPermitidos.includes(usuarioActual)) {
+                link.style.display = 'none'; // Oculta la opción si el rol no tiene permiso
+            }
+        });
+
+        // Validación de seguridad visual en la vista
+        if (usuarioActual === "voluntario" && window.location.pathname.includes("coordinador")) {
+            alert("Acceso restringido. Redirigiendo a vista de voluntario.");
+            window.location.href = "recepcion.html";
+        }
     </script>
 </body>
 
