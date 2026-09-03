@@ -21,6 +21,24 @@
             width: 100%;
             max-width: 400px;
         }
+
+        /* Corrección: Estilos idénticos para el input de contraseña */
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 1rem;
+            background-color: var(--bg-light);
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--active-dark);
+        }
     </style>
 </head>
 
@@ -28,7 +46,8 @@
 
     <div class="login-card">
         <h2 class="mt-0">Iniciar Sesión</h2>
-        <p class="text-muted mb-2">Ingresa tus credenciales para acceder al sistema[cite: 1, 2].</p>
+        <!-- Texto limpio, sin referencias extrañas -->
+        <p class="text-muted mb-2">Ingresa tus credenciales para acceder al sistema.</p>
 
         <form id="loginForm">
             <div class="mb-1-5">
@@ -48,8 +67,7 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            // Aquí conectarás con tu backend en Java (Spring Boot) para validar credenciales.
-            // Para la demo, puedes redirigir según el correo ingresado:
+            // Simulación de ruteo para la demo
             const email = document.getElementById('email').value;
 
             if (email.includes('voluntario')) {

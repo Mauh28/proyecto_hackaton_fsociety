@@ -56,7 +56,7 @@
                     </select>
                 </div>
 
-                <button type="button" class="btn btn-primary">Guardar Campaña</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarCampana">Guardar Campaña</button>
             </div>
 
             <!-- SECCIÓN 2: Formulario de Centros de Acopio -->
@@ -100,7 +100,7 @@
                     </select>
                 </div>
 
-                <button type="button" class="btn btn-primary">Registrar Centro</button>
+                <button type="button" class="btn btn-primary" id="btnRegistrarCentro">Registrar Centro</button>
             </div>
 
         </div>
@@ -109,23 +109,23 @@
     <!-- Panel Derecho: Dashboard Global -->
     <div class="right-panel">
 
-        <!-- Navegación -->
-        <div class="dropdown">
-            <button type="button" class="dropbtn">Navegación ▾</button>
-            <div class="dropdown-content" id="navDropdown">
-                <!-- Visible para Voluntario, Encargado y Coordinador -->
-                <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción (Voluntario)</a>
-                <!-- Visible solo para Encargado y Coordinador -->
-                <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
-                <!-- Visible exclusivamente para el Coordinador General -->
-                <a href="coordinador.html" data-role="coordinador">Dashboard Global (Coordinador)</a>
+        <!-- Navegación sin inline styles -->
+        <div class="nav-wrapper">
+            <div class="dropdown dropdown-relative">
+                <button type="button" class="dropbtn">Navegación ▾</button>
+                <div class="dropdown-content" id="navDropdown">
+                    <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción
+                        (Voluntario)</a>
+                    <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
+                    <a href="coordinador.html" data-role="coordinador">Dashboard Global (Coordinador)</a>
+                </div>
             </div>
         </div>
 
         <h3 class="mt-0">Dashboard Global</h3>
         <p class="text-muted text-sm mt-0 mb-2">Visibilidad total de la campaña activa.</p>
 
-        <!-- Métricas Maestras -->
+        <!-- Métricas Maestras y Meta de Campaña -->
         <div class="dashboard-card mb-1-5">
             <div class="stat-grid">
                 <div class="stat-box">
@@ -145,9 +145,20 @@
                     <p class="stat-text-alt">Agua (L)</p>
                 </div>
             </div>
+
+            <!-- Meta Global de Recolección -->
+            <div class="mt-2 pt-1 border-bottom">
+                <div class="flex-between-end">
+                    <strong class="text-sm">Meta Global de Campaña</strong>
+                    <span class="text-sm text-muted">4,850 / 10,000</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
         </div>
 
-        <!-- Comparativa de Centros (Requisito MVP) -->
+        <!-- Comparativa de Centros -->
         <div class="dashboard-card flex-1 mb-0">
             <h4 class="mt-0 pb-1 border-bottom">Comparativa de Centros</h4>
             <ul class="history-list">
@@ -185,8 +196,11 @@
         </div>
     </div>
 
-    <!-- Script para cambiar entre formularios -->
+    <!-- Notificación Toast -->
+    <div id="toastNotif" class="toast">Configuración actualizada exitosamente</div>
+
     <script>
+        // Cambio dinámico de formularios
         const cards = document.querySelectorAll('.category-card[data-type]');
         const formSections = document.querySelectorAll('.form-section');
 
@@ -201,26 +215,41 @@
                 document.getElementById(`sec-${type}`).classList.add('active');
             });
         });
-    </script>
-    <script>
-        // SIMULACIÓN DE LOGIN: Cambia esto por el rol activo de tu sesión ("voluntario", "encargado" o "coordinador")
-        const usuarioActual = "voluntario"; // Prueba cambiando a "encargado" o "coordinador"
 
-        // Control de visibilidad del menú desplegable basado en el rol
+        // Control de roles en el menú
+        const usuarioActual = "coordinador";
         const links = document.querySelectorAll('#navDropdown a');
 
         links.forEach(link => {
             const rolesPermitidos = link.getAttribute('data-role');
             if (!rolesPermitidos.includes(usuarioActual)) {
-                link.style.display = 'none'; // Oculta la opción si el rol no tiene permiso
+                link.style.display = 'none';
             }
         });
 
-        // Validación de seguridad visual en la vista
+        // Validación de acceso seguro a la vista
         if (usuarioActual === "voluntario" && window.location.pathname.includes("coordinador")) {
             alert("Acceso restringido. Redirigiendo a vista de voluntario.");
             window.location.href = "recepcion.html";
         }
+
+        // Animación de notificaciones al guardar
+        const toast = document.getElementById('toastNotif');
+        function dispararNotificacion(mensaje) {
+            toast.textContent = mensaje;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.getElementById('btnGuardarCampana').addEventListener('click', () => {
+            dispararNotificacion('¡Campaña guardada con éxito!');
+        });
+
+        document.getElementById('btnRegistrarCentro').addEventListener('click', () => {
+            dispararNotificacion('¡Centro de acopio registrado!');
+        });
     </script>
 </body>
 

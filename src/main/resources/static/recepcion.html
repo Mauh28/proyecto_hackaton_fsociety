@@ -58,16 +58,19 @@
     </div>
 
     <div class="right-panel">
-        <div class="dropdown">
-            <button type="button" class="dropbtn">Navegación ▾</button>
-            <div class="dropdown-content" id="navDropdown">
-                <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción (Voluntario)</a>
-                <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
-                <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
+        <div class="nav-wrapper">
+            <div class="dropdown dropdown-relative">
+                <button type="button" class="dropbtn">Navegación ▾</button>
+                <div class="dropdown-content" id="navDropdown">
+                    <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción
+                        (Voluntario)</a>
+                    <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
+                    <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
+                </div>
             </div>
         </div>
 
-        <div class="info-card">
+        <div class="info-card w-full">
             <h3 class="mt-0">Resumen del Centro</h3>
             <div class="flex-center-gap-1 mb-1-5 mt-2">
                 <div class="circle-icon">1</div>
@@ -77,7 +80,6 @@
                 </div>
             </div>
 
-            <!-- Meta de Recolección -->
             <div class="mt-2 pt-1 border-bottom">
                 <div class="flex-between-end">
                     <strong class="text-sm">Meta de Recolección</strong>
@@ -90,11 +92,9 @@
         </div>
     </div>
 
-    <!-- Contenedor de la notificación -->
     <div id="toastNotif" class="toast">¡Donación registrada con éxito!</div>
 
     <script>
-        // Lógica de Tarjetas
         const cards = document.querySelectorAll('.category-card');
         cards.forEach(card => {
             card.addEventListener('click', () => {
@@ -103,7 +103,6 @@
             });
         });
 
-        // Simulación de Roles
         const usuarioActual = "voluntario";
         const links = document.querySelectorAll('#navDropdown a');
         links.forEach(link => {
@@ -113,7 +112,6 @@
             }
         });
 
-        // Lógica de Notificación y Animación de Meta
         const btnRegistrar = document.getElementById('btnRegistrar');
         const toast = document.getElementById('toastNotif');
         const inputQuantity = document.getElementById('inputQuantity');
@@ -124,24 +122,19 @@
         const metaTotal = 5000;
 
         btnRegistrar.addEventListener('click', () => {
-            // Mostrar Toast
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3000); // Se oculta a los 3 segundos
+            }, 3000);
 
-            // Actualizar Meta y Barra de Progreso
             const cantidadAgregada = parseInt(inputQuantity.value) || 0;
             stockActual += cantidadAgregada;
             stockActualEl.textContent = stockActual;
 
-            // Calcular nuevo porcentaje
             let porcentaje = (stockActual / metaTotal) * 100;
-            if (porcentaje > 100) porcentaje = 100; // Evitar que desborde visualmente
+            if (porcentaje > 100) porcentaje = 100;
 
             progressBar.style.width = `${porcentaje}%`;
-
-            // Resetear cantidad a 1
             inputQuantity.value = 1;
         });
     </script>

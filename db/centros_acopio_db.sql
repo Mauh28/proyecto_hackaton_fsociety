@@ -211,9 +211,6 @@ CREATE PROCEDURE sp_registrar_recepcion_donacion(
 )
 BEGIN
     DECLARE v_donante_id INT DEFAULT NULL;
-    DECLARE v_centro_activo BOOLEAN;
-    DECLARE v_campania_activa BOOLEAN;
-    DECLARE v_asociacion_activa BOOLEAN;
     DECLARE v_movimiento_id INT;
     DECLARE v_nuevo_stock DECIMAL(10,2);
 
@@ -224,25 +221,19 @@ BEGIN
     END IF;
 
     -- 2. Validar que el centro exista y esté activo
-    SELECT activo INTO v_centro_activo FROM centros WHERE id = p_centro_id;
-    IF v_centro_activo IS NULL OR v_centro_activo = FALSE THEN
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id AND activo = TRUE) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Error: El centro de acopio no existe o está inactivo.';
     END IF;
 
     -- 3. Validar que la campaña exista y esté activa
-    SELECT activo INTO v_campania_activa FROM campanias WHERE id = p_campania_id;
-    IF v_campania_activa IS NULL OR v_campania_activa = FALSE THEN
+    IF NOT EXISTS (SELECT 1 FROM campanias WHERE id = p_campania_id AND activo = TRUE) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Error: La campaña no existe o está inactiva.';
     END IF;
 
     -- 4. Validar que el centro participe activamente en la campaña
-    SELECT activo INTO v_asociacion_activa 
-    FROM centros_campanias 
-    WHERE id_centro = p_centro_id AND id_campania = p_campania_id;
-    
-    IF v_asociacion_activa IS NULL OR v_asociacion_activa = FALSE THEN
+    IF NOT EXISTS (SELECT 1 FROM centros_campanias WHERE id_centro = p_centro_id AND id_campania = p_campania_id AND activo = TRUE) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Error: El centro no está habilitado para recibir insumos en esta campaña.';
     END IF;
@@ -266,10 +257,12 @@ BEGIN
     );
     SET v_movimiento_id = LAST_INSERT_ID();
 
-    -- 7. Consultar el nuevo stock disponible resultante
-    SELECT COALESCE(stock_disponible, 0) INTO v_nuevo_stock
-    FROM v_stock_actual
-    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+    -- 7. Consultar el nuevo stock disponible resultante de forma segura
+    SELECT COALESCE(
+        (SELECT stock_disponible FROM v_stock_actual 
+         WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id), 
+        0.00
+    ) INTO v_nuevo_stock;
 
     -- 8. Devolver resultado
     SELECT 
@@ -311,9 +304,11 @@ BEGIN
     END IF;
 
     -- 3. VALIDACIÓN CRÍTICA: Prohibido Stock Negativo (Sección 5.3)
-    SELECT COALESCE(stock_disponible, 0) INTO v_stock_actual
-    FROM v_stock_actual
-    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+    SELECT COALESCE(
+        (SELECT stock_disponible FROM v_stock_actual 
+         WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id), 
+        0.00
+    ) INTO v_stock_actual;
 
     IF v_stock_actual < p_cantidad THEN
         SIGNAL SQLSTATE '45000'
@@ -371,9 +366,11 @@ BEGIN
     END IF;
 
     -- 3. Validar existencias suficientes para descontar la merma
-    SELECT COALESCE(stock_disponible, 0) INTO v_stock_actual
-    FROM v_stock_actual
-    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+    SELECT COALESCE(
+        (SELECT stock_disponible FROM v_stock_actual 
+         WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id), 
+        0.00
+    ) INTO v_stock_actual;
 
     IF v_stock_actual < p_cantidad THEN
         SIGNAL SQLSTATE '45000'
@@ -441,10 +438,12 @@ BEGIN
         SET MESSAGE_TEXT = 'Error: El centro de destino no está habilitado en esta campaña.';
     END IF;
 
-    -- 4. Validar existencias suficientes en el centro de origen
-    SELECT COALESCE(stock_disponible, 0) INTO v_stock_origen
-    FROM v_stock_actual
-    WHERE centro_id = p_centro_origen_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+    -- 4. Validar existencias suficientes en el centro de origen de forma segura
+    SELECT COALESCE(
+        (SELECT stock_disponible FROM v_stock_actual 
+         WHERE centro_id = p_centro_origen_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id), 
+        0.00
+    ) INTO v_stock_origen;
 
     IF v_stock_origen < p_cantidad THEN
         SIGNAL SQLSTATE '45000'
@@ -531,10 +530,12 @@ BEGIN
         SET MESSAGE_TEXT = 'Error: El motivo de ajuste es obligatorio (CORRECCION_CONTEO, ERROR_CAPTURA, OTRO).';
     END IF;
 
-    -- 4. Validar existencias si el ajuste es negativo
-    SELECT COALESCE(stock_disponible, 0) INTO v_stock_actual
-    FROM v_stock_actual
-    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+    -- 4. Validar existencias si el ajuste es negativo de forma segura
+    SELECT COALESCE(
+        (SELECT stock_disponible FROM v_stock_actual 
+         WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id), 
+        0.00
+    ) INTO v_stock_actual;
 
     IF p_tipo_ajuste = 'AJUSTE_NEGATIVO' AND v_stock_actual < p_cantidad THEN
         SIGNAL SQLSTATE '45000'
@@ -551,10 +552,12 @@ BEGIN
     );
     SET v_movimiento_id = LAST_INSERT_ID();
 
-    -- 6. Consultar nuevo stock disponible
-    SELECT COALESCE(stock_disponible, 0) INTO v_nuevo_stock
-    FROM v_stock_actual
-    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+    -- 6. Consultar nuevo stock disponible de forma segura
+    SELECT COALESCE(
+        (SELECT stock_disponible FROM v_stock_actual 
+         WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id), 
+        0.00
+    ) INTO v_nuevo_stock;
 
     -- 7. Devolver resultado
     SELECT 
@@ -564,6 +567,1033 @@ BEGIN
         p_cantidad AS cantidad_ajustada,
         v_nuevo_stock AS stock_oficial_actualizado,
         'Ajuste de inventario registrado y auditado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ==========================================================
+-- PROCEDIMIENTOS ALMACENADOS - FASE 2: AUTH, CATÁLOGOS Y SELECTORES
+-- ==========================================================
+
+-- ----------------------------------------------------------
+-- SP 6: Autenticación y Contexto de Sesión de Usuario
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_autenticar_usuario;
+DELIMITER //
+CREATE PROCEDURE sp_autenticar_usuario(
+    IN p_email VARCHAR(150)
+)
+BEGIN
+    -- 1. Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM usuario WHERE email = p_email) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Credenciales inválidas. Usuario no registrado.';
+    END IF;
+
+    -- 2. Validar si la cuenta está activa
+    IF NOT EXISTS (SELECT 1 FROM usuario WHERE email = p_email AND activo = TRUE) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La cuenta de usuario se encuentra deshabilitada.';
+    END IF;
+
+    -- 3. Retornar perfil y credenciales para validación en backend
+    SELECT 
+        u.id AS usuario_id,
+        u.nombre,
+        u.email,
+        u.password AS password_hash,
+        u.rol,
+        u.centro_id,
+        c.nombre AS centro_nombre,
+        u.institucion_id,
+        i.nombre AS institucion_nombre,
+        u.activo
+    FROM usuario u
+    LEFT JOIN centros c ON u.centro_id = c.id
+    LEFT JOIN instituciones_receptoras i ON u.institucion_id = i.id
+    WHERE u.email = p_email;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 7: Registro y Alta de Usuario (RBAC)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_usuario;
+DELIMITER //
+CREATE PROCEDURE sp_crear_usuario(
+    IN p_nombre VARCHAR(100),
+    IN p_email VARCHAR(150),
+    IN p_password VARCHAR(255),
+    IN p_centro_id INT,
+    IN p_institucion_id INT,
+    IN p_rol VARCHAR(20)
+)
+BEGIN
+    -- 1. Validar duplicidad de email
+    IF EXISTS (SELECT 1 FROM usuario WHERE email = p_email) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El correo electrónico ya se encuentra registrado.';
+    END IF;
+
+    -- 2. Validar rol válido
+    IF p_rol NOT IN ('COORDINADOR', 'ENCARGADO', 'VOLUNTARIO', 'INSTITUCION', 'LIDER') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Rol no válido. Debe ser COORDINADOR, ENCARGADO, VOLUNTARIO, INSTITUCION o LIDER.';
+    END IF;
+
+    -- 3. Validar consistencia de asignaciones según rol
+    IF p_rol IN ('ENCARGADO', 'VOLUNTARIO') AND p_centro_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Usuarios con rol Encargado o Voluntario deben tener un centro_id asignado.';
+    END IF;
+
+    IF p_rol = 'INSTITUCION' AND p_institucion_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Usuarios con rol Institución deben tener un institucion_id asignado.';
+    END IF;
+
+    -- 4. Insertar nuevo usuario
+    INSERT INTO usuario (nombre, email, password, centro_id, institucion_id, rol, activo)
+    VALUES (p_nombre, p_email, p_password, p_centro_id, p_institucion_id, p_rol, TRUE);
+
+    SELECT 
+        LAST_INSERT_ID() AS usuario_id,
+        p_nombre AS nombre,
+        p_email AS email,
+        p_rol AS rol,
+        'Usuario registrado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 8: Cambiar Estado de Usuario (Activar / Desactivar)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_cambiar_estado_usuario;
+DELIMITER //
+CREATE PROCEDURE sp_cambiar_estado_usuario(
+    IN p_usuario_id INT,
+    IN p_nuevo_estado BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM usuario WHERE id = p_usuario_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El usuario especificado no existe.';
+    END IF;
+
+    UPDATE usuario SET activo = p_nuevo_estado WHERE id = p_usuario_id;
+
+    SELECT 
+        p_usuario_id AS usuario_id,
+        p_nuevo_estado AS nuevo_estado_activo,
+        'Estado de usuario actualizado correctamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 9: Crear Centro de Acopio
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_centro_acopio;
+DELIMITER //
+CREATE PROCEDURE sp_crear_centro_acopio(
+    IN p_nombre VARCHAR(150),
+    IN p_institucion VARCHAR(150),
+    IN p_ubicacion TEXT,
+    IN p_latitud DECIMAL(10, 8),
+    IN p_longitud DECIMAL(11, 8)
+)
+BEGIN
+    IF p_nombre IS NULL OR TRIM(p_nombre) = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El nombre del centro de acopio es obligatorio.';
+    END IF;
+
+    INSERT INTO centros (nombre, institucion, ubicacion, latitud, longitud, activo)
+    VALUES (p_nombre, p_institucion, p_ubicacion, p_latitud, p_longitud, TRUE);
+
+    SELECT 
+        LAST_INSERT_ID() AS centro_id,
+        p_nombre AS nombre,
+        'Centro de acopio registrado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 10: Editar Centro de Acopio
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_editar_centro_acopio;
+DELIMITER //
+CREATE PROCEDURE sp_editar_centro_acopio(
+    IN p_centro_id INT,
+    IN p_nombre VARCHAR(150),
+    IN p_institucion VARCHAR(150),
+    IN p_ubicacion TEXT,
+    IN p_latitud DECIMAL(10, 8),
+    IN p_longitud DECIMAL(11, 8)
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio no existe.';
+    END IF;
+
+    UPDATE centros 
+    SET 
+        nombre = p_nombre,
+        institucion = p_institucion,
+        ubicacion = p_ubicacion,
+        latitud = p_latitud,
+        longitud = p_longitud
+    WHERE id = p_centro_id;
+
+    SELECT 
+        p_centro_id AS centro_id,
+        p_nombre AS nombre,
+        'Centro de acopio modificado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 11: Cambiar Estado de Centro (Activar / Desactivar)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_cambiar_estado_centro;
+DELIMITER //
+CREATE PROCEDURE sp_cambiar_estado_centro(
+    IN p_centro_id INT,
+    IN p_nuevo_estado BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio especificado no existe.';
+    END IF;
+
+    UPDATE centros SET activo = p_nuevo_estado WHERE id = p_centro_id;
+
+    SELECT 
+        p_centro_id AS centro_id,
+        p_nuevo_estado AS activo,
+        'Estado del centro de acopio actualizado correctamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 12: Crear Campaña de Emergencia / Beneficencia
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_campania;
+DELIMITER //
+CREATE PROCEDURE sp_crear_campania(
+    IN p_nombre VARCHAR(150),
+    IN p_descripcion TEXT,
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE,
+    IN p_meta_unidades DECIMAL(10,2),
+    IN p_lider_id INT
+)
+BEGIN
+    IF p_nombre IS NULL OR TRIM(p_nombre) = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El nombre de la campaña es obligatorio.';
+    END IF;
+
+    IF p_fecha_fin IS NOT NULL AND p_fecha_fin < p_fecha_inicio THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La fecha de finalización no puede ser anterior a la fecha de inicio.';
+    END IF;
+
+    IF p_lider_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM usuario WHERE id = p_lider_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El usuario asignado como líder de campaña no existe.';
+    END IF;
+
+    INSERT INTO campanias (nombre, descripcion, fecha_inicio, fecha_fin, meta_unidades, activo, lider_id)
+    VALUES (p_nombre, p_descripcion, p_fecha_inicio, p_fecha_fin, COALESCE(p_meta_unidades, 0.00), TRUE, p_lider_id);
+
+    SELECT 
+        LAST_INSERT_ID() AS campania_id,
+        p_nombre AS nombre,
+        'Campaña creada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 13: Editar Campaña
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_editar_campania;
+DELIMITER //
+CREATE PROCEDURE sp_editar_campania(
+    IN p_campania_id INT,
+    IN p_nombre VARCHAR(150),
+    IN p_descripcion TEXT,
+    IN p_fecha_fin DATE,
+    IN p_meta_unidades DECIMAL(10,2),
+    IN p_lider_id INT
+)
+BEGIN
+    DECLARE v_fecha_inicio DATE;
+
+    -- 1. Validar existencia de la campaña
+    IF NOT EXISTS (SELECT 1 FROM campanias WHERE id = p_campania_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña especificada no existe.';
+    END IF;
+
+    SELECT fecha_inicio INTO v_fecha_inicio FROM campanias WHERE id = p_campania_id;
+
+    IF p_fecha_fin IS NOT NULL AND p_fecha_fin < v_fecha_inicio THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La fecha de finalización no puede ser anterior a la fecha de inicio.';
+    END IF;
+
+    UPDATE campanias 
+    SET 
+        nombre = p_nombre,
+        descripcion = p_descripcion,
+        fecha_fin = p_fecha_fin,
+        meta_unidades = COALESCE(p_meta_unidades, meta_unidades),
+        lider_id = p_lider_id
+    WHERE id = p_campania_id;
+
+    SELECT 
+        p_campania_id AS campania_id,
+        p_nombre AS nombre,
+        'Campaña actualizada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 14: Cambiar Estado de Campaña (Activar / Cierre Oficial)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_cambiar_estado_campania;
+DELIMITER //
+CREATE PROCEDURE sp_cambiar_estado_campania(
+    IN p_campania_id INT,
+    IN p_nuevo_estado BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM campanias WHERE id = p_campania_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña especificada no existe.';
+    END IF;
+
+    UPDATE campanias SET activo = p_nuevo_estado WHERE id = p_campania_id;
+
+    SELECT 
+        p_campania_id AS campania_id,
+        p_nuevo_estado AS activo,
+        'Estado de vigencia de la campaña actualizado correctamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 15: Asociar o Habilitar Centro en una Campaña
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_asociar_centro_campania;
+DELIMITER //
+CREATE PROCEDURE sp_asociar_centro_campania(
+    IN p_centro_id INT,
+    IN p_campania_id INT,
+    IN p_activo BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio no existe.';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM campanias WHERE id = p_campania_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña no existe.';
+    END IF;
+
+    INSERT INTO centros_campanias (id_centro, id_campania, activo)
+    VALUES (p_centro_id, p_campania_id, p_activo)
+    ON DUPLICATE KEY UPDATE activo = p_activo;
+
+    SELECT 
+        p_centro_id AS centro_id,
+        p_campania_id AS campania_id,
+        p_activo AS participacion_activa,
+        'Vinculación de centro a campaña actualizada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 16: Registrar Artículo en Catálogo
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_articulo;
+DELIMITER //
+CREATE PROCEDURE sp_crear_articulo(
+    IN p_nombre VARCHAR(100),
+    IN p_categoria VARCHAR(30),
+    IN p_unidad VARCHAR(20)
+)
+BEGIN
+    IF p_categoria NOT IN ('NO_PERECEDERO', 'PERECEDERO', 'ROPA', 'LIMPIEZA', 'MEDICAMENTO', 'OTRO') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Categoría inválida. Debe ser NO_PERECEDERO, PERECEDERO, ROPA, LIMPIEZA, MEDICAMENTO u OTRO.';
+    END IF;
+
+    IF p_unidad NOT IN ('PIEZA', 'KG', 'L', 'BOLSA', 'CAJA') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Unidad inválida. Debe ser PIEZA, KG, L, BOLSA o CAJA.';
+    END IF;
+
+    INSERT INTO articulos (nombre, categoria, unidad)
+    VALUES (p_nombre, p_categoria, p_unidad);
+
+    SELECT 
+        LAST_INSERT_ID() AS articulo_id,
+        p_nombre AS nombre,
+        p_categoria AS categoria,
+        p_unidad AS unidad,
+        'Artículo catalogado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 17: Listar Artículos para Selectores de Formulario
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_articulos;
+DELIMITER //
+CREATE PROCEDURE sp_listar_articulos(
+    IN p_categoria VARCHAR(30)
+)
+BEGIN
+    IF p_categoria IS NOT NULL AND TRIM(p_categoria) <> '' THEN
+        SELECT id, nombre, categoria, unidad 
+        FROM articulos 
+        WHERE categoria = p_categoria 
+        ORDER BY nombre ASC;
+    ELSE
+        SELECT id, nombre, categoria, unidad 
+        FROM articulos 
+        ORDER BY categoria ASC, nombre ASC;
+    END IF;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 18: Listar Instituciones Receptoras para Selectores
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_instituciones_receptoras;
+DELIMITER //
+CREATE PROCEDURE sp_listar_instituciones_receptoras()
+BEGIN
+    SELECT id, nombre, direccion, contacto 
+    FROM instituciones_receptoras 
+    ORDER BY nombre ASC;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 19: Listar Campañas Activas por Centro (Dropdown de Captura)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_campanias_activas_centro;
+DELIMITER //
+CREATE PROCEDURE sp_listar_campanias_activas_centro(
+    IN p_centro_id INT
+)
+BEGIN
+    SELECT 
+        c.id AS campania_id,
+        c.nombre,
+        c.fecha_inicio,
+        c.fecha_fin,
+        c.meta_unidades
+    FROM campanias c
+    INNER JOIN centros_campanias cc ON c.id = cc.id_campania
+    WHERE cc.id_centro = p_centro_id 
+      AND c.activo = TRUE 
+      AND cc.activo = TRUE
+    ORDER BY c.fecha_inicio DESC;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 20: Listar Centros Destino para Transferencia (Excluyendo Origen)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_centros_destino_transferencia;
+DELIMITER //
+CREATE PROCEDURE sp_listar_centros_destino_transferencia(
+    IN p_centro_origen_id INT,
+    IN p_campania_id INT
+)
+BEGIN
+    SELECT 
+        c.id AS centro_id,
+        c.nombre,
+        c.institucion,
+        c.ubicacion
+    FROM centros c
+    INNER JOIN centros_campanias cc ON c.id = cc.id_centro
+    WHERE cc.id_campania = p_campania_id 
+      AND c.activo = TRUE 
+      AND cc.activo = TRUE 
+      AND c.id <> p_centro_origen_id
+    ORDER BY c.nombre ASC;
+END //
+DELIMITER ;
+
+-- ==========================================================
+-- PROCEDIMIENTOS ALMACENADOS - FASE 3: INSTITUCIÓN RECEPTORA, AUDITORÍA Y STOCK
+-- ==========================================================
+
+-- ----------------------------------------------------------
+-- SP 21: Consultar Entregas Canalizadas a una Institución
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_consultar_entregas_institucion;
+DELIMITER //
+CREATE PROCEDURE sp_consultar_entregas_institucion(
+    IN p_institucion_id INT,
+    IN p_solo_pendientes BOOLEAN
+)
+BEGIN
+    -- 1. Validar existencia de la institución
+    IF NOT EXISTS (SELECT 1 FROM instituciones_receptoras WHERE id = p_institucion_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La institución receptora especificada no existe.';
+    END IF;
+
+    -- 2. Consultar entregas dirigidas a esta institución
+    SELECT 
+        m.id AS movimiento_id,
+        m.fecha,
+        c.nombre AS centro_origen,
+        camp.nombre AS campania_nombre,
+        a.id AS articulo_id,
+        a.nombre AS articulo_nombre,
+        a.categoria,
+        m.cantidad,
+        a.unidad,
+        u.nombre AS despachado_por,
+        m.entrega_confirmada,
+        m.fecha_confirmacion
+    FROM movimientos m
+    INNER JOIN centros c ON m.centro_id = c.id
+    INNER JOIN campanias camp ON m.campania_id = camp.id
+    INNER JOIN articulos a ON m.articulo_id = a.id
+    INNER JOIN usuario u ON m.usuario_id = u.id
+    WHERE m.tipo = 'ENTREGA'
+      AND m.institucion_receptora_id = p_institucion_id
+      AND (p_solo_pendientes = FALSE OR m.entrega_confirmada = FALSE)
+    ORDER BY m.fecha DESC;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 22: Confirmar Entrega Recibida por la Institución
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_confirmar_entrega_recibida;
+DELIMITER //
+CREATE PROCEDURE sp_confirmar_entrega_recibida(
+    IN p_movimiento_id INT,
+    IN p_usuario_id INT
+)
+BEGIN
+    DECLARE v_institucion_receptora_id INT;
+    DECLARE v_usuario_institucion_id INT;
+    DECLARE v_usuario_rol VARCHAR(20);
+
+    -- 1. Validar que el movimiento exista
+    IF NOT EXISTS (SELECT 1 FROM movimientos WHERE id = p_movimiento_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El movimiento de entrega especificado no existe.';
+    END IF;
+
+    -- 2. Validar que sea de tipo ENTREGA
+    IF NOT EXISTS (SELECT 1 FROM movimientos WHERE id = p_movimiento_id AND tipo = 'ENTREGA') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El movimiento indicado no corresponde a una entrega.';
+    END IF;
+
+    -- 3. Validar que no haya sido confirmada previamente
+    IF EXISTS (SELECT 1 FROM movimientos WHERE id = p_movimiento_id AND entrega_confirmada = TRUE) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Aviso: Esta entrega ya ha sido confirmada previamente.';
+    END IF;
+
+    -- 4. Seguridad RBAC: Si el usuario es de rol INSTITUCION, verificar que pertenezca a la institución destino
+    SELECT institucion_receptora_id INTO v_institucion_receptora_id FROM movimientos WHERE id = p_movimiento_id;
+    SELECT rol, institucion_id INTO v_usuario_rol, v_usuario_institucion_id FROM usuario WHERE id = p_usuario_id;
+
+    IF v_usuario_rol = 'INSTITUCION' AND (v_usuario_institucion_id IS NULL OR v_usuario_institucion_id <> v_institucion_receptora_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: No tiene autorización para confirmar entregas dirigidas a otra institución.';
+    END IF;
+
+    -- 5. Actualizar estado de confirmación
+    UPDATE movimientos 
+    SET entrega_confirmada = TRUE,
+        fecha_confirmacion = CURRENT_TIMESTAMP
+    WHERE id = p_movimiento_id;
+
+    -- 6. Devolver confirmación
+    SELECT 
+        p_movimiento_id AS movimiento_id,
+        TRUE AS entrega_confirmada,
+        CURRENT_TIMESTAMP AS fecha_confirmacion,
+        'Entrega confirmada y recibida satisfactoriamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 23: Consultar Stock Actual de un Centro (Inventario en Tiempo Real)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_obtener_stock_centro;
+DELIMITER //
+CREATE PROCEDURE sp_obtener_stock_centro(
+    IN p_centro_id INT,
+    IN p_campania_id INT
+)
+BEGIN
+    -- 1. Validar que el centro exista
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio especificado no existe.';
+    END IF;
+
+    -- 2. Consultar directamente sobre la vista oficial de stock
+    SELECT 
+        v.centro_id,
+        c.nombre AS centro_nombre,
+        v.campania_id,
+        camp.nombre AS campania_nombre,
+        v.articulo_id,
+        a.nombre AS articulo_nombre,
+        a.categoria,
+        a.unidad,
+        v.stock_disponible
+    FROM v_stock_actual v
+    INNER JOIN centros c ON v.centro_id = c.id
+    INNER JOIN campanias camp ON v.campania_id = camp.id
+    INNER JOIN articulos a ON v.articulo_id = a.id
+    WHERE v.centro_id = p_centro_id
+      AND (p_campania_id IS NULL OR p_campania_id = 0 OR v.campania_id = p_campania_id)
+      AND v.stock_disponible > 0
+    ORDER BY camp.nombre ASC, a.categoria ASC, a.nombre ASC;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 24: Historial de Movimientos y Kárdex Multicriterio (Auditoría)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_consultar_historial_movimientos;
+DELIMITER //
+CREATE PROCEDURE sp_consultar_historial_movimientos(
+    IN p_centro_id INT,
+    IN p_campania_id INT,
+    IN p_articulo_id INT,
+    IN p_tipo VARCHAR(30),
+    IN p_fecha_desde DATE,
+    IN p_fecha_hasta DATE
+)
+BEGIN
+    SELECT 
+        m.id AS movimiento_id,
+        m.fecha,
+        m.tipo,
+        c.nombre AS centro_nombre,
+        camp.nombre AS campania_nombre,
+        a.id AS articulo_id,
+        a.nombre AS articulo_nombre,
+        a.categoria,
+        m.cantidad,
+        a.unidad,
+        u.nombre AS actor_nombre,
+        u.rol AS actor_rol,
+        m.motivo,
+        m.motivo_detalle,
+        COALESCE(
+            inst.nombre, 
+            d.nombre, 
+            IF(m.donante_id IS NOT NULL, 'Donante Anónimo', NULL), 
+            'N/A'
+        ) AS destinatario_o_fuente,
+        m.entrega_confirmada,
+        m.estado_aprobacion
+    FROM movimientos m
+    INNER JOIN centros c ON m.centro_id = c.id
+    INNER JOIN campanias camp ON m.campania_id = camp.id
+    INNER JOIN articulos a ON m.articulo_id = a.id
+    INNER JOIN usuario u ON m.usuario_id = u.id
+    LEFT JOIN instituciones_receptoras inst ON m.institucion_receptora_id = inst.id
+    LEFT JOIN donantes d ON m.donante_id = d.id
+    WHERE (p_centro_id IS NULL OR p_centro_id = 0 OR m.centro_id = p_centro_id)
+      AND (p_campania_id IS NULL OR p_campania_id = 0 OR m.campania_id = p_campania_id)
+      AND (p_articulo_id IS NULL OR p_articulo_id = 0 OR m.articulo_id = p_articulo_id)
+      AND (p_tipo IS NULL OR TRIM(p_tipo) = '' OR m.tipo = p_tipo)
+      AND (p_fecha_desde IS NULL OR DATE(m.fecha) >= p_fecha_desde)
+      AND (p_fecha_hasta IS NULL OR DATE(m.fecha) <= p_fecha_hasta)
+    ORDER BY m.fecha DESC, m.id DESC;
+END //
+DELIMITER ;
+
+-- ==========================================================
+-- PROCEDIMIENTOS ALMACENADOS - FASE 4: DASHBOARDS, ANALÍTICA E INNOVACIÓN
+-- ==========================================================
+
+-- ----------------------------------------------------------
+-- SP 25: Dashboard Consolidado Global (Coordinador General)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_dashboard_coordinador_global;
+DELIMITER //
+CREATE PROCEDURE sp_dashboard_coordinador_global(
+    IN p_campania_id INT
+)
+BEGIN
+    DECLARE v_meta_total DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_total_donaciones DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_total_entregas DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_total_merma DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_centros_activos INT DEFAULT 0;
+    DECLARE v_avance_porcentaje DECIMAL(5,2) DEFAULT 0.00;
+
+    -- 1. Calcular meta según filtro
+    IF p_campania_id IS NOT NULL AND p_campania_id > 0 THEN
+        SELECT COALESCE(meta_unidades, 0.00) INTO v_meta_total 
+        FROM campanias WHERE id = p_campania_id;
+
+        SELECT COUNT(DISTINCT id_centro) INTO v_centros_activos
+        FROM centros_campanias 
+        WHERE id_campania = p_campania_id AND activo = TRUE;
+    ELSE
+        SELECT COALESCE(SUM(meta_unidades), 0.00) INTO v_meta_total 
+        FROM campanias WHERE activo = TRUE;
+
+        SELECT COUNT(*) INTO v_centros_activos 
+        FROM centros WHERE activo = TRUE;
+    END IF;
+
+    -- 2. Calcular agregados de movimientos aprobados
+    SELECT 
+        COALESCE(SUM(CASE WHEN tipo = 'RECEPCION' THEN cantidad ELSE 0 END), 0.00),
+        COALESCE(SUM(CASE WHEN tipo = 'ENTREGA' THEN cantidad ELSE 0 END), 0.00),
+        COALESCE(SUM(CASE WHEN tipo = 'MERMA' THEN cantidad ELSE 0 END), 0.00)
+    INTO v_total_donaciones, v_total_entregas, v_total_merma
+    FROM movimientos
+    WHERE (p_campania_id IS NULL OR p_campania_id = 0 OR campania_id = p_campania_id)
+      AND estado_aprobacion = 'APROBADO';
+
+    -- 3. Calcular porcentaje de avance hacia la meta
+    IF v_meta_total > 0 THEN
+        SET v_avance_porcentaje = ROUND((v_total_donaciones / v_meta_total) * 100, 2);
+    ELSE
+        SET v_avance_porcentaje = 0.00;
+    END IF;
+
+    -- 4. Devolver métricas consolidadas
+    SELECT 
+        p_campania_id AS campania_id_filtro,
+        v_total_donaciones AS total_recaudado,
+        v_total_entregas AS total_entregado,
+        v_total_merma AS total_merma,
+        (v_total_donaciones - v_total_entregas - v_total_merma) AS stock_disponible_global,
+        v_meta_total AS meta_cuantitativa,
+        v_avance_porcentaje AS porcentaje_avance_meta,
+        v_centros_activos AS centros_activos_participando;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 26: Comparativa y Distribución entre Centros (Coordinador)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_dashboard_comparativa_centros;
+DELIMITER //
+CREATE PROCEDURE sp_dashboard_comparativa_centros(
+    IN p_campania_id INT
+)
+BEGIN
+    SELECT 
+        c.id AS centro_id,
+        c.nombre AS centro_nombre,
+        c.institucion,
+        c.ubicacion,
+        c.latitud,
+        c.longitud,
+        COALESCE(m.total_recibido, 0.00) AS total_recibido,
+        COALESCE(m.total_entregado, 0.00) AS total_entregado,
+        COALESCE(m.total_merma, 0.00) AS total_merma,
+        COALESCE(s.stock_remanente, 0.00) AS stock_remanente
+    FROM centros c
+    LEFT JOIN (
+        SELECT 
+            centro_id,
+            SUM(CASE WHEN tipo = 'RECEPCION' THEN cantidad ELSE 0 END) AS total_recibido,
+            SUM(CASE WHEN tipo = 'ENTREGA' THEN cantidad ELSE 0 END) AS total_entregado,
+            SUM(CASE WHEN tipo = 'MERMA' THEN cantidad ELSE 0 END) AS total_merma
+        FROM movimientos
+        WHERE (p_campania_id IS NULL OR p_campania_id = 0 OR campania_id = p_campania_id)
+          AND estado_aprobacion = 'APROBADO'
+        GROUP BY centro_id
+    ) m ON c.id = m.centro_id
+    LEFT JOIN (
+        SELECT 
+            centro_id,
+            SUM(stock_disponible) AS stock_remanente
+        FROM v_stock_actual
+        WHERE (p_campania_id IS NULL OR p_campania_id = 0 OR campania_id = p_campania_id)
+        GROUP BY centro_id
+    ) s ON c.id = s.centro_id
+    WHERE c.activo = TRUE
+      AND (p_campania_id IS NULL OR p_campania_id = 0 OR EXISTS (
+          SELECT 1 FROM centros_campanias cc 
+          WHERE cc.id_centro = c.id AND cc.id_campania = p_campania_id AND cc.activo = TRUE
+      ))
+    ORDER BY stock_remanente DESC, c.nombre ASC;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 27: Ranking de Artículos Más Donados (Gráficas de Tendencia)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_dashboard_articulos_mas_donados;
+DELIMITER //
+CREATE PROCEDURE sp_dashboard_articulos_mas_donados(
+    IN p_campania_id INT,
+    IN p_limite INT
+)
+BEGIN
+    DECLARE v_limite INT DEFAULT 5;
+    
+    IF p_limite IS NOT NULL AND p_limite > 0 THEN
+        SET v_limite = p_limite;
+    END IF;
+
+    SELECT 
+        a.id AS articulo_id,
+        a.nombre AS articulo_nombre,
+        a.categoria,
+        a.unidad,
+        SUM(m.cantidad) AS total_donado,
+        COUNT(m.id) AS numero_recepciones
+    FROM movimientos m
+    INNER JOIN articulos a ON m.articulo_id = a.id
+    WHERE m.tipo = 'RECEPCION'
+      AND m.estado_aprobacion = 'APROBADO'
+      AND (p_campania_id IS NULL OR p_campania_id = 0 OR m.campania_id = p_campania_id)
+    GROUP BY a.id, a.nombre, a.categoria, a.unidad
+    ORDER BY total_donado DESC
+    LIMIT v_limite;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 28: Dashboard Operativo del Encargado de Centro
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_dashboard_encargado_centro;
+DELIMITER //
+CREATE PROCEDURE sp_dashboard_encargado_centro(
+    IN p_centro_id INT
+)
+BEGIN
+    DECLARE v_stock_total DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_recibido_hoy DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_entregado_hoy DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_pendientes_confirmacion INT DEFAULT 0;
+    DECLARE v_merma_acumulada DECIMAL(10,2) DEFAULT 0.00;
+
+    -- 1. Validar existencia del centro
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio no existe.';
+    END IF;
+
+    -- 2. Stock total disponible en el centro
+    SELECT COALESCE(SUM(stock_disponible), 0.00) INTO v_stock_total
+    FROM v_stock_actual
+    WHERE centro_id = p_centro_id;
+
+    -- 3. Movimientos del día actual
+    SELECT 
+        COALESCE(SUM(CASE WHEN tipo = 'RECEPCION' THEN cantidad ELSE 0 END), 0.00),
+        COALESCE(SUM(CASE WHEN tipo = 'ENTREGA' THEN cantidad ELSE 0 END), 0.00)
+    INTO v_recibido_hoy, v_entregado_hoy
+    FROM movimientos
+    WHERE centro_id = p_centro_id 
+      AND DATE(fecha) = CURRENT_DATE()
+      AND estado_aprobacion = 'APROBADO';
+
+    -- 4. Entregas pendientes de confirmación por instituciones
+    SELECT COUNT(*) INTO v_pendientes_confirmacion
+    FROM movimientos
+    WHERE centro_id = p_centro_id
+      AND tipo = 'ENTREGA'
+      AND entrega_confirmada = FALSE;
+
+    -- 5. Merma acumulada del centro
+    SELECT COALESCE(SUM(cantidad), 0.00) INTO v_merma_acumulada
+    FROM movimientos
+    WHERE centro_id = p_centro_id
+      AND tipo = 'MERMA'
+      AND estado_aprobacion = 'APROBADO';
+
+    -- 6. Devolver resultado consolidado
+    SELECT 
+        p_centro_id AS centro_id,
+        v_stock_total AS stock_total_disponible,
+        v_recibido_hoy AS recibido_hoy,
+        v_entregado_hoy AS entregado_hoy,
+        v_pendientes_confirmacion AS entregas_por_confirmar,
+        v_merma_acumulada AS merma_acumulada;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 29: Dashboard Analítico del Líder de Campaña
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_dashboard_lider_campania;
+DELIMITER //
+CREATE PROCEDURE sp_dashboard_lider_campania(
+    IN p_campania_id INT,
+    IN p_usuario_id INT
+)
+BEGIN
+    DECLARE v_nombre_campania VARCHAR(150);
+    DECLARE v_meta DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_total_donado DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_total_entregado DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_total_merma DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_centros_activos INT DEFAULT 0;
+    DECLARE v_avance DECIMAL(5,2) DEFAULT 0.00;
+
+    -- 1. Validar existencia de campaña
+    IF NOT EXISTS (SELECT 1 FROM campanias WHERE id = p_campania_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña especificada no existe.';
+    END IF;
+
+    -- 2. Validar que el usuario sea el líder asignado o Coordinador
+    IF NOT EXISTS (
+        SELECT 1 FROM campanias c 
+        INNER JOIN usuario u ON u.id = p_usuario_id 
+        WHERE c.id = p_campania_id AND (c.lider_id = p_usuario_id OR u.rol = 'COORDINADOR')
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: No tiene autorización para acceder al dashboard de esta campaña.';
+    END IF;
+
+    -- 3. Obtener metadatos de campaña
+    SELECT nombre, COALESCE(meta_unidades, 0.00) 
+    INTO v_nombre_campania, v_meta 
+    FROM campanias WHERE id = p_campania_id;
+
+    -- 4. Contar centros participantes
+    SELECT COUNT(*) INTO v_centros_activos
+    FROM centros_campanias
+    WHERE id_campania = p_campania_id AND activo = TRUE;
+
+    -- 5. Totales de movimientos
+    SELECT 
+        COALESCE(SUM(CASE WHEN tipo = 'RECEPCION' THEN cantidad ELSE 0 END), 0.00),
+        COALESCE(SUM(CASE WHEN tipo = 'ENTREGA' THEN cantidad ELSE 0 END), 0.00),
+        COALESCE(SUM(CASE WHEN tipo = 'MERMA' THEN cantidad ELSE 0 END), 0.00)
+    INTO v_total_donado, v_total_entregado, v_total_merma
+    FROM movimientos
+    WHERE campania_id = p_campania_id AND estado_aprobacion = 'APROBADO';
+
+    IF v_meta > 0 THEN
+        SET v_avance = ROUND((v_total_donado / v_meta) * 100, 2);
+    ELSE
+        SET v_avance = 0.00;
+    END IF;
+
+    SELECT 
+        p_campania_id AS campania_id,
+        v_nombre_campania AS campania_nombre,
+        v_meta AS meta_unidades,
+        v_total_donado AS total_recolectado,
+        v_total_entregado AS total_canalizado,
+        v_total_merma AS total_merma,
+        (v_total_donado - v_total_entregado - v_total_merma) AS stock_actual_campania,
+        v_avance AS porcentaje_avance_meta,
+        v_centros_activos AS centros_participantes;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 30: Autorización / Aprobación de Merma por Coordinador (Innovación 9.2)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_aprobar_merma;
+DELIMITER //
+CREATE PROCEDURE sp_aprobar_merma(
+    IN p_movimiento_id INT,
+    IN p_coordinador_id INT,
+    IN p_nuevo_estado VARCHAR(20)
+)
+BEGIN
+    -- 1. Validar que el movimiento exista
+    IF NOT EXISTS (SELECT 1 FROM movimientos WHERE id = p_movimiento_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El movimiento especificado no existe.';
+    END IF;
+
+    -- 2. Validar que sea de tipo MERMA
+    IF NOT EXISTS (SELECT 1 FROM movimientos WHERE id = p_movimiento_id AND tipo = 'MERMA') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El movimiento no corresponde a una merma.';
+    END IF;
+
+    -- 3. Validar nuevo estado
+    IF p_nuevo_estado NOT IN ('APROBADO', 'RECHAZADO') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El estado debe ser APROBADO o RECHAZADO.';
+    END IF;
+
+    -- 4. Validar rol Coordinador
+    IF NOT EXISTS (SELECT 1 FROM usuario WHERE id = p_coordinador_id AND rol = 'COORDINADOR') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Solo un usuario con rol Coordinador puede autorizar o rechazar mermas.';
+    END IF;
+
+    -- 5. Actualizar estado
+    UPDATE movimientos
+    SET estado_aprobacion = p_nuevo_estado,
+        aprobado_por_id = p_coordinador_id
+    WHERE id = p_movimiento_id;
+
+    SELECT 
+        p_movimiento_id AS movimiento_id,
+        p_nuevo_estado AS estado_aprobacion,
+        p_coordinador_id AS aprobado_por,
+        'Resolución de merma procesada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 31: Datos para Mapa Interactivo con Geolocalización (Innovación 9.3)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_obtener_centros_mapa;
+DELIMITER //
+CREATE PROCEDURE sp_obtener_centros_mapa(
+    IN p_campania_id INT
+)
+BEGIN
+    SELECT 
+        c.id AS centro_id,
+        c.nombre,
+        c.institucion,
+        c.ubicacion,
+        c.latitud,
+        c.longitud,
+        c.activo,
+        COALESCE(s.stock_total, 0.00) AS total_stock_disponible,
+        COUNT(DISTINCT cc.id_campania) AS campanias_activas_conteo
+    FROM centros c
+    LEFT JOIN (
+        SELECT centro_id, SUM(stock_disponible) AS stock_total
+        FROM v_stock_actual
+        WHERE (p_campania_id IS NULL OR p_campania_id = 0 OR campania_id = p_campania_id)
+        GROUP BY centro_id
+    ) s ON c.id = s.centro_id
+    LEFT JOIN centros_campanias cc ON c.id = cc.id_centro AND cc.activo = TRUE
+    WHERE c.latitud IS NOT NULL 
+      AND c.longitud IS NOT NULL
+      AND c.activo = TRUE
+      AND (p_campania_id IS NULL OR p_campania_id = 0 OR EXISTS (
+          SELECT 1 FROM centros_campanias cc2 
+          WHERE cc2.id_centro = c.id AND cc2.id_campania = p_campania_id AND cc2.activo = TRUE
+      ))
+    GROUP BY c.id, c.nombre, c.institucion, c.ubicacion, c.latitud, c.longitud, c.activo, s.stock_total
+    ORDER BY c.nombre ASC;
 END //
 DELIMITER ;
 
