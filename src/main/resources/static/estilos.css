@@ -364,3 +364,23 @@ select:focus {
     justify-content: space-between;
     align-items: flex-end;
 }
+
+/* Contenedor y posicionamiento del menú superior */
+.nav-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+}
+
+.dropdown-relative {
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+/* Ancho completo con control de caja */
+.w-full {
+    width: 100%;
+    box-sizing: border-box;
+}
