@@ -4,17 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Recepción</title>
+    <title>Registro de Recepción - Centros de Acopio</title>
     <link rel="stylesheet" href="estilos.css">
+    <style>
+        .toast.toast-error {
+            background-color: var(--danger) !important;
+        }
+
+        .category-card {
+            cursor: pointer;
+        }
+
+        .user-context-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-rol-badge {
+            background-color: #059669;
+            color: white;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
 </head>
 
 <body>
 
     <div class="left-panel">
+        <!-- Barra de Perfil y Contexto RBAC (Estandarizada con MenuController) -->
+        <div class="user-context-bar" id="userProfileBar" style="display: none;">
+            <div>
+                <span style="font-weight: 600; color: #1f2937;" id="userNombre">Cargando perfil...</span>
+                <span id="userCentro" style="font-size: 0.85rem; color: #6b7280; margin-left: 0.5rem;"></span>
+            </div>
+            <span class="user-rol-badge" id="userRolBadge">VOLUNTARIO</span>
+        </div>
+
         <h2>Registrar Donación</h2>
         <p class="text-muted mb-2">Ingresa los datos del artículo recibido en el centro.</p>
 
-        <!-- Selector de Categoría (Sección 4 del PDF) -->
+        <!-- Selector de Categoría -->
         <label class="font-semibold mb-1">Categoría del Artículo</label>
         <div class="category-grid" id="categoryGrid">
             <div class="category-card active" data-cat="no-perecedero">
@@ -43,24 +83,30 @@
             </div>
         </div>
 
+        <!-- Selector de Catálogo Oficial de Insumos -->
+        <div class="mb-1-5">
+            <label for="selectArticulo" class="font-semibold">Seleccionar del Catálogo Oficial</label>
+            <select id="selectArticulo">
+                <option value="">Cargando insumos del catálogo...</option>
+            </select>
+        </div>
+
         <div class="mb-1-5">
             <label for="inputItemName" class="font-semibold">Descripción / Nombre del Artículo</label>
-            <input type="text" id="inputItemName" placeholder="Ej. Arroz en grano, Atún en lata, Agua embotellada"
-                required>
+            <input type="text" id="inputItemName" placeholder="Ej. Arroz en grano, Atún en lata, Agua embotellada" required>
         </div>
 
         <!-- Cantidad con Unidad de Medida (kg, l, pza, bolsa, caja) -->
         <div class="mb-1-5">
             <label class="font-semibold">Cantidad y Unidad de Medida</label>
             <div class="input-unit-group">
-                <input type="number" id="inputQuantity" min="0.1" step="any" value="1" placeholder="Cantidad / Peso"
-                    required>
+                <input type="number" id="inputQuantity" min="0.1" step="any" value="1" placeholder="Cantidad / Peso" required>
                 <select id="selectUnit">
-                    <option value="kg">kg (Kilogramos)</option>
-                    <option value="l">l (Litros)</option>
-                    <option value="pieza">Piezas</option>
-                    <option value="bolsa">Bolsas</option>
-                    <option value="caja">Cajas</option>
+                    <option value="PIEZA">Piezas</option>
+                    <option value="KG">kg (Kilogramos)</option>
+                    <option value="L">l (Litros)</option>
+                    <option value="BOLSA">Bolsas</option>
+                    <option value="CAJA">Cajas</option>
                 </select>
             </div>
         </div>
@@ -72,7 +118,7 @@
 
         <div class="flex-gap-1">
             <button type="button" class="btn btn-primary" id="btnRegistrar">Registrar Donación</button>
-            <button type="button" class="btn btn-secondary" onclick="window.location.reload();">Limpiar</button>
+            <button type="button" class="btn btn-secondary" id="btnLimpiar">Limpiar</button>
         </div>
     </div>
 
@@ -85,7 +131,7 @@
                     <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción</a>
                     <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
                     <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
-                    <a href="index.html" onclick="sessionStorage.clear();">Cerrar Sesión</a>
+                    <a href="index.html" onclick="cerrarSesion(event);">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
@@ -93,29 +139,34 @@
         <div class="info-card w-full">
             <h3 class="mt-0">Resumen del Centro</h3>
             <div class="flex-center-gap-1 mb-1-5 mt-2">
-                <div class="circle-icon">1</div>
+                <div class="circle-icon" id="centroIcon">1</div>
                 <div>
-                    <strong>Campaña Activa</strong>
-                    <div class="text-muted text-sm">Contingencia Huracán 2026</div>
+                    <strong id="centroNombre">Campus Central - Explanada</strong>
+                    <div class="text-muted text-sm" id="campaniaNombre">Cargando campaña activa...</div>
                 </div>
             </div>
 
             <div class="mt-2 pt-1 border-bottom">
                 <div class="flex-between-end">
                     <strong class="text-sm">Meta de Recolección</strong>
-                    <span class="text-sm text-muted"><span id="stockActual">1204</span> / 5000</span>
+                    <span class="text-sm text-muted">
+                        <span id="stockActual">0</span> / <span id="metaTotal">5000</span>
+                    </span>
                 </div>
                 <div class="progress-container">
-                    <div class="progress-fill" id="progressBar"></div>
+                    <div class="progress-fill" id="progressBar" style="width: 0%;"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Notificación Toast -->
     <div id="toastNotif" class="toast">¡Donación registrada con éxito!</div>
 
     <script>
-        // Control interactivo del menú desplegable (clic persistente y accesibilidad)
+        // ==========================================
+        // 1. Control de Menú Desplegable y Cierre de Sesión
+        // ==========================================
         const dropdownEl = document.querySelector('.dropdown');
         const dropBtn = document.getElementById('dropBtn');
         const navDropdown = document.getElementById('navDropdown');
@@ -142,56 +193,312 @@
             });
         }
 
-        // Restricción por rol según CONTEXTO_PROYECTO.md
-        const rolActivo = sessionStorage.getItem('rolActivo');
-        if (rolActivo) {
-            document.querySelectorAll('#navDropdown a[data-role]').forEach(link => {
-                const roles = link.getAttribute('data-role');
-                if (!roles.includes(rolActivo)) {
-                    link.style.display = 'none';
-                }
-            });
+        function cerrarSesion(e) {
+            if (e) e.preventDefault();
+            sessionStorage.clear();
+            window.location.href = 'index.html';
         }
 
-        // Alternar categoría
+        // ==========================================
+        // 2. Elementos del DOM y Estado Global
+        // ==========================================
         const cards = document.querySelectorAll('.category-card');
+        const selectArticulo = document.getElementById('selectArticulo');
+        const inputItemName = document.getElementById('inputItemName');
+        const inputQuantity = document.getElementById('inputQuantity');
+        const selectUnit = document.getElementById('selectUnit');
+        const inputDonor = document.getElementById('inputDonor');
+        const btnRegistrar = document.getElementById('btnRegistrar');
+        const btnLimpiar = document.getElementById('btnLimpiar');
+        const toast = document.getElementById('toastNotif');
+
+        const stockActualEl = document.getElementById('stockActual');
+        const metaTotalEl = document.getElementById('metaTotal');
+        const progressBar = document.getElementById('progressBar');
+        const campaniaNombreEl = document.getElementById('campaniaNombre');
+        const centroNombreEl = document.getElementById('centroNombre');
+
+        let currentCentroId = 1;
+        let currentCampaniaId = 1;
+        let currentUsuarioId = 3;
+        let metaTotalActual = 5000;
+        let stockActualNum = 0;
+        let categoriaActiva = "no-perecedero";
+
+        // ==========================================
+        // 3. Sistema de Notificaciones Toast
+        // ==========================================
+        let toastTimeout = null;
+        function mostrarToast(mensaje, esError = false) {
+            clearTimeout(toastTimeout);
+            toast.textContent = mensaje;
+            if (esError) {
+                toast.classList.add('toast-error');
+            } else {
+                toast.classList.remove('toast-error');
+            }
+            toast.classList.add('show');
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // ==========================================
+        // 4. Inicializar y Validar Sesión RBAC (Estandarizado con MenuController)
+        // ==========================================
+        async function inicializarSesionUsuario() {
+            let email = sessionStorage.getItem('email') || sessionStorage.getItem('usuarioEmail');
+            const rolActivo = sessionStorage.getItem('rolActivo');
+            const usuarioGuardado = sessionStorage.getItem('usuarioActivo');
+
+            if (usuarioGuardado) {
+                try {
+                    const parsed = JSON.parse(usuarioGuardado);
+                    if (parsed && parsed.email) email = parsed.email;
+                    aplicarContextoUsuario(parsed);
+                } catch (e) {
+                    console.warn('Error al parsear usuarioActivo de sessionStorage', e);
+                }
+            }
+
+            if (!email && rolActivo) {
+                const r = rolActivo.toLowerCase();
+                if (r.includes('coordinador')) email = 'coordinador@hackaton.org';
+                else if (r.includes('encargado')) email = 'encargado.central@hackaton.org';
+                else email = 'voluntario.central@hackaton.org';
+            }
+
+            if (email) {
+                try {
+                    const res = await fetch(`/api/menu/contexto?email=${encodeURIComponent(email)}`);
+                    if (res.ok) {
+                        const contexto = await res.json();
+                        sessionStorage.setItem('usuarioActivo', JSON.stringify(contexto));
+                        sessionStorage.setItem('rolActivo', contexto.rol.toLowerCase());
+                        aplicarContextoUsuario(contexto);
+                    }
+                } catch (err) {
+                    console.warn("No se pudo validar sesión con backend, usando contexto local:", err);
+                }
+            }
+        }
+
+        function aplicarContextoUsuario(contexto) {
+            if (!contexto) return;
+
+            if (contexto.id) currentUsuarioId = contexto.id;
+            if (contexto.centroId) currentCentroId = contexto.centroId;
+
+            const userNombreEl = document.getElementById('userNombre');
+            const userCentroEl = document.getElementById('userCentro');
+            const userRolBadge = document.getElementById('userRolBadge');
+            const userProfileBar = document.getElementById('userProfileBar');
+
+            if (userNombreEl && contexto.nombre) userNombreEl.textContent = contexto.nombre;
+            if (userCentroEl && contexto.centroNombre) userCentroEl.textContent = `• ${contexto.centroNombre}`;
+            if (userRolBadge && contexto.rol) {
+                userRolBadge.textContent = contexto.rol;
+                if (contexto.rol === 'COORDINADOR') userRolBadge.style.backgroundColor = '#2563eb';
+                else if (contexto.rol === 'ENCARGADO') userRolBadge.style.backgroundColor = '#059669';
+                else userRolBadge.style.backgroundColor = '#4b5563';
+            }
+            if (userProfileBar) userProfileBar.style.display = 'flex';
+
+            // Filtrar menú dropdown por rol
+            if (contexto.rol) {
+                const rolLower = contexto.rol.toLowerCase();
+                document.querySelectorAll('#navDropdown a[data-role]').forEach(link => {
+                    const roles = link.getAttribute('data-role') || '';
+                    if (!roles.includes(rolLower)) {
+                        link.style.display = 'none';
+                    } else {
+                        link.style.display = 'block';
+                    }
+                });
+            }
+        }
+
+        // ==========================================
+        // 5. Cargar Resumen del Centro y Campaña (SP 19 / v_stock_actual)
+        // ==========================================
+        async function cargarResumenCentro() {
+            try {
+                const res = await fetch(`/api/recepcion/resumen?centroId=${currentCentroId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.campaniaNombre) {
+                        campaniaNombreEl.textContent = data.campaniaNombre;
+                    }
+                    if (data.centroNombre) {
+                        centroNombreEl.textContent = data.centroNombre;
+                    }
+                    if (data.campaniaId) {
+                        currentCampaniaId = data.campaniaId;
+                    }
+                    if (data.metaTotal) {
+                        metaTotalActual = parseFloat(data.metaTotal);
+                        metaTotalEl.textContent = Math.round(metaTotalActual).toLocaleString();
+                    }
+                    if (data.stockActual !== undefined && data.stockActual !== null) {
+                        stockActualNum = parseFloat(data.stockActual);
+                        stockActualEl.textContent = Math.round(stockActualNum).toLocaleString();
+                    }
+                    if (data.porcentajeAvance !== undefined) {
+                        progressBar.style.width = `${Math.min(parseFloat(data.porcentajeAvance), 100)}%`;
+                    }
+                }
+            } catch (err) {
+                console.warn("No se pudo cargar resumen en vivo, usando datos por defecto:", err);
+            }
+        }
+
+        // ==========================================
+        // 6. Cargar Artículos del Catálogo por Categoría (SP 17)
+        // ==========================================
+        async function cargarArticulosPorCategoria(cat) {
+            selectArticulo.innerHTML = '<option value="">Cargando insumos...</option>';
+            try {
+                const res = await fetch(`/api/recepcion/articulos?categoria=${encodeURIComponent(cat)}`);
+                if (res.ok) {
+                    const articulos = await res.json();
+                    selectArticulo.innerHTML = '<option value="">-- Selecciona del catálogo o escribe abajo --</option>';
+                    articulos.forEach(art => {
+                        const opt = document.createElement('option');
+                        opt.value = art.id;
+                        opt.textContent = `${art.nombre} (${art.unidad})`;
+                        opt.setAttribute('data-nombre', art.nombre);
+                        opt.setAttribute('data-unidad', art.unidad);
+                        selectArticulo.appendChild(opt);
+                    });
+                } else {
+                    selectArticulo.innerHTML = '<option value="">(Escribe el nombre del insumo abajo)</option>';
+                }
+            } catch (err) {
+                console.warn("Error cargando artículos:", err);
+                selectArticulo.innerHTML = '<option value="">(Escribe el nombre del insumo abajo)</option>';
+            }
+        }
+
+        // Al cambiar de artículo en el selector, sincronizar nombre y unidad
+        selectArticulo.addEventListener('change', () => {
+            const selectedOpt = selectArticulo.options[selectArticulo.selectedIndex];
+            if (selectedOpt && selectedOpt.value) {
+                const nombre = selectedOpt.getAttribute('data-nombre');
+                const unidad = selectedOpt.getAttribute('data-unidad');
+                if (nombre) inputItemName.value = nombre;
+                if (unidad) selectUnit.value = unidad.toUpperCase();
+            }
+        });
+
+        // Alternar categoría al hacer clic en las tarjetas
         cards.forEach(card => {
             card.addEventListener('click', () => {
                 cards.forEach(c => c.classList.remove('active'));
                 card.classList.add('active');
+                categoriaActiva = card.getAttribute('data-cat') || 'no-perecedero';
+                cargarArticulosPorCategoria(categoriaActiva);
             });
         });
 
-        // Registro con retroalimentación y actualización de stock
-        const btnRegistrar = document.getElementById('btnRegistrar');
-        const toast = document.getElementById('toastNotif');
-        const inputQuantity = document.getElementById('inputQuantity');
-        const inputItemName = document.getElementById('inputItemName');
-        const stockActualEl = document.getElementById('stockActual');
-        const progressBar = document.getElementById('progressBar');
+        // ==========================================
+        // 7. Enviar Registro de Donación al Backend (SP 1)
+        // ==========================================
+        btnRegistrar.addEventListener('click', async () => {
+            const itemName = inputItemName.value.trim();
+            const cantidad = parseFloat(inputQuantity.value);
+            const articuloIdVal = parseInt(selectArticulo.value) || null;
+            const donor = inputDonor.value.trim();
+            const esAnonimo = (donor === "");
 
-        let stockActual = 1204;
-        const metaTotal = 5000;
-
-        btnRegistrar.addEventListener('click', () => {
-            if (!inputItemName.value.trim()) {
-                alert('Por favor describe el artículo antes de registrar.');
+            // Validaciones locales iniciales
+            if (!itemName && !articuloIdVal) {
+                mostrarToast('Por favor selecciona o describe el artículo antes de registrar.', true);
+                inputItemName.focus();
                 return;
             }
 
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            if (isNaN(cantidad) || cantidad <= 0) {
+                mostrarToast('La cantidad debe ser mayor a cero.', true);
+                inputQuantity.focus();
+                return;
+            }
 
-            const cant = parseFloat(inputQuantity.value) || 0;
-            stockActual += Math.round(cant);
-            stockActualEl.textContent = stockActual;
+            const payload = {
+                centroId: currentCentroId,
+                campaniaId: currentCampaniaId,
+                articuloId: articuloIdVal,
+                articuloNombre: itemName,
+                categoria: categoriaActiva,
+                unidad: selectUnit.value,
+                cantidad: cantidad,
+                usuarioId: currentUsuarioId,
+                esAnonimo: esAnonimo,
+                donanteNombre: esAnonimo ? null : donor,
+                donanteContacto: null
+            };
 
-            let pct = (stockActual / metaTotal) * 100;
-            if (pct > 100) pct = 100;
-            progressBar.style.width = `${pct}%`;
+            btnRegistrar.disabled = true;
+            btnRegistrar.textContent = 'Registrando...';
 
+            try {
+                const response = await fetch('/api/recepcion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    mostrarToast(data.mensaje || '¡Donación registrada con éxito!');
+
+                    // Actualizar métricas del panel derecho en tiempo real
+                    if (data.stockActual !== undefined && data.stockActual !== null) {
+                        stockActualNum = parseFloat(data.stockActual);
+                    } else {
+                        stockActualNum += cantidad;
+                    }
+                    stockActualEl.textContent = Math.round(stockActualNum).toLocaleString();
+
+                    let pct = (stockActualNum / metaTotalActual) * 100;
+                    if (pct > 100) pct = 100;
+                    progressBar.style.width = `${pct.toFixed(1)}%`;
+
+                    // Limpiar campos de captura
+                    inputItemName.value = '';
+                    selectArticulo.value = '';
+                    inputQuantity.value = 1;
+                    inputDonor.value = '';
+                } else {
+                    // Capturar ErrorResponse estandarizado del GlobalExceptionHandler
+                    const errorData = await response.json().catch(() => ({ mensaje: 'Error en la solicitud.' }));
+                    mostrarToast(errorData.mensaje || errorData.error || 'No se pudo procesar la donación.', true);
+                }
+            } catch (err) {
+                console.error("Error al conectar con /api/recepcion:", err);
+                mostrarToast('Error de conexión con el servidor.', true);
+            } finally {
+                btnRegistrar.disabled = false;
+                btnRegistrar.textContent = 'Registrar Donación';
+            }
+        });
+
+        // Botón limpiar formulario
+        btnLimpiar.addEventListener('click', () => {
             inputItemName.value = '';
+            selectArticulo.value = '';
             inputQuantity.value = 1;
+            inputDonor.value = '';
+        });
+
+        // ==========================================
+        // 8. Inicialización de la Página
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await inicializarSesionUsuario();
+            await cargarResumenCentro();
+            cargarArticulosPorCategoria('no-perecedero');
         });
     </script>
 </body>
