@@ -189,6 +189,383 @@ where m.estado_aprobacion = 'APROBADO'
 group by m.centro_id, m.campania_id, m.articulo_id;
 
 -- ==========================================================
+-- PROCEDIMIENTOS ALMACENADOS - FASE 1: CORE DE INVENTARIO
+-- ==========================================================
+
+-- ----------------------------------------------------------
+-- SP 1: Registro de Recepción de Donación
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_registrar_recepcion_donacion;
+DELIMITER //
+CREATE PROCEDURE sp_registrar_recepcion_donacion(
+    IN p_centro_id INT,
+    IN p_campania_id INT,
+    IN p_articulo_id INT,
+    IN p_cantidad DECIMAL(10,2),
+    IN p_usuario_id INT,
+    IN p_es_anonimo BOOLEAN,
+    IN p_donante_nombre VARCHAR(150),
+    IN p_donante_contacto VARCHAR(100)
+)
+BEGIN
+    DECLARE v_donante_id INT DEFAULT NULL;
+    DECLARE v_centro_activo BOOLEAN;
+    DECLARE v_campania_activa BOOLEAN;
+    DECLARE v_asociacion_activa BOOLEAN;
+    DECLARE v_movimiento_id INT;
+    DECLARE v_nuevo_stock DECIMAL(10,2);
+
+    -- 1. Validar cantidad mayor a cero
+    IF p_cantidad <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La cantidad recibida debe ser mayor a cero.';
+    END IF;
+
+    -- 2. Validar que el centro exista y esté activo
+    SELECT activo INTO v_centro_activo FROM centros WHERE id = p_centro_id;
+    IF v_centro_activo IS NULL OR v_centro_activo = FALSE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio no existe o está inactivo.';
+    END IF;
+
+    -- 3. Validar que la campaña exista y esté activa
+    SELECT activo INTO v_campania_activa FROM campanias WHERE id = p_campania_id;
+    IF v_campania_activa IS NULL OR v_campania_activa = FALSE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña no existe o está inactiva.';
+    END IF;
+
+    -- 4. Validar que el centro participe activamente en la campaña
+    SELECT activo INTO v_asociacion_activa 
+    FROM centros_campanias 
+    WHERE id_centro = p_centro_id AND id_campania = p_campania_id;
+    
+    IF v_asociacion_activa IS NULL OR v_asociacion_activa = FALSE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro no está habilitado para recibir insumos en esta campaña.';
+    END IF;
+
+    -- 5. Manejo del Donante (Anónimo o Registrado)
+    IF p_es_anonimo = FALSE AND p_donante_nombre IS NOT NULL AND TRIM(p_donante_nombre) <> '' THEN
+        INSERT INTO donantes (nombre, contacto, es_anonimo)
+        VALUES (p_donante_nombre, p_donante_contacto, FALSE);
+        SET v_donante_id = LAST_INSERT_ID();
+    ELSE
+        SET v_donante_id = NULL;
+    END IF;
+
+    -- 6. Insertar movimiento inmutable de recepción
+    INSERT INTO movimientos (
+        tipo, centro_id, campania_id, articulo_id, cantidad, 
+        usuario_id, donante_id, estado_aprobacion
+    ) VALUES (
+        'RECEPCION', p_centro_id, p_campania_id, p_articulo_id, p_cantidad, 
+        p_usuario_id, v_donante_id, 'APROBADO'
+    );
+    SET v_movimiento_id = LAST_INSERT_ID();
+
+    -- 7. Consultar el nuevo stock disponible resultante
+    SELECT COALESCE(stock_disponible, 0) INTO v_nuevo_stock
+    FROM v_stock_actual
+    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+
+    -- 8. Devolver resultado
+    SELECT 
+        v_movimiento_id AS movimiento_id,
+        'RECEPCION' AS tipo,
+        p_cantidad AS cantidad_recibida,
+        v_nuevo_stock AS stock_actual,
+        'Donación registrada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 2: Registro de Entrega / Canalización hacia Institución
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_registrar_entrega;
+DELIMITER //
+CREATE PROCEDURE sp_registrar_entrega(
+    IN p_centro_id INT,
+    IN p_campania_id INT,
+    IN p_articulo_id INT,
+    IN p_cantidad DECIMAL(10,2),
+    IN p_institucion_receptora_id INT,
+    IN p_usuario_id INT
+)
+BEGIN
+    DECLARE v_stock_actual DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_movimiento_id INT;
+
+    -- 1. Validar cantidad positiva
+    IF p_cantidad <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La cantidad a entregar debe ser mayor a cero.';
+    END IF;
+
+    -- 2. Validar existencia de la institución receptora
+    IF NOT EXISTS (SELECT 1 FROM instituciones_receptoras WHERE id = p_institucion_receptora_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La institución receptora especificada no existe.';
+    END IF;
+
+    -- 3. VALIDACIÓN CRÍTICA: Prohibido Stock Negativo (Sección 5.3)
+    SELECT COALESCE(stock_disponible, 0) INTO v_stock_actual
+    FROM v_stock_actual
+    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+
+    IF v_stock_actual < p_cantidad THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Stock insuficiente. No se puede realizar una entrega que cause stock negativo.';
+    END IF;
+
+    -- 4. Registrar movimiento de entrega
+    INSERT INTO movimientos (
+        tipo, centro_id, campania_id, articulo_id, cantidad, 
+        usuario_id, institucion_receptora_id, estado_aprobacion, entrega_confirmada
+    ) VALUES (
+        'ENTREGA', p_centro_id, p_campania_id, p_articulo_id, p_cantidad, 
+        p_usuario_id, p_institucion_receptora_id, 'APROBADO', FALSE
+    );
+    SET v_movimiento_id = LAST_INSERT_ID();
+
+    -- 5. Devolver resultado
+    SELECT 
+        v_movimiento_id AS movimiento_id,
+        'ENTREGA' AS tipo,
+        p_cantidad AS cantidad_entregada,
+        (v_stock_actual - p_cantidad) AS stock_restante,
+        'Entrega canalizada exitosamente. Pendiente de confirmación por la institución.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 3: Registro de Merma con Motivo Obligatorio
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_registrar_merma;
+DELIMITER //
+CREATE PROCEDURE sp_registrar_merma(
+    IN p_centro_id INT,
+    IN p_campania_id INT,
+    IN p_articulo_id INT,
+    IN p_cantidad DECIMAL(10,2),
+    IN p_motivo VARCHAR(50),
+    IN p_motivo_detalle TEXT,
+    IN p_usuario_id INT
+)
+BEGIN
+    DECLARE v_stock_actual DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_movimiento_id INT;
+
+    -- 1. Validar cantidad positiva
+    IF p_cantidad <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La cantidad de merma debe ser mayor a cero.';
+    END IF;
+
+    -- 2. Validar motivo obligatorio (CADUCIDAD, DANO, PERDIDA, OTRO)
+    IF p_motivo IS NULL OR p_motivo NOT IN ('CADUCIDAD', 'DANO', 'PERDIDA', 'OTRO') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El motivo de merma es obligatorio y debe ser CADUCIDAD, DANO, PERDIDA u OTRO.';
+    END IF;
+
+    -- 3. Validar existencias suficientes para descontar la merma
+    SELECT COALESCE(stock_disponible, 0) INTO v_stock_actual
+    FROM v_stock_actual
+    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+
+    IF v_stock_actual < p_cantidad THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: No hay existencias suficientes en inventario para asentar esta merma.';
+    END IF;
+
+    -- 4. Registrar movimiento de merma
+    INSERT INTO movimientos (
+        tipo, centro_id, campania_id, articulo_id, cantidad, 
+        usuario_id, motivo, motivo_detalle, estado_aprobacion
+    ) VALUES (
+        'MERMA', p_centro_id, p_campania_id, p_articulo_id, p_cantidad, 
+        p_usuario_id, p_motivo, p_motivo_detalle, 'APROBADO'
+    );
+    SET v_movimiento_id = LAST_INSERT_ID();
+
+    -- 5. Devolver resultado
+    SELECT 
+        v_movimiento_id AS movimiento_id,
+        'MERMA' AS tipo,
+        p_motivo AS motivo,
+        p_cantidad AS cantidad_merma,
+        (v_stock_actual - p_cantidad) AS stock_restante,
+        'Merma asentada exitosamente en el historial.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 4: Registro Atómico de Transferencia entre Centros
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_registrar_transferencia_centros;
+DELIMITER //
+CREATE PROCEDURE sp_registrar_transferencia_centros(
+    IN p_centro_origen_id INT,
+    IN p_centro_destino_id INT,
+    IN p_campania_id INT,
+    IN p_articulo_id INT,
+    IN p_cantidad DECIMAL(10,2),
+    IN p_usuario_id INT
+)
+BEGIN
+    DECLARE v_stock_origen DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_transferencia_id INT;
+
+    -- 1. Validar que origen y destino sean distintos
+    IF p_centro_origen_id = p_centro_destino_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de origen y destino no pueden ser el mismo.';
+    END IF;
+
+    -- 2. Validar cantidad positiva
+    IF p_cantidad <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La cantidad a transferir debe ser mayor a cero.';
+    END IF;
+
+    -- 3. Validar que ambos centros participen activamente en la campaña
+    IF NOT EXISTS (SELECT 1 FROM centros_campanias WHERE id_centro = p_centro_origen_id AND id_campania = p_campania_id AND activo = TRUE) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de origen no está habilitado en esta campaña.';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM centros_campanias WHERE id_centro = p_centro_destino_id AND id_campania = p_campania_id AND activo = TRUE) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de destino no está habilitado en esta campaña.';
+    END IF;
+
+    -- 4. Validar existencias suficientes en el centro de origen
+    SELECT COALESCE(stock_disponible, 0) INTO v_stock_origen
+    FROM v_stock_actual
+    WHERE centro_id = p_centro_origen_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+
+    IF v_stock_origen < p_cantidad THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Stock insuficiente en el centro de origen para realizar la transferencia.';
+    END IF;
+
+    -- 5. Operación Atómica (Salida en Origen + Entrada en Destino)
+    START TRANSACTION;
+        -- Insertar registro maestro de transferencia
+        INSERT INTO transferencias (
+            centro_origen_id, centro_destino_id, campania_id, 
+            articulo_id, cantidad, usuario_id, estado
+        ) VALUES (
+            p_centro_origen_id, p_centro_destino_id, p_campania_id, 
+            p_articulo_id, p_cantidad, p_usuario_id, 'COMPLETADA'
+        );
+        SET v_transferencia_id = LAST_INSERT_ID();
+
+        -- Movimiento de salida en el centro origen
+        INSERT INTO movimientos (
+            tipo, centro_id, campania_id, articulo_id, cantidad, 
+            usuario_id, transferencia_id, estado_aprobacion
+        ) VALUES (
+            'TRANSFERENCIA_SALIDA', p_centro_origen_id, p_campania_id, p_articulo_id, p_cantidad, 
+            p_usuario_id, v_transferencia_id, 'APROBADO'
+        );
+
+        -- Movimiento de entrada en el centro destino
+        INSERT INTO movimientos (
+            tipo, centro_id, campania_id, articulo_id, cantidad, 
+            usuario_id, transferencia_id, estado_aprobacion
+        ) VALUES (
+            'TRANSFERENCIA_ENTRADA', p_centro_destino_id, p_campania_id, p_articulo_id, p_cantidad, 
+            p_usuario_id, v_transferencia_id, 'APROBADO'
+        );
+    COMMIT;
+
+    -- 6. Devolver confirmación
+    SELECT 
+        v_transferencia_id AS transferencia_id,
+        p_centro_origen_id AS centro_origen,
+        p_centro_destino_id AS centro_destino,
+        p_cantidad AS cantidad_transferida,
+        (v_stock_origen - p_cantidad) AS stock_remanente_origen,
+        'Transferencia entre centros completada atómicamente con éxito.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 5: Registro de Ajuste Manual de Stock con Motivo
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_registrar_ajuste_stock;
+DELIMITER //
+CREATE PROCEDURE sp_registrar_ajuste_stock(
+    IN p_centro_id INT,
+    IN p_campania_id INT,
+    IN p_articulo_id INT,
+    IN p_cantidad DECIMAL(10,2),
+    IN p_tipo_ajuste VARCHAR(20),
+    IN p_motivo VARCHAR(50),
+    IN p_motivo_detalle TEXT,
+    IN p_usuario_id INT
+)
+BEGIN
+    DECLARE v_stock_actual DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_movimiento_id INT;
+    DECLARE v_nuevo_stock DECIMAL(10,2);
+
+    -- 1. Validar cantidad positiva
+    IF p_cantidad <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La cantidad de ajuste debe ser mayor a cero.';
+    END IF;
+
+    -- 2. Validar tipo de ajuste
+    IF p_tipo_ajuste NOT IN ('AJUSTE_POSITIVO', 'AJUSTE_NEGATIVO') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El tipo de ajuste debe ser AJUSTE_POSITIVO o AJUSTE_NEGATIVO.';
+    END IF;
+
+    -- 3. Validar motivo obligatorio (CORRECCION_CONTEO, ERROR_CAPTURA, OTRO, etc.)
+    IF p_motivo IS NULL OR p_motivo NOT IN ('CORRECCION_CONTEO', 'ERROR_CAPTURA', 'OTRO', 'DANO', 'PERDIDA') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El motivo de ajuste es obligatorio (CORRECCION_CONTEO, ERROR_CAPTURA, OTRO).';
+    END IF;
+
+    -- 4. Validar existencias si el ajuste es negativo
+    SELECT COALESCE(stock_disponible, 0) INTO v_stock_actual
+    FROM v_stock_actual
+    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+
+    IF p_tipo_ajuste = 'AJUSTE_NEGATIVO' AND v_stock_actual < p_cantidad THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El ajuste negativo excede las existencias registradas en almacén.';
+    END IF;
+
+    -- 5. Registrar movimiento de ajuste
+    INSERT INTO movimientos (
+        tipo, centro_id, campania_id, articulo_id, cantidad, 
+        usuario_id, motivo, motivo_detalle, estado_aprobacion
+    ) VALUES (
+        p_tipo_ajuste, p_centro_id, p_campania_id, p_articulo_id, p_cantidad, 
+        p_usuario_id, p_motivo, p_motivo_detalle, 'APROBADO'
+    );
+    SET v_movimiento_id = LAST_INSERT_ID();
+
+    -- 6. Consultar nuevo stock disponible
+    SELECT COALESCE(stock_disponible, 0) INTO v_nuevo_stock
+    FROM v_stock_actual
+    WHERE centro_id = p_centro_id AND campania_id = p_campania_id AND articulo_id = p_articulo_id;
+
+    -- 7. Devolver resultado
+    SELECT 
+        v_movimiento_id AS movimiento_id,
+        p_tipo_ajuste AS tipo_ajuste,
+        p_motivo AS motivo,
+        p_cantidad AS cantidad_ajustada,
+        v_nuevo_stock AS stock_oficial_actualizado,
+        'Ajuste de inventario registrado y auditado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ==========================================================
 -- 12. DATOS SEMILLA (SEEDS / FIXTURES) PARA LA DEMO
 -- ==========================================================
 
