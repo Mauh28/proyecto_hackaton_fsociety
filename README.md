@@ -18,7 +18,7 @@
 | :--- | :--- | :--- |
 | **Backend** | **Java 17 & Spring Boot** | Lógica de negocio, API REST, validaciones y arquitectura de servicios. |
 | **Persistencia / ORM** | **Spring Data JPA & Hibernate** | Mapeo y consultas a la base de datos relacional. |
-| **Base de Datos (Cloud)** | **Clever Cloud (MySQL 8.4)** | Base de datos MySQL 8.4 alojada en la nube con soporte nativo para Procedimientos Almacenados y vistas. |
+| **Base de Datos (Cloud)** | **TiDB Cloud (Serverless)** | Base de datos MySQL distribuida de alta disponibilidad alojada en la nube para acceso colaborativo 24/7 y despliegue sin depender de `localhost`. |
 | **Modelado de BD** | **MySQL Workbench** | Diseño relacional, creación y ejecución del script de tablas y procedimientos. |
 | **Frontend** | **HTML5, CSS3, JavaScript & Bootstrap** | Interfaz de usuario responsiva para voluntarios y encargados de centro. |
 | **Motor de Plantillas** | **Thymeleaf** | Renderizado de vistas dinámicas integrado con Spring Boot. |
@@ -54,9 +54,9 @@ cd proyecto_hackaton_fsociety
 
 ### 3. Configuración de Base de Datos
 La conexión a la base de datos en la nube ya se encuentra preconfigurada en el archivo `src/main/resources/application.properties`:
-* **Host:** `b0efvzjhpegivufhzick-mysql.services.clever-cloud.com`
-* **Base de datos:** `b0efvzjhpegivufhzick`
-* **Puerto:** `3306`
+* **Host:** `gateway01.us-east-1.prod.aws.tidbcloud.com`
+* **Base de datos:** `centros_acopio`
+* **Puerto:** `4000`
 
 *(Si necesitas cambiar credenciales, edita directamente `src/main/resources/application.properties`).*
 
