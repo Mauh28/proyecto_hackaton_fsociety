@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal - Centros de Acopio</title>
+    <link rel="stylesheet" href="estilos.css">
+    <style>
+        body {
+            background-color: var(--bg-gray);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .menu-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            display: block;
+        }
+
+        .menu-card:hover {
+            border-color: var(--active-dark);
+            background-color: var(--bg-gray);
+        }
+
+        .menu-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--active-dark);
+        }
+
+        .menu-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="menu-container">
+        <h2 class="mt-0">Menú Principal</h2>
+        <p class="text-muted">Selecciona el módulo al que deseas ingresar según tu rol asignado[cite: 1, 2].</p>
+
+        <div class="menu-grid" id="menuGrid">
+            <!-- Módulo 1: Recepción (Disponible para Voluntario, Encargado y Coordinador) -->
+            <a href="recepcion.html" class="menu-card" data-role="voluntario, encargado, coordinador">
+                <h3>Registro de Recepciones</h3>
+                <p>Registra nuevos artículos y donaciones (anónimas o con datos) al llegar al centro[cite: 1, 2].</p>
+            </a>
+
+            <!-- Módulo 2: Panel de Encargado (Disponible para Encargado y Coordinador) -->
+            <a href="encargado.html" class="menu-card" data-role="encargado, coordinador">
+                <h3>Gestión de Encargado</h3>
+                <p>Administra entregas, transferencias entre centros, mermas y ajustes de inventario[cite: 1, 2].</p>
+            </a>
+
+            <!-- Módulo 3: Dashboard Global (Disponible exclusivamente para Coordinador) -->
+            <a href="coordinador.html" class="menu-card" data-role="coordinador">
+                <h3>Dashboard Global y Configuración</h3>
+                <p>Da de alta campañas, centros, activa cuentas y supervisa las métricas de toda la red.</p>
+            </a>
+        </div>
+
+        <div class="logout-container">
+            <a href="index.html" class="text-sm text-muted logout-link">Cerrar Sesión</a>
+        </div>
+    </div>
+
+    <script>
+        // SIMULACIÓN DE ROL ACTIVO: Puedes cambiar esto dinámicamente desde tu backend o sesión
+        // Opciones: "voluntario", "encargado", "coordinador"
+        const rolUsuario = "encargado";
+
+        // Filtrar dinámicamente las tarjetas del menú según el rol del usuario
+        const opcionesMenu = document.querySelectorAll('.menu-card');
+
+        opcionesMenu.forEach(card => {
+            const rolesPermitidos = card.getAttribute('data-role');
+            if (!rolesPermitidos.includes(rolUsuario)) {
+                card.style.display = 'none'; // Oculta las tarjetas que no correspondan al rol
+            }
+        });
+    </script>
+</body>
+
+</html>
