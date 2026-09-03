@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Recepción - Centro de Acopio</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .panel {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .donor-info {
+            display: none;
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+
+        .donor-info.active {
+            display: block;
+        }
+
+        button.submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button.submit-btn:hover {
+            opacity: 0.9;
+        }
+
+        .stock-display {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .stock-number {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--primary);
+            transition: transform 0.2s;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--success);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            display: none;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .toggle-container label {
+            margin: 0;
+        }
+
+        .divider {
+            border: 1px solid var(--border);
+            margin: 2rem 0;
+        }
+
+        #recentList {
+            list-style: none;
+            padding: 0;
+        }
+
+        #recentList li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Panel Izquierdo: Formulario -->
+    <div class="panel">
+        <h2>Nueva Recepción</h2>
+        <form id="donationForm">
+            <div class="form-group">
+                <label>Campaña Activa</label>
+                <input type="text" value="Huracán 2026 - Zona Sur" disabled>
+            </div>
+
+            <div class="toggle-container">
+                <input type="checkbox" id="anonymousToggle" checked>
+                <label for="anonymousToggle">Donación Anónima</label>
+            </div>
+
+            <div class="donor-info" id="donorFields">
+                <div class="form-group">
+                    <label>Nombre del Donante</label>
+                    <input type="text" id="donorName" placeholder="Ej. Juan Pérez">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Artículo</label>
+                <select id="itemSelect" required>
+                    <option value="">Selecciona un artículo...</option>
+                    <option value="agua">Agua Embotellada (Litros)</option>
+                    <option value="lata">Atún (Pieza)</option>
+                    <option value="arroz">Arroz (Kg)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Cantidad</label>
+                <input type="number" id="itemQuantity" min="1" value="1" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Registrar Donación</button>
+        </form>
+    </div>
+
+    <!-- Panel Derecho: Stock en Tiempo Real -->
+    <div class="panel">
+        <h2>Stock del Centro</h2>
+        <div class="stock-display">
+            <div class="stock-number" id="currentStock">142</div>
+            <p>Artículos totales registrados</p>
+        </div>
+        <hr class="divider">
+        <h3>Últimos Movimientos</h3>
+        <ul id="recentList">
+            <li>+5 Agua Embotellada (Anónimo)</li>
+        </ul>
+    </div>
+
+    <div class="toast" id="toastMsg">¡Recepción registrada con éxito!</div>
+
+    <script>
+        // Lógica para mostrar/ocultar datos del donante
+        const anonymousToggle = document.getElementById('anonymousToggle');
+        const donorFields = document.getElementById('donorFields');
+
+        anonymousToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                donorFields.classList.remove('active');
+            } else {
+                donorFields.classList.add('active');
+            }
+        });
+
+        // Lógica de envío y actualización en tiempo real
+        const form = document.getElementById('donationForm');
+        const currentStockEl = document.getElementById('currentStock');
+        const toast = document.getElementById('toastMsg');
+        const recentList = document.getElementById('recentList');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault(); // Evita recargar la página
+
+            const quantity = parseInt(document.getElementById('itemQuantity').value);
+            const itemName = document.getElementById('itemSelect').options[document.getElementById('itemSelect').selectedIndex].text;
+            const isAnonymous = anonymousToggle.checked;
+            const donorName = isAnonymous ? 'Anónimo' : document.getElementById('donorName').value;
+
+            // Aquí iría tu fetch() hacia el backend en Java para registrar en base de datos.
+            // fetch('/api/recepciones', { method: 'POST', body: JSON.stringify({...}) })
+
+            // Simulación de actualización visual (Stock aumenta)
+            const currentStock = parseInt(currentStockEl.innerText);
+            currentStockEl.innerText = currentStock + quantity;
+
+            // Animación sencilla
+            currentStockEl.style.transform = 'scale(1.2)';
+            setTimeout(() => currentStockEl.style.transform = 'scale(1)', 200);
+
+            // Agregar a la lista de recientes
+            const newLi = document.createElement('li');
+            newLi.innerText = `+${quantity} ${itemName} (${donorName})`;
+            recentList.prepend(newLi);
+
+            // Mostrar notificación
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+
+            // Resetear formulario manteniendo la campaña
+            form.reset();
+            donorFields.classList.remove('active');
+        });
+    </script>
+</body>
+
+</html>
