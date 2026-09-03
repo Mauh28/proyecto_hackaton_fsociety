@@ -3,8 +3,10 @@
 -- Script de Base de Datos compatible con MySQL 8.0+ y TiDB Cloud
 -- ==========================================================
 
-create database if not exists centros_acopio;
-use centros_acopio;
+-- el nombre ya no es centros de acopio debido a las limitaciones que tiene clever cloud que es donde alojamos la BD
+
+-- create database if not exists centros_acopio;
+use b0efvzjhpegivufhzick;
 
 -- ----------------------------------------------------------
 -- 1. Tabla: Instituciones Receptoras
