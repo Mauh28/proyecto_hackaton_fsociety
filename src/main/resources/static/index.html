@@ -6,47 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Centros de Acopio</title>
     <link rel="stylesheet" href="estilos.css">
-    <style>
-        body {
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-gray);
-        }
-
-        .login-card {
-            background: white;
-            padding: 3rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        /* Corrección: Estilos idénticos para el input de contraseña */
-        input[type="password"] {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-top: 0.5rem;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 1rem;
-            background-color: var(--bg-light);
-        }
-
-        input[type="password"]:focus {
-            outline: none;
-            border-color: var(--active-dark);
-        }
-    </style>
 </head>
 
-<body>
+<body class="menu-body">
 
     <div class="login-card">
         <h2 class="mt-0">Iniciar Sesión</h2>
-        <!-- Texto limpio, sin referencias extrañas -->
         <p class="text-muted mb-2">Ingresa tus credenciales para acceder al sistema.</p>
 
         <form id="loginForm">
@@ -67,16 +32,19 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            // Simulación de ruteo para la demo
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.toLowerCase();
 
-            if (email.includes('voluntario')) {
-                window.location.href = 'recepcion.html';
-            } else if (email.includes('encargado')) {
-                window.location.href = 'encargado.html';
+            // Persistencia de rol en sessionStorage
+            if (email.includes('encargado')) {
+                sessionStorage.setItem('rolActivo', 'encargado');
+            } else if (email.includes('coordinador')) {
+                sessionStorage.setItem('rolActivo', 'coordinador');
             } else {
-                window.location.href = 'coordinador.html';
+                sessionStorage.setItem('rolActivo', 'voluntario');
             }
+
+            // Redirección inmediata al Menú Principal
+            window.location.href = 'menu.html';
         });
     </script>
 </body>

@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Encargado - Centro de Acopio</title>
-    <!-- Enlace al archivo CSS global -->
     <link rel="stylesheet" href="estilos.css">
 </head>
 
@@ -13,7 +12,7 @@
 
     <div class="left-panel">
         <h2>Gestión de Inventario</h2>
-        <p class="text-muted mb-2">Selecciona el tipo de movimiento a registrar.</p>
+        <p class="text-muted mb-2">Selecciona el tipo de movimiento a registrar[cite: 1].</p>
 
         <!-- Tipos de Movimientos del Encargado -->
         <div class="category-grid" id="movementGrid">
@@ -37,17 +36,28 @@
 
         <!-- Campos comunes a todos los movimientos -->
         <div class="mb-1-5">
-            <label for="itemSelect" class="font-semibold">Artículo</label>
+            <label for="itemSelect" class="font-semibold">Artículo en Stock</label>
             <select id="itemSelect" required>
                 <option value="">Selecciona un artículo en stock...</option>
-                <option value="agua">Agua Embotellada (Litros) - Stock: 150</option>
-                <option value="arroz">Arroz (Kg) - Stock: 45</option>
+                <option value="agua">Agua Embotellada (150 L disponibles)</option>
+                <option value="arroz">Arroz en grano (45 Kg disponibles)</option>
+                <option value="atun">Atún en lata (80 Piezas disponibles)</option>
+                <option value="cobijas">Cobijas térmicas (30 Piezas disponibles)</option>
             </select>
         </div>
 
         <div class="mb-2">
-            <label for="inputQuantity" class="font-semibold">Cantidad</label>
-            <input type="number" id="inputQuantity" min="1" value="1" required>
+            <label class="font-semibold">Cantidad / Peso a Descontar</label>
+            <div class="input-unit-group">
+                <input type="number" id="inputQuantity" min="0.1" step="any" value="1" required>
+                <select id="unitSelect">
+                    <option value="kg">Kg (Kilogramos)</option>
+                    <option value="l">L (Litros)</option>
+                    <option value="pieza">Piezas</option>
+                    <option value="caja">Cajas</option>
+                    <option value="bolsa">Bolsas</option>
+                </select>
+            </div>
         </div>
 
         <!-- Campos dinámicos según el tipo de movimiento seleccionado -->
@@ -58,11 +68,12 @@
                     <label for="instSelect" class="font-semibold">Institución Receptora</label>
                     <select id="instSelect" required>
                         <option value="">Selecciona la institución...</option>
-                        <option value="cruz-roja">Cruz Roja</option>
+                        <option value="cruz-roja">Cruz Roja Mexicana</option>
                         <option value="banco-alimentos">Banco de Alimentos</option>
+                        <option value="refugio-sur">Refugio Temporal Sur</option>
                     </select>
                 </div>
-                <button type="button" class="btn btn-primary">Registrar Entrega</button>
+                <button type="button" class="btn btn-primary" id="btnEntrega">Registrar Entrega</button>
             </div>
 
             <!-- Campos para Transferencia a otro centro -->
@@ -73,9 +84,10 @@
                         <option value="">Selecciona el centro destino...</option>
                         <option value="centro-norte">Centro Comunitario Norte</option>
                         <option value="escuela-sur">Escuela Primaria Sur</option>
+                        <option value="auditorio-muni">Auditorio Municipal</option>
                     </select>
                 </div>
-                <button type="button" class="btn btn-primary">Registrar Transferencia</button>
+                <button type="button" class="btn btn-primary" id="btnTransferencia">Registrar Transferencia</button>
             </div>
 
             <!-- Campos para Merma (Motivo Obligatorio) -->
@@ -89,7 +101,7 @@
                         <option value="perdida">Pérdida</option>
                     </select>
                 </div>
-                <button type="button" class="btn btn-primary">Descontar Merma</button>
+                <button type="button" class="btn btn-danger" id="btnMerma">Descontar Merma</button>
             </div>
 
             <!-- Campos para Ajuste Manual -->
@@ -102,10 +114,10 @@
                     </select>
                 </div>
                 <div class="mb-1-5">
-                    <label for="motivoAjuste" class="font-semibold">Motivo de Corrección</label>
+                    <label for="motivoAjuste" class="font-semibold">Motivo de Corrección Obligatorio</label>
                     <input type="text" id="motivoAjuste" placeholder="Ej. Error de conteo inicial" required>
                 </div>
-                <button type="button" class="btn btn-primary">Aplicar Ajuste</button>
+                <button type="button" class="btn btn-primary" id="btnAjuste">Aplicar Ajuste</button>
             </div>
 
         </div>
@@ -113,110 +125,172 @@
 
     <!-- Panel Derecho: Dashboard del Centro -->
     <div class="right-panel">
-        <div class="dropdown">
-            <button type="button" class="dropbtn">Navegación ▾</button>
-            <div class="dropdown-content" id="navDropdown">
-                <!-- Visible para Voluntario, Encargado y Coordinador -->
-                <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción (Voluntario)</a>
-
-                <!-- Visible solo para Encargado y Coordinador -->
-                <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
-
-                <!-- Visible exclusivamente para el Coordinador General -->
-                <a href="coordinador.html" data-role="coordinador">Dashboard Global (Coordinador)</a>
+        <div class="nav-wrapper">
+            <div class="dropdown dropdown-relative">
+                <button type="button" class="dropbtn" id="dropBtn">Navegación ▾</button>
+                <div class="dropdown-content" id="navDropdown">
+                    <a href="menu.html" data-role="voluntario, encargado, coordinador">Menú Principal</a>
+                    <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción</a>
+                    <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
+                    <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
+                    <a href="index.html" id="btnLogout" onclick="sessionStorage.clear();">Cerrar Sesión</a>
+                </div>
             </div>
         </div>
 
-        <!-- Tarjeta de Métricas -->
+        <!-- Tarjeta de Métricas con Barra de Progreso de Campaña -->
         <div class="dashboard-card mb-1-5">
             <h3 class="mt-0">Dashboard: Centro Principal</h3>
 
             <div class="stat-grid mt-2">
                 <div class="stat-box">
                     <h4>Stock Total</h4>
-                    <p>1,204</p>
+                    <p id="statStock">1,204</p>
                 </div>
                 <div class="stat-box">
-                    <h4>Mermas (Último mes)</h4>
-                    <p class="text-danger">12</p>
+                    <h4>Mermas (Mes)</h4>
+                    <p class="text-danger" id="statMerma">12</p>
+                </div>
+            </div>
+
+            <!-- Meta de Recolección de la Campaña -->
+            <div class="mt-2 pt-1 border-bottom">
+                <div class="flex-between-end">
+                    <strong class="text-sm">Meta de Campaña (Centro)</strong>
+                    <span class="text-sm text-muted">1,204 / 3,000</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-fill"></div>
                 </div>
             </div>
         </div>
 
         <!-- Tarjeta de Historial -->
-
-        <div class="info-card flex-1">
+        <div class="info-card flex-1 mb-0">
             <h4 class="mt-0 pb-1 border-bottom">Historial de Movimientos</h4>
-            <ul class="history-list">
+            <ul class="history-list" id="historyList">
                 <li>
                     <div>
                         <strong>Merma</strong> - Agua Embotellada
                         <div class="text-muted text-sm">Daño (Actor: Encargado 1)</div>
                     </div>
-                    <strong class="text-danger">-5</strong>
+                    <strong class="text-danger">-5 L</strong>
                 </li>
                 <li>
                     <div>
                         <strong>Transferencia</strong> - Arroz
                         <div class="text-muted text-sm">Hacia Centro Norte (Actor: Encargado 1)</div>
                     </div>
-                    <strong class="text-danger">-20</strong>
+                    <strong class="text-danger">-20 Kg</strong>
                 </li>
                 <li>
                     <div>
                         <strong>Recepción</strong> - Atún
                         <div class="text-muted text-sm">Anónimo (Actor: Voluntario)</div>
                     </div>
-                    <strong class="text-success">+50</strong>
+                    <strong class="text-success">+50 Piezas</strong>
                 </li>
             </ul>
         </div>
     </div>
 
-    <!-- Script para el comportamiento dinámico del formulario -->
+    <!-- Contenedor Toast para Notificaciones -->
+    <div id="toastNotif" class="toast">¡Operación registrada con éxito!</div>
+
+    <!-- Scripts de interactividad y roles -->
     <script>
-        // Seleccionamos solo las tarjetas que tienen el atributo data-type
+        // 1. Control y persistencia estricta de sesión desde sessionStorage
+        const rolActivo = sessionStorage.getItem('rolActivo');
+
+        if (rolActivo === 'voluntario') {
+            alert("Acceso restringido: Los voluntarios no pueden gestionar mermas ni transferencias[cite: 1]. Redirigiendo a recepción.");
+            window.location.href = "recepcion.html";
+        }
+
+        // Control interactivo del menú desplegable (clic persistente y accesibilidad)
+        const dropdownEl = document.querySelector('.dropdown');
+        const dropBtn = document.getElementById('dropBtn');
+        const navDropdown = document.getElementById('navDropdown');
+
+        if (dropBtn && dropdownEl && navDropdown) {
+            dropBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdownEl.classList.toggle('open');
+                navDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dropdownEl.contains(e.target)) {
+                    dropdownEl.classList.remove('open');
+                    navDropdown.classList.remove('show');
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    dropdownEl.classList.remove('open');
+                    navDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // Control de visibilidad del menú desplegable basado en el rol de sesión
+        const links = document.querySelectorAll('#navDropdown a[data-role]');
+        links.forEach(link => {
+            const rolesPermitidos = link.getAttribute('data-role');
+            if (rolActivo && !rolesPermitidos.includes(rolActivo)) {
+                link.style.display = 'none';
+            }
+        });
+
+        // Limpiar sesión al cerrar
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                sessionStorage.clear();
+            });
+        }
+
+        // 2. Alternar entre tipos de movimientos
         const cards = document.querySelectorAll('.category-card[data-type]');
         const formSections = document.querySelectorAll('.form-section');
 
         cards.forEach(card => {
             card.addEventListener('click', () => {
-                // 1. Limpiar estado activo de todas las tarjetas
                 cards.forEach(c => c.classList.remove('active'));
-
-                // 2. Activar la tarjeta seleccionada
                 card.classList.add('active');
 
-                // 3. Obtener el tipo de movimiento de la tarjeta seleccionada
                 const type = card.getAttribute('data-type');
-
-                // 4. Ocultar todos los sub-formularios
                 formSections.forEach(sec => sec.classList.remove('active'));
-
-                // 5. Mostrar solo el formulario que corresponde al movimiento seleccionado
                 document.getElementById(`sec-${type}`).classList.add('active');
             });
         });
-    </script>
-    <script>
-        // SIMULACIÓN DE LOGIN: Cambia esto por el rol activo de tu sesión ("voluntario", "encargado" o "coordinador")
-        const usuarioActual = "voluntario"; // Prueba cambiando a "encargado" o "coordinador"
 
-        // Control de visibilidad del menú desplegable basado en el rol
-        const links = document.querySelectorAll('#navDropdown a');
+        // 3. Sistema de notificaciones Toast animadas
+        const toast = document.getElementById('toastNotif');
+        function dispararNotificacion(mensaje) {
+            toast.textContent = mensaje;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
 
-        links.forEach(link => {
-            const rolesPermitidos = link.getAttribute('data-role');
-            if (!rolesPermitidos.includes(usuarioActual)) {
-                link.style.display = 'none'; // Oculta la opción si el rol no tiene permiso
-            }
+        document.getElementById('btnEntrega').addEventListener('click', () => {
+            dispararNotificacion('Entrega institucional registrada con éxito');
         });
 
-        // Validación de seguridad visual en la vista
-        if (usuarioActual === "voluntario" && window.location.pathname.includes("coordinador")) {
-            alert("Acceso restringido. Redirigiendo a vista de voluntario.");
-            window.location.href = "recepcion.html";
-        }
+        document.getElementById('btnTransferencia').addEventListener('click', () => {
+            dispararNotificacion('Transferencia de salida enviada correctamente');
+        });
+
+        document.getElementById('btnMerma').addEventListener('click', () => {
+            dispararNotificacion('Merma descontada del inventario');
+        });
+
+        document.getElementById('btnAjuste').addEventListener('click', () => {
+            dispararNotificacion('Ajuste de inventario aplicado');
+        });
     </script>
 </body>
 
