@@ -11,155 +11,98 @@
 <body class="menu-body">
 
     <div class="info-card menu-container">
-        <div class="flex-between-end" style="margin-bottom: 0.5rem;">
-            <h2 class="mt-0" style="margin: 0;">Menú Principal</h2>
-            <a href="index.html" class="text-sm text-muted no-underline" onclick="cerrarSesion(event);">Cerrar Sesión</a>
-        </div>
-        <p class="text-muted" style="margin-top: 0.25rem;">Selecciona el módulo al que deseas ingresar según tus permisos autorizados.</p>
+        <h2 class="mt-0">Menú Principal</h2>
+        <p class="text-muted">Selecciona el módulo al que deseas ingresar según tu rol asignado.</p>
 
-        <!-- Barra de Contexto del Usuario Validado por Backend -->
-        <div id="userProfileBar" style="display: none; margin: 1.25rem 0; padding: 0.75rem 1rem; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; align-items: center; justify-content: space-between;">
-            <div>
-                <span style="font-weight: 600; color: #1f2937;" id="userNombre">Cargando perfil...</span>
-                <span id="userCentro" style="font-size: 0.85rem; color: #6b7280; margin-left: 0.5rem;"></span>
-            </div>
-            <span id="userRolBadge" style="background-color: #374151; color: white; padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;"></span>
-        </div>
-
-        <!-- Alerta de Error de Acceso o Cuenta Inactiva -->
-        <div id="errorAlert" style="display: none; padding: 0.85rem 1rem; margin-bottom: 1.25rem; background-color: #fee2e2; border: 1px solid #f87171; border-radius: 8px; color: #991b1b; font-size: 0.9rem;"></div>
-
-        <div class="menu-grid-col" id="menuCardsContainer">
+        <div class="menu-grid-col">
             <!-- Módulo 1: Recepción -->
-            <a href="recepcion.html" class="category-card menu-link-card" id="cardRecepcion"
-                data-module="recepcion" data-role="voluntario, encargado, coordinador">
+            <a href="recepcion.html" class="category-card menu-link-card"
+                data-role="voluntario, encargado, coordinador">
                 <h3 class="menu-title">Registro de Recepciones</h3>
                 <p class="menu-desc">Registra nuevos artículos y donaciones al llegar al centro.</p>
             </a>
 
             <!-- Módulo 2: Panel de Encargado -->
-            <a href="encargado.html" class="category-card menu-link-card" id="cardEncargado"
-                data-module="encargado" data-role="encargado, coordinador">
+            <a href="encargado.html" class="category-card menu-link-card" data-role="encargado, coordinador">
                 <h3 class="menu-title">Gestión de Encargado</h3>
                 <p class="menu-desc">Administra entregas, transferencias, mermas y ajustes de inventario.</p>
             </a>
 
             <!-- Módulo 3: Dashboard Global -->
-            <a href="coordinador.html" class="category-card menu-link-card" id="cardCoordinador"
-                data-module="coordinador" data-role="coordinador">
+            <a href="coordinador.html" class="category-card menu-link-card" data-role="coordinador">
                 <h3 class="menu-title">Dashboard Global y Configuración</h3>
                 <p class="menu-desc">Da de alta campañas, centros, activa cuentas y supervisa métricas.</p>
             </a>
         </div>
+
+        <div class="text-right mt-2 pt-1 border-bottom">
+            <a href="index.html" class="text-sm text-muted no-underline" onclick="sessionStorage.clear();">Cerrar
+                Sesión</a>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Obtener identificador o email de la sesión activa
-            let email = sessionStorage.getItem('email') || sessionStorage.getItem('usuarioEmail');
-            const rolActivo = sessionStorage.getItem('rolActivo');
-            const usuarioGuardado = sessionStorage.getItem('usuarioActivo');
+        // 1. Obtener identificador o email de la sesión activa
+        let email = sessionStorage.getItem('email') || sessionStorage.getItem('usuarioEmail');
+        const rolActivo = sessionStorage.getItem('rolActivo');
+        const usuarioNombre = sessionStorage.getItem('usuarioNombre');
 
-            if (usuarioGuardado) {
-                try {
-                    const parsed = JSON.parse(usuarioGuardado);
-                    if (parsed && parsed.email) email = parsed.email;
-                } catch (e) {
-                    console.warn('Error al parsear usuarioActivo', e);
-                }
-            }
-
-            // Mapeo transparente para compatibilidad con login actual de index.html
-            if (!email && rolActivo) {
-                const rol = rolActivo.toLowerCase();
-                if (rol.includes('coordinador')) email = 'coordinador@hackaton.org';
-                else if (rol.includes('encargado')) email = 'encargado.central@hackaton.org';
-                else email = 'voluntario.central@hackaton.org';
-            }
-
-            // Si no hay ninguna sesión registrada, redirigir al login
-            if (!email && !rolActivo) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            try {
-                // 2. Validar con el backend (TiDB Cloud)
-                const response = await fetch(`/api/menu/contexto?email=${encodeURIComponent(email)}`);
-                
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ mensaje: 'Acceso no autorizado.' }));
-                    mostrarError(errorData.mensaje || 'Error al validar credenciales.');
-                    setTimeout(() => {
-                        sessionStorage.clear();
-                        window.location.href = 'index.html';
-                    }, 3000);
-                    return;
-                }
-
-                const contexto = await response.json();
-
-                // 3. Persistir sesión validada por el servidor
-                sessionStorage.setItem('usuarioActivo', JSON.stringify(contexto));
-                sessionStorage.setItem('rolActivo', contexto.rol.toLowerCase());
-
-                // 4. Renderizar perfil validado
-                document.getElementById('userNombre').textContent = contexto.nombre;
-                document.getElementById('userRolBadge').textContent = contexto.rol;
-                
-                // Color temático del badge según rol
-                const badge = document.getElementById('userRolBadge');
-                if (contexto.rol === 'COORDINADOR') badge.style.backgroundColor = '#2563eb';
-                else if (contexto.rol === 'ENCARGADO') badge.style.backgroundColor = '#059669';
-                else badge.style.backgroundColor = '#4b5563';
-
-                if (contexto.centroNombre) {
-                    document.getElementById('userCentro').textContent = `• Sede: ${contexto.centroNombre}`;
-                } else if (contexto.institucionNombre) {
-                    document.getElementById('userCentro').textContent = `• Institución: ${contexto.institucionNombre}`;
-                } else {
-                    document.getElementById('userCentro').textContent = '• Gestión General';
-                }
-                document.getElementById('userProfileBar').style.display = 'flex';
-
-                // 5. Filtrar dinámicamente las tarjetas según permisos del backend
-                const modulos = contexto.modulosPermitidos || [];
-                const cards = document.querySelectorAll('.menu-link-card');
-                
-                cards.forEach(card => {
-                    const modulo = card.getAttribute('data-module');
-                    if (modulo && !modulos.includes(modulo)) {
-                        card.style.display = 'none';
-                    } else {
-                        card.style.display = 'block';
-                    }
-                });
-
-            } catch (err) {
-                console.error('Error al conectar con la API de menú:', err);
-                // Respaldo de contingencia con rolActivo local
-                if (rolActivo) {
-                    const cards = document.querySelectorAll('a[data-role]');
-                    cards.forEach(card => {
-                        const rolesPermitidos = card.getAttribute('data-role') || '';
-                        if (!rolesPermitidos.includes(rolActivo.toLowerCase())) {
-                            card.style.display = 'none';
-                        }
-                    });
-                }
-            }
-        });
-
-        function mostrarError(msg) {
-            const alertBox = document.getElementById('errorAlert');
-            alertBox.textContent = msg;
-            alertBox.style.display = 'block';
+        // Si no hay ninguna sesión registrada, redirigir al login
+        if (!email && !rolActivo) {
+            window.location.href = 'index.html';
         }
 
-        function cerrarSesion(event) {
-            if (event) event.preventDefault();
-            sessionStorage.clear();
-            window.location.href = 'index.html';
+        // Si viene el nombre del usuario, mostrar bienvenida personalizada
+        if (usuarioNombre && rolActivo) {
+            const parrafoSubtitulo = document.querySelector('.info-card > p.text-muted');
+            if (parrafoSubtitulo) {
+                parrafoSubtitulo.innerHTML = `Bienvenido(a), <strong>${usuarioNombre}</strong> (${rolActivo.toUpperCase()}). Selecciona el módulo al que deseas ingresar.`;
+            }
+        }
+
+        // Filtrar dinámicamente las tarjetas según el rol activo
+        function aplicarFiltroRol(rol) {
+            if (!rol) return;
+            const rolNorm = rol.toLowerCase();
+            const opcionesMenu = document.querySelectorAll('a[data-role]');
+            opcionesMenu.forEach(card => {
+                const rolesPermitidos = (card.getAttribute('data-role') || '').toLowerCase();
+                if (!rolesPermitidos.includes(rolNorm)) {
+                    card.style.display = 'none';
+                } else {
+                    card.style.display = 'block';
+                }
+            });
+        }
+
+        // Aplicar filtro inicial de inmediato para evitar parpadeos
+        if (rolActivo) {
+            aplicarFiltroRol(rolActivo);
+        }
+
+        // Intentar validación silenciosa en backend si hay email disponible
+        if (email) {
+            fetch(`/api/menu/contexto?email=${encodeURIComponent(email)}`)
+                .then(res => {
+                    if (res.ok) return res.json();
+                    return null;
+                })
+                .then(contexto => {
+                    if (contexto && contexto.rol) {
+                        sessionStorage.setItem('rolActivo', contexto.rol.toLowerCase());
+                        sessionStorage.setItem('usuarioNombre', contexto.nombre);
+                        sessionStorage.setItem('usuarioActivo', JSON.stringify(contexto));
+                        aplicarFiltroRol(contexto.rol);
+
+                        const parrafoSubtitulo = document.querySelector('.info-card > p.text-muted');
+                        if (parrafoSubtitulo) {
+                            parrafoSubtitulo.innerHTML = `Bienvenido(a), <strong>${contexto.nombre}</strong> (${contexto.rol}). Selecciona el módulo al que deseas ingresar.`;
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.warn('Conexión con /api/menu/contexto:', err);
+                });
         }
     </script>
 </body>
