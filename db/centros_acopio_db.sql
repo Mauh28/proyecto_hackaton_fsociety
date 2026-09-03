@@ -8,6 +8,12 @@
 -- create database if not exists centros_acopio;
 use b0efvzjhpegivufhzick;
 
+-- Limpieza segura para garantizar que las tablas se creen con todas las columnas e índices nuevos
+SET FOREIGN_KEY_CHECKS = 0;
+DROP VIEW IF EXISTS v_stock_actual;
+DROP TABLE IF EXISTS centros_campanias, transferencias, movimientos, donantes, articulos, campanias, usuario, centros, instituciones_receptoras;
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- ----------------------------------------------------------
 -- 1. Tabla: Instituciones Receptoras
 -- ----------------------------------------------------------
