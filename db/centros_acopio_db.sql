@@ -566,6 +566,475 @@ END //
 DELIMITER ;
 
 -- ==========================================================
+-- PROCEDIMIENTOS ALMACENADOS - FASE 2: AUTH, CATÁLOGOS Y SELECTORES
+-- ==========================================================
+
+-- ----------------------------------------------------------
+-- SP 6: Autenticación y Contexto de Sesión de Usuario
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_autenticar_usuario;
+DELIMITER //
+CREATE PROCEDURE sp_autenticar_usuario(
+    IN p_email VARCHAR(150)
+)
+BEGIN
+    DECLARE v_existe INT DEFAULT 0;
+    DECLARE v_activo BOOLEAN;
+
+    -- 1. Verificar si el usuario existe
+    SELECT COUNT(*), activo INTO v_existe, v_activo 
+    FROM usuario 
+    WHERE email = p_email 
+    GROUP BY activo;
+
+    IF v_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Credenciales inválidas. Usuario no registrado.';
+    END IF;
+
+    IF v_activo = FALSE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La cuenta de usuario se encuentra deshabilitada.';
+    END IF;
+
+    -- 2. Retornar perfil y credenciales para validación en backend
+    SELECT 
+        u.id AS usuario_id,
+        u.nombre,
+        u.email,
+        u.password AS password_hash,
+        u.rol,
+        u.centro_id,
+        c.nombre AS centro_nombre,
+        u.institucion_id,
+        i.nombre AS institucion_nombre,
+        u.activo
+    FROM usuario u
+    LEFT JOIN centros c ON u.centro_id = c.id
+    LEFT JOIN instituciones_receptoras i ON u.institucion_id = i.id
+    WHERE u.email = p_email;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 7: Registro y Alta de Usuario (RBAC)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_usuario;
+DELIMITER //
+CREATE PROCEDURE sp_crear_usuario(
+    IN p_nombre VARCHAR(100),
+    IN p_email VARCHAR(150),
+    IN p_password VARCHAR(255),
+    IN p_centro_id INT,
+    IN p_institucion_id INT,
+    IN p_rol VARCHAR(20)
+)
+BEGIN
+    -- 1. Validar duplicidad de email
+    IF EXISTS (SELECT 1 FROM usuario WHERE email = p_email) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El correo electrónico ya se encuentra registrado.';
+    END IF;
+
+    -- 2. Validar rol válido
+    IF p_rol NOT IN ('COORDINADOR', 'ENCARGADO', 'VOLUNTARIO', 'INSTITUCION', 'LIDER') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Rol no válido. Debe ser COORDINADOR, ENCARGADO, VOLUNTARIO, INSTITUCION o LIDER.';
+    END IF;
+
+    -- 3. Validar consistencia de asignaciones según rol
+    IF p_rol IN ('ENCARGADO', 'VOLUNTARIO') AND p_centro_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Usuarios con rol Encargado o Voluntario deben tener un centro_id asignado.';
+    END IF;
+
+    IF p_rol = 'INSTITUCION' AND p_institucion_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Usuarios con rol Institución deben tener un institucion_id asignado.';
+    END IF;
+
+    -- 4. Insertar nuevo usuario
+    INSERT INTO usuario (nombre, email, password, centro_id, institucion_id, rol, activo)
+    VALUES (p_nombre, p_email, p_password, p_centro_id, p_institucion_id, p_rol, TRUE);
+
+    SELECT 
+        LAST_INSERT_ID() AS usuario_id,
+        p_nombre AS nombre,
+        p_email AS email,
+        p_rol AS rol,
+        'Usuario registrado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 8: Cambiar Estado de Usuario (Activar / Desactivar)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_cambiar_estado_usuario;
+DELIMITER //
+CREATE PROCEDURE sp_cambiar_estado_usuario(
+    IN p_usuario_id INT,
+    IN p_nuevo_estado BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM usuario WHERE id = p_usuario_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El usuario especificado no existe.';
+    END IF;
+
+    UPDATE usuario SET activo = p_nuevo_estado WHERE id = p_usuario_id;
+
+    SELECT 
+        p_usuario_id AS usuario_id,
+        p_nuevo_estado AS nuevo_estado_activo,
+        'Estado de usuario actualizado correctamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 9: Crear Centro de Acopio
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_centro_acopio;
+DELIMITER //
+CREATE PROCEDURE sp_crear_centro_acopio(
+    IN p_nombre VARCHAR(150),
+    IN p_institucion VARCHAR(150),
+    IN p_ubicacion TEXT,
+    IN p_latitud DECIMAL(10, 8),
+    IN p_longitud DECIMAL(11, 8)
+)
+BEGIN
+    IF p_nombre IS NULL OR TRIM(p_nombre) = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El nombre del centro de acopio es obligatorio.';
+    END IF;
+
+    INSERT INTO centros (nombre, institucion, ubicacion, latitud, longitud, activo)
+    VALUES (p_nombre, p_institucion, p_ubicacion, p_latitud, p_longitud, TRUE);
+
+    SELECT 
+        LAST_INSERT_ID() AS centro_id,
+        p_nombre AS nombre,
+        'Centro de acopio registrado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 10: Editar Centro de Acopio
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_editar_centro_acopio;
+DELIMITER //
+CREATE PROCEDURE sp_editar_centro_acopio(
+    IN p_centro_id INT,
+    IN p_nombre VARCHAR(150),
+    IN p_institucion VARCHAR(150),
+    IN p_ubicacion TEXT,
+    IN p_latitud DECIMAL(10, 8),
+    IN p_longitud DECIMAL(11, 8)
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio no existe.';
+    END IF;
+
+    UPDATE centros 
+    SET 
+        nombre = p_nombre,
+        institucion = p_institucion,
+        ubicacion = p_ubicacion,
+        latitud = p_latitud,
+        longitud = p_longitud
+    WHERE id = p_centro_id;
+
+    SELECT 
+        p_centro_id AS centro_id,
+        p_nombre AS nombre,
+        'Centro de acopio modificado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 11: Cambiar Estado de Centro (Activar / Desactivar)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_cambiar_estado_centro;
+DELIMITER //
+CREATE PROCEDURE sp_cambiar_estado_centro(
+    IN p_centro_id INT,
+    IN p_nuevo_estado BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio especificado no existe.';
+    END IF;
+
+    UPDATE centros SET activo = p_nuevo_estado WHERE id = p_centro_id;
+
+    SELECT 
+        p_centro_id AS centro_id,
+        p_nuevo_estado AS activo,
+        'Estado del centro de acopio actualizado correctamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 12: Crear Campaña de Emergencia / Beneficencia
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_campania;
+DELIMITER //
+CREATE PROCEDURE sp_crear_campania(
+    IN p_nombre VARCHAR(150),
+    IN p_descripcion TEXT,
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE,
+    IN p_meta_unidades DECIMAL(10,2),
+    IN p_lider_id INT
+)
+BEGIN
+    IF p_nombre IS NULL OR TRIM(p_nombre) = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El nombre de la campaña es obligatorio.';
+    END IF;
+
+    IF p_fecha_fin IS NOT NULL AND p_fecha_fin < p_fecha_inicio THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La fecha de finalización no puede ser anterior a la fecha de inicio.';
+    END IF;
+
+    IF p_lider_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM usuario WHERE id = p_lider_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El usuario asignado como líder de campaña no existe.';
+    END IF;
+
+    INSERT INTO campanias (nombre, descripcion, fecha_inicio, fecha_fin, meta_unidades, activo, lider_id)
+    VALUES (p_nombre, p_descripcion, p_fecha_inicio, p_fecha_fin, COALESCE(p_meta_unidades, 0.00), TRUE, p_lider_id);
+
+    SELECT 
+        LAST_INSERT_ID() AS campania_id,
+        p_nombre AS nombre,
+        'Campaña creada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 13: Editar Campaña
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_editar_campania;
+DELIMITER //
+CREATE PROCEDURE sp_editar_campania(
+    IN p_campania_id INT,
+    IN p_nombre VARCHAR(150),
+    IN p_descripcion TEXT,
+    IN p_fecha_fin DATE,
+    IN p_meta_unidades DECIMAL(10,2),
+    IN p_lider_id INT
+)
+BEGIN
+    DECLARE v_fecha_inicio DATE;
+
+    SELECT fecha_inicio INTO v_fecha_inicio FROM campanias WHERE id = p_campania_id;
+
+    IF v_fecha_inicio IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña especificada no existe.';
+    END IF;
+
+    IF p_fecha_fin IS NOT NULL AND p_fecha_fin < v_fecha_inicio THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La fecha de finalización no puede ser anterior a la fecha de inicio.';
+    END IF;
+
+    UPDATE campanias 
+    SET 
+        nombre = p_nombre,
+        descripcion = p_descripcion,
+        fecha_fin = p_fecha_fin,
+        meta_unidades = COALESCE(p_meta_unidades, meta_unidades),
+        lider_id = p_lider_id
+    WHERE id = p_campania_id;
+
+    SELECT 
+        p_campania_id AS campania_id,
+        p_nombre AS nombre,
+        'Campaña actualizada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 14: Cambiar Estado de Campaña (Activar / Cierre Oficial)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_cambiar_estado_campania;
+DELIMITER //
+CREATE PROCEDURE sp_cambiar_estado_campania(
+    IN p_campania_id INT,
+    IN p_nuevo_estado BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM campanias WHERE id = p_campania_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña especificada no existe.';
+    END IF;
+
+    UPDATE campanias SET activo = p_nuevo_estado WHERE id = p_campania_id;
+
+    SELECT 
+        p_campania_id AS campania_id,
+        p_nuevo_estado AS activo,
+        'Estado de vigencia de la campaña actualizado correctamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 15: Asociar o Habilitar Centro en una Campaña
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_asociar_centro_campania;
+DELIMITER //
+CREATE PROCEDURE sp_asociar_centro_campania(
+    IN p_centro_id INT,
+    IN p_campania_id INT,
+    IN p_activo BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM centros WHERE id = p_centro_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: El centro de acopio no existe.';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM campanias WHERE id = p_campania_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: La campaña no existe.';
+    END IF;
+
+    INSERT INTO centros_campanias (id_centro, id_campania, activo)
+    VALUES (p_centro_id, p_campania_id, p_activo)
+    ON DUPLICATE KEY UPDATE activo = p_activo;
+
+    SELECT 
+        p_centro_id AS centro_id,
+        p_campania_id AS campania_id,
+        p_activo AS participacion_activa,
+        'Vinculación de centro a campaña actualizada exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 16: Registrar Artículo en Catálogo
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_crear_articulo;
+DELIMITER //
+CREATE PROCEDURE sp_crear_articulo(
+    IN p_nombre VARCHAR(100),
+    IN p_categoria VARCHAR(30),
+    IN p_unidad VARCHAR(20)
+)
+BEGIN
+    IF p_categoria NOT IN ('NO_PERECEDERO', 'PERECEDERO', 'ROPA', 'LIMPIEZA', 'MEDICAMENTO', 'OTRO') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Categoría inválida. Debe ser NO_PERECEDERO, PERECEDERO, ROPA, LIMPIEZA, MEDICAMENTO u OTRO.';
+    END IF;
+
+    IF p_unidad NOT IN ('PIEZA', 'KG', 'L', 'BOLSA', 'CAJA') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Unidad inválida. Debe ser PIEZA, KG, L, BOLSA o CAJA.';
+    END IF;
+
+    INSERT INTO articulos (nombre, categoria, unidad)
+    VALUES (p_nombre, p_categoria, p_unidad);
+
+    SELECT 
+        LAST_INSERT_ID() AS articulo_id,
+        p_nombre AS nombre,
+        p_categoria AS categoria,
+        p_unidad AS unidad,
+        'Artículo catalogado exitosamente.' AS mensaje;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 17: Listar Artículos para Selectores de Formulario
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_articulos;
+DELIMITER //
+CREATE PROCEDURE sp_listar_articulos(
+    IN p_categoria VARCHAR(30)
+)
+BEGIN
+    IF p_categoria IS NOT NULL AND TRIM(p_categoria) <> '' THEN
+        SELECT id, nombre, categoria, unidad 
+        FROM articulos 
+        WHERE categoria = p_categoria 
+        ORDER BY nombre ASC;
+    ELSE
+        SELECT id, nombre, categoria, unidad 
+        FROM articulos 
+        ORDER BY categoria ASC, nombre ASC;
+    END IF;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 18: Listar Instituciones Receptoras para Selectores
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_instituciones_receptoras;
+DELIMITER //
+CREATE PROCEDURE sp_listar_instituciones_receptoras()
+BEGIN
+    SELECT id, nombre, direccion, contacto 
+    FROM instituciones_receptoras 
+    ORDER BY nombre ASC;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 19: Listar Campañas Activas por Centro (Dropdown de Captura)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_campanias_activas_centro;
+DELIMITER //
+CREATE PROCEDURE sp_listar_campanias_activas_centro(
+    IN p_centro_id INT
+)
+BEGIN
+    SELECT 
+        c.id AS campania_id,
+        c.nombre,
+        c.fecha_inicio,
+        c.fecha_fin,
+        c.meta_unidades
+    FROM campanias c
+    INNER JOIN centros_campanias cc ON c.id = cc.id_campania
+    WHERE cc.id_centro = p_centro_id 
+      AND c.activo = TRUE 
+      AND cc.activo = TRUE
+    ORDER BY c.fecha_inicio DESC;
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------
+-- SP 20: Listar Centros Destino para Transferencia (Excluyendo Origen)
+-- ----------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_listar_centros_destino_transferencia;
+DELIMITER //
+CREATE PROCEDURE sp_listar_centros_destino_transferencia(
+    IN p_centro_origen_id INT,
+    IN p_campania_id INT
+)
+BEGIN
+    SELECT 
+        c.id AS centro_id,
+        c.nombre,
+        c.institucion,
+        c.ubicacion
+    FROM centros c
+    INNER JOIN centros_campanias cc ON c.id = cc.id_centro
+    WHERE cc.id_campania = p_campania_id 
+      AND c.activo = TRUE 
+      AND cc.activo = TRUE 
+      AND c.id <> p_centro_origen_id
+    ORDER BY c.nombre ASC;
+END //
+DELIMITER ;
+
+-- ==========================================================
 -- 12. DATOS SEMILLA (SEEDS / FIXTURES) PARA LA DEMO
 -- ==========================================================
 
