@@ -28,8 +28,17 @@ public enum TipoMovimiento {
     }
 
     public static TipoMovimiento desdeValorDb(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        String clean = valor.trim();
+        String normalizado = clean.replace(" ", "_").replace("-", "_")
+                .replace("Ó", "O").replace("ó", "o")
+                .toUpperCase();
         for (TipoMovimiento tipo : values()) {
-            if (tipo.valorDb.equalsIgnoreCase(valor)) {
+            if (tipo.name().equalsIgnoreCase(normalizado) || 
+                tipo.valorDb.equalsIgnoreCase(clean) ||
+                tipo.valorDb.replace(" ", "_").equalsIgnoreCase(clean)) {
                 return tipo;
             }
         }

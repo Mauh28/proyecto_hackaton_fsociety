@@ -19,9 +19,20 @@ public enum MotivoMovimiento {
     }
 
     public static MotivoMovimiento desdeValorDb(String valor) {
-        if (valor == null) return null;
+        if (valor == null || valor.trim().isEmpty()) return null;
+        String clean = valor.trim();
+        String normalizado = clean.replace(" ", "_").replace("-", "_")
+                .replace("Ñ", "N").replace("ñ", "n")
+                .replace("Á", "A").replace("á", "a")
+                .replace("É", "E").replace("é", "e")
+                .replace("Í", "I").replace("í", "i")
+                .replace("Ó", "O").replace("ó", "o")
+                .replace("Ú", "U").replace("ú", "u")
+                .toUpperCase();
         for (MotivoMovimiento m : values()) {
-            if (m.valorDb.equalsIgnoreCase(valor)) {
+            if (m.name().equalsIgnoreCase(normalizado) || 
+                m.valorDb.equalsIgnoreCase(clean) ||
+                m.valorDb.replace(" ", "_").equalsIgnoreCase(clean)) {
                 return m;
             }
         }

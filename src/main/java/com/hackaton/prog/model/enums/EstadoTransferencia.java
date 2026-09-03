@@ -16,8 +16,14 @@ public enum EstadoTransferencia {
     }
 
     public static EstadoTransferencia desdeValorDb(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        String clean = valor.trim();
+        String normalizado = clean.replace(" ", "_").replace("-", "_").toUpperCase();
         for (EstadoTransferencia est : values()) {
-            if (est.valorDb.equalsIgnoreCase(valor)) {
+            if (est.name().equalsIgnoreCase(normalizado) || 
+                est.valorDb.equalsIgnoreCase(clean)) {
                 return est;
             }
         }

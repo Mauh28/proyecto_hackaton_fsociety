@@ -10,7 +10,7 @@ public class EnumsConverters {
     public static class RolUsuarioConverter implements AttributeConverter<RolUsuario, String> {
         @Override
         public String convertToDatabaseColumn(RolUsuario attribute) {
-            return attribute != null ? attribute.getValorDb() : null;
+            return attribute != null ? attribute.name() : null;
         }
 
         @Override
@@ -23,7 +23,7 @@ public class EnumsConverters {
     public static class CategoriaArticuloConverter implements AttributeConverter<CategoriaArticulo, String> {
         @Override
         public String convertToDatabaseColumn(CategoriaArticulo attribute) {
-            return attribute != null ? attribute.getValorDb() : null;
+            return attribute != null ? attribute.name() : null;
         }
 
         @Override
@@ -36,7 +36,7 @@ public class EnumsConverters {
     public static class UnidadMedidaConverter implements AttributeConverter<UnidadMedida, String> {
         @Override
         public String convertToDatabaseColumn(UnidadMedida attribute) {
-            return attribute != null ? attribute.getValorDb() : null;
+            return attribute != null ? attribute.name() : null;
         }
 
         @Override
@@ -49,7 +49,7 @@ public class EnumsConverters {
     public static class EstadoTransferenciaConverter implements AttributeConverter<EstadoTransferencia, String> {
         @Override
         public String convertToDatabaseColumn(EstadoTransferencia attribute) {
-            return attribute != null ? attribute.getValorDb() : null;
+            return attribute != null ? attribute.name() : null;
         }
 
         @Override
@@ -62,7 +62,7 @@ public class EnumsConverters {
     public static class TipoMovimientoConverter implements AttributeConverter<TipoMovimiento, String> {
         @Override
         public String convertToDatabaseColumn(TipoMovimiento attribute) {
-            return attribute != null ? attribute.getValorDb() : null;
+            return attribute != null ? attribute.name() : null;
         }
 
         @Override
@@ -75,7 +75,7 @@ public class EnumsConverters {
     public static class MotivoMovimientoConverter implements AttributeConverter<MotivoMovimiento, String> {
         @Override
         public String convertToDatabaseColumn(MotivoMovimiento attribute) {
-            return attribute != null ? attribute.getValorDb() : null;
+            return attribute != null ? attribute.name() : null;
         }
 
         @Override

@@ -19,8 +19,15 @@ public enum CategoriaArticulo {
     }
 
     public static CategoriaArticulo desdeValorDb(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        String clean = valor.trim();
+        String normalizado = clean.replace(" ", "_").replace("-", "_").toUpperCase();
         for (CategoriaArticulo cat : values()) {
-            if (cat.valorDb.equalsIgnoreCase(valor)) {
+            if (cat.name().equalsIgnoreCase(normalizado) || 
+                cat.valorDb.equalsIgnoreCase(clean) ||
+                cat.valorDb.replace(" ", "_").equalsIgnoreCase(normalizado)) {
                 return cat;
             }
         }

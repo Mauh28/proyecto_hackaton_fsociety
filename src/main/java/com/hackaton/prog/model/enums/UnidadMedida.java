@@ -18,8 +18,14 @@ public enum UnidadMedida {
     }
 
     public static UnidadMedida desdeValorDb(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        String clean = valor.trim();
+        String normalizado = clean.replace(" ", "_").replace("-", "_").toUpperCase();
         for (UnidadMedida u : values()) {
-            if (u.valorDb.equalsIgnoreCase(valor)) {
+            if (u.name().equalsIgnoreCase(normalizado) || 
+                u.valorDb.equalsIgnoreCase(clean)) {
                 return u;
             }
         }

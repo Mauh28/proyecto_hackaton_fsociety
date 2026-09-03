@@ -8,11 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -142,11 +146,28 @@ public class RecepcionService {
                 else if (u.contains("PIEZA") || u.contains("PZA")) unidadNormalizada = "PIEZA";
             }
 
-            List<Map<String, Object>> nuevo = jdbcTemplate.queryForList(
-                    "CALL sp_crear_articulo(?, ?, ?)", nombre, catNormalizada, unidadNormalizada
-            );
-            if (!nuevo.isEmpty() && nuevo.get(0).get("articulo_id") != null) {
-                return ((Number) nuevo.get(0).get("articulo_id")).intValue();
+            try {
+                List<Map<String, Object>> nuevo = jdbcTemplate.queryForList(
+                        "CALL sp_crear_articulo(?, ?, ?)", nombre, catNormalizada, unidadNormalizada
+                );
+                if (!nuevo.isEmpty() && nuevo.get(0).get("articulo_id") != null) {
+                    return ((Number) nuevo.get(0).get("articulo_id")).intValue();
+                }
+            } catch (Exception eSP) {
+                KeyHolder keyHolder = new GeneratedKeyHolder();
+                jdbcTemplate.update(connection -> {
+                    PreparedStatement ps = connection.prepareStatement(
+                            "INSERT INTO articulos (nombre, categoria, unidad) VALUES (?, ?, ?)",
+                            Statement.RETURN_GENERATED_KEYS
+                    );
+                    ps.setString(1, nombre);
+                    ps.setString(2, catNormalizada);
+                    ps.setString(3, unidadNormalizada);
+                    return ps;
+                }, keyHolder);
+                if (keyHolder.getKey() != null) {
+                    return keyHolder.getKey().intValue();
+                }
             }
         } catch (Exception ex) {
             log.warn("Error al resolver o crear artículo: {}", ex.getMessage());
@@ -156,7 +177,7 @@ public class RecepcionService {
 
     /**
      * Lista los artículos para el catálogo/selector invocando:
-     * sp_listar_articulos(p_categoria)
+     * sp_listar_articulos(p_categoria) o fallback SQL directo
      */
     public List<ArticuloItemDTO> listarArticulos(String categoria) {
         String sql = "CALL sp_listar_articulos(?)";
@@ -178,7 +199,25 @@ public class RecepcionService {
                 ));
             }
         } catch (Exception ex) {
-            log.error("Error al consultar sp_listar_articulos: {}", ex.getMessage(), ex);
+            log.warn("sp_listar_articulos no disponible, usando consulta SQL directa: {}", ex.getMessage());
+            try {
+                String fallbackSql = (catParam == null)
+                        ? "SELECT id, nombre, categoria, unidad FROM articulos ORDER BY nombre ASC"
+                        : "SELECT id, nombre, categoria, unidad FROM articulos WHERE categoria = ? ORDER BY nombre ASC";
+                List<Map<String, Object>> rows = (catParam == null)
+                        ? jdbcTemplate.queryForList(fallbackSql)
+                        : jdbcTemplate.queryForList(fallbackSql, catParam);
+                for (Map<String, Object> r : rows) {
+                    articulos.add(new ArticuloItemDTO(
+                            ((Number) r.get("id")).intValue(),
+                            (String) r.get("nombre"),
+                            (String) r.get("categoria"),
+                            (String) r.get("unidad")
+                    ));
+                }
+            } catch (Exception e2) {
+                log.error("Error al consultar articulos en fallback: {}", e2.getMessage());
+            }
         }
         return articulos;
     }
@@ -201,7 +240,7 @@ public class RecepcionService {
         resumen.setStockActual(BigDecimal.ZERO);
         resumen.setPorcentajeAvance(BigDecimal.ZERO);
 
-        // 1. Consultar campaña activa del centro mediante SP 19
+        // 1. Consultar campaña activa del centro mediante SP o fallback
         try {
             List<Map<String, Object>> campanias = jdbcTemplate.queryForList(
                     "CALL sp_listar_campanias_activas_centro(?)", centroId
@@ -219,7 +258,22 @@ public class RecepcionService {
                 }
             }
         } catch (Exception ex) {
-            log.warn("No se pudo obtener campaña activa vía SP 19: {}", ex.getMessage());
+            log.warn("sp_listar_campanias_activas_centro no disponible, usando fallback SQL: {}", ex.getMessage());
+            try {
+                String sqlCampania = "SELECT c.id AS campania_id, c.nombre, c.meta_unidades " +
+                        "FROM campanias c " +
+                        "INNER JOIN centros_campanias cc ON c.id = cc.id_campania " +
+                        "WHERE cc.id_centro = ? AND cc.activo = TRUE AND c.activo = TRUE LIMIT 1";
+                List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlCampania, centroId);
+                if (!rows.isEmpty()) {
+                    Map<String, Object> c = rows.get(0);
+                    if (c.get("campania_id") != null) resumen.setCampaniaId(((Number) c.get("campania_id")).intValue());
+                    if (c.get("nombre") != null) resumen.setCampaniaNombre((String) c.get("nombre"));
+                    if (c.get("meta_unidades") != null) resumen.setMetaTotal(new BigDecimal(c.get("meta_unidades").toString()));
+                }
+            } catch (Exception e2) {
+                log.error("Error en fallback campania: {}", e2.getMessage());
+            }
         }
 
         // 2. Consultar nombre del centro

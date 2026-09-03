@@ -18,8 +18,16 @@ public enum RolUsuario {
     }
 
     public static RolUsuario desdeValorDb(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        String clean = valor.trim();
+        String normalizado = clean.replace(" ", "_").replace("-", "_")
+                .replace("Í", "I").replace("í", "i")
+                .toUpperCase();
         for (RolUsuario rol : values()) {
-            if (rol.valorDb.equalsIgnoreCase(valor)) {
+            if (rol.name().equalsIgnoreCase(normalizado) || 
+                rol.valorDb.equalsIgnoreCase(clean)) {
                 return rol;
             }
         }
