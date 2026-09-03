@@ -32,11 +32,7 @@ public class Usuario {
     private RolUsuario rol;
 
     @Column(nullable = false)
-<<<<<<< HEAD
     private Boolean activo = true;
-=======
-    private boolean activo = true;
->>>>>>> 55f1aa5090f1fa9a82a06a15a73c57164993dca9
 
     public Usuario() {
     }
@@ -52,21 +48,11 @@ public class Usuario {
         this.centro = centro;
         this.institucion = institucion;
         this.rol = rol;
-<<<<<<< HEAD
         this.activo = activo != null ? activo : true;
-=======
-        this.activo = true;
     }
 
     public Usuario(String nombre, String email, String password, Centro centro, InstitucionReceptora institucion, RolUsuario rol, boolean activo) {
-        this.nombre = nombre;
-        this.email = email;
-        this.password = password;
-        this.centro = centro;
-        this.institucion = institucion;
-        this.rol = rol;
-        this.activo = activo;
->>>>>>> 55f1aa5090f1fa9a82a06a15a73c57164993dca9
+        this(nombre, email, password, centro, institucion, rol, Boolean.valueOf(activo));
     }
 
     public Integer getId() {
@@ -125,19 +111,19 @@ public class Usuario {
         this.rol = rol;
     }
 
-<<<<<<< HEAD
     public Boolean getActivo() {
         return activo;
     }
 
-    public void setActivo(Boolean activo) {
-=======
     public boolean isActivo() {
-        return activo;
+        return activo != null && activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo != null ? activo : true;
     }
 
     public void setActivo(boolean activo) {
->>>>>>> 55f1aa5090f1fa9a82a06a15a73c57164993dca9
         this.activo = activo;
     }
 }

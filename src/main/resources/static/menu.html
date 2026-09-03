@@ -54,27 +54,6 @@
     </div>
 
     <script>
-<<<<<<< HEAD
-        // Lógica real de restricción basada en el Login
-        const rolActivo = sessionStorage.getItem('rolActivo');
-        const usuarioNombre = sessionStorage.getItem('usuarioNombre');
-
-        if (!rolActivo) {
-            window.location.href = 'index.html';
-        } else {
-            if (usuarioNombre) {
-                const parrafoSubtitulo = document.querySelector('.info-card > p.text-muted');
-                if (parrafoSubtitulo) {
-                    parrafoSubtitulo.innerHTML = `Bienvenido(a), <strong>${usuarioNombre}</strong> (${rolActivo.toUpperCase()}). Selecciona el módulo al que deseas ingresar.`;
-                }
-            }
-
-            const opcionesMenu = document.querySelectorAll('a[data-role]');
-            opcionesMenu.forEach(card => {
-                const rolesPermitidos = card.getAttribute('data-role');
-                if (!rolesPermitidos.includes(rolActivo)) {
-                    card.style.display = 'none';
-=======
         document.addEventListener('DOMContentLoaded', async () => {
             // 1. Obtener identificador o email de la sesión activa
             let email = sessionStorage.getItem('email') || sessionStorage.getItem('usuarioEmail');
@@ -87,7 +66,6 @@
                     if (parsed && parsed.email) email = parsed.email;
                 } catch (e) {
                     console.warn('Error al parsear usuarioActivo', e);
->>>>>>> 55f1aa5090f1fa9a82a06a15a73c57164993dca9
                 }
             }
 
