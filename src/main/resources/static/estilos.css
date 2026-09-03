@@ -19,7 +19,10 @@ body {
     font-family: 'Segoe UI', system-ui, sans-serif;
     margin: 0;
     display: flex;
-    height: 100vh;
+    /* Corrección de scrollbars en split screen */
+    min-height: 100vh;
+    height: auto;
+    overflow-x: hidden;
     color: var(--text-dark);
     background-color: var(--bg-light);
 }
@@ -38,7 +41,8 @@ h4 {
     flex: 1.2;
     padding: 3rem 4rem;
     background: var(--bg-light);
-    overflow-y: auto;
+    /* Se cambia auto por visible para eliminar la barra de scroll a mitad de pantalla */
+    overflow-y: visible;
 }
 
 .right-panel {
@@ -48,17 +52,32 @@ h4 {
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    min-height: 100vh;
+    box-sizing: border-box;
 }
 
 /* ==========================================================================
-   4. Navegación (Menú Desplegable)
+   4. Navegación Superior y Menú Desplegable
    ========================================================================== */
+.nav-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 50;
+}
+
 .dropdown {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
-    z-index: 10;
+    position: relative;
+    display: inline-block;
+    z-index: 50;
+}
+
+.dropdown-relative {
+    position: relative;
+    top: 0;
+    right: 0;
 }
 
 .dropbtn {
@@ -69,18 +88,39 @@ h4 {
     cursor: pointer;
     font-weight: 500;
     color: var(--text-dark);
+    user-select: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.dropbtn:hover,
+.dropdown.open .dropbtn {
+    background-color: var(--bg-gray);
+    border-color: #d1d5db;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
     right: 0;
+    top: 100%;
     background-color: white;
-    min-width: 200px;
+    min-width: 210px;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
     border-radius: 6px;
     border: 1px solid var(--border);
-    margin-top: 0.5rem;
+    margin-top: 4px;
+    z-index: 1000;
+}
+
+/* Puente invisible entre el botón y el menú para que el cursor no pierda el hover */
+.dropdown-content::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: transparent;
 }
 
 .dropdown-content a {
@@ -89,9 +129,14 @@ h4 {
     text-decoration: none;
     display: block;
     font-size: 0.95rem;
+    transition: background-color 0.15s ease;
 }
 
-.dropdown:hover .dropdown-content {
+/* Mostrar tanto con hover, focus dentro o cuando está abierto con la clase open/show */
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content,
+.dropdown.open .dropdown-content,
+.dropdown-content.show {
     display: block;
 }
 
@@ -128,7 +173,6 @@ h4 {
     border-color: var(--active-dark);
 }
 
-/* Manejo del ícono de check "✓" */
 .category-card span:nth-child(2) {
     display: none;
 }
@@ -155,6 +199,7 @@ label {
 }
 
 input[type="text"],
+input[type="password"],
 input[type="number"],
 select {
     width: 100%;
@@ -172,6 +217,13 @@ input:focus,
 select:focus {
     outline: none;
     border-color: var(--active-dark);
+}
+
+/* Grupo de cantidad y unidad de medida */
+.input-unit-group {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0.75rem;
 }
 
 /* ==========================================================================
@@ -220,7 +272,6 @@ select:focus {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* Iconos circulares */
 .circle-icon {
     width: 2rem;
     height: 2rem;
@@ -231,9 +282,107 @@ select:focus {
     justify-content: center;
 }
 
+/* Métricas Maestras */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat-box {
+    background-color: var(--bg-gray);
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.stat-box h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.stat-box p {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+/* Historial de movimientos */
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.history-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-list li:last-child {
+    border-bottom: none;
+}
+
 /* ==========================================================================
-   9. Clases Utilitarias (Vitales para alinear y espaciar)
+   9. Menú Principal (menu.html)
    ========================================================================== */
+.menu-body {
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 3rem;
+}
+
+.menu-grid-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.menu-link-card {
+    text-decoration: none;
+    display: block;
+}
+
+.menu-title {
+    margin: 0 0 0.5rem 0;
+    color: var(--active-dark);
+}
+
+.menu-desc {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
+.no-underline {
+    text-decoration: none;
+}
+
+.logout-container {
+    margin-top: 2rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    text-align: right;
+}
+
+/* ==========================================================================
+   10. Clases Utilitarias (Alineación y Espaciado)
+   ========================================================================== */
+.w-full {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .text-muted {
     color: var(--text-muted);
 }
@@ -256,6 +405,10 @@ select:focus {
 
 .font-bold {
     font-weight: bold;
+}
+
+.mb-0 {
+    margin-bottom: 0;
 }
 
 .mb-1-5 {
@@ -287,8 +440,6 @@ select:focus {
     overflow-y: auto;
 }
 
-/* Permite que el historial tenga scroll si crece mucho */
-
 .flex-gap-1 {
     display: flex;
     gap: 1rem;
@@ -300,12 +451,18 @@ select:focus {
     gap: 1rem;
 }
 
+.flex-between-end {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
 .text-right {
     text-align: right;
 }
 
 /* ==========================================================================
-   10. Animaciones
+   11. Animaciones, Barra de Progreso y Toasts
    ========================================================================== */
 @keyframes fadeIn {
     from {
@@ -319,7 +476,6 @@ select:focus {
     }
 }
 
-/* Barra de Progreso (Metas) */
 .progress-container {
     width: 100%;
     background-color: var(--border);
@@ -333,11 +489,9 @@ select:focus {
     height: 100%;
     background-color: var(--success);
     width: 24%;
-    /* Porcentaje inicial */
     transition: width 0.4s ease-in-out;
 }
 
-/* Notificación Flotante (Toast) */
 .toast {
     position: fixed;
     bottom: 2rem;
@@ -359,28 +513,11 @@ select:focus {
     opacity: 1;
 }
 
-.flex-between-end {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-}
-
-/* Contenedor y posicionamiento del menú superior */
-.nav-wrapper {
+.login-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 2rem;
-}
-
-.dropdown-relative {
-    position: relative;
-    top: 0;
-    right: 0;
-}
-
-/* Ancho completo con control de caja */
-.w-full {
-    width: 100%;
-    box-sizing: border-box;
+    max-width: 400px;
 }

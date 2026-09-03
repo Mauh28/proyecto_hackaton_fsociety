@@ -12,8 +12,10 @@
 
     <div class="left-panel">
         <h2>Registrar Donación</h2>
-        <p class="text-muted mb-2">Selecciona la categoría del artículo recibido.</p>
+        <p class="text-muted mb-2">Ingresa los datos del artículo recibido en el centro.</p>
 
+        <!-- Selector de Categoría (Sección 4 del PDF) -->
+        <label class="font-semibold mb-1">Categoría del Artículo</label>
         <div class="category-grid" id="categoryGrid">
             <div class="category-card active" data-cat="no-perecedero">
                 <span>Alimento No Perecedero</span>
@@ -42,8 +44,25 @@
         </div>
 
         <div class="mb-1-5">
-            <label for="inputQuantity" class="font-semibold">Cantidad o Peso</label>
-            <input type="number" id="inputQuantity" min="1" value="1">
+            <label for="inputItemName" class="font-semibold">Descripción / Nombre del Artículo</label>
+            <input type="text" id="inputItemName" placeholder="Ej. Arroz en grano, Atún en lata, Agua embotellada"
+                required>
+        </div>
+
+        <!-- Cantidad con Unidad de Medida (kg, l, pza, bolsa, caja) -->
+        <div class="mb-1-5">
+            <label class="font-semibold">Cantidad y Unidad de Medida</label>
+            <div class="input-unit-group">
+                <input type="number" id="inputQuantity" min="0.1" step="any" value="1" placeholder="Cantidad / Peso"
+                    required>
+                <select id="selectUnit">
+                    <option value="kg">kg (Kilogramos)</option>
+                    <option value="l">l (Litros)</option>
+                    <option value="pieza">Piezas</option>
+                    <option value="bolsa">Bolsas</option>
+                    <option value="caja">Cajas</option>
+                </select>
+            </div>
         </div>
 
         <div class="mb-2">
@@ -53,19 +72,20 @@
 
         <div class="flex-gap-1">
             <button type="button" class="btn btn-primary" id="btnRegistrar">Registrar Donación</button>
-            <button type="button" class="btn btn-secondary">Cancelar</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.reload();">Limpiar</button>
         </div>
     </div>
 
     <div class="right-panel">
         <div class="nav-wrapper">
             <div class="dropdown dropdown-relative">
-                <button type="button" class="dropbtn">Navegación ▾</button>
+                <button type="button" class="dropbtn" id="dropBtn">Navegación ▾</button>
                 <div class="dropdown-content" id="navDropdown">
-                    <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción
-                        (Voluntario)</a>
+                    <a href="menu.html" data-role="voluntario, encargado, coordinador">Menú Principal</a>
+                    <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción</a>
                     <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
                     <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
+                    <a href="index.html" onclick="sessionStorage.clear();">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
@@ -76,7 +96,7 @@
                 <div class="circle-icon">1</div>
                 <div>
                     <strong>Campaña Activa</strong>
-                    <div class="text-muted text-sm">Huracán 2026</div>
+                    <div class="text-muted text-sm">Contingencia Huracán 2026</div>
                 </div>
             </div>
 
@@ -95,6 +115,45 @@
     <div id="toastNotif" class="toast">¡Donación registrada con éxito!</div>
 
     <script>
+        // Control interactivo del menú desplegable (clic persistente y accesibilidad)
+        const dropdownEl = document.querySelector('.dropdown');
+        const dropBtn = document.getElementById('dropBtn');
+        const navDropdown = document.getElementById('navDropdown');
+
+        if (dropBtn && dropdownEl && navDropdown) {
+            dropBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdownEl.classList.toggle('open');
+                navDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dropdownEl.contains(e.target)) {
+                    dropdownEl.classList.remove('open');
+                    navDropdown.classList.remove('show');
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    dropdownEl.classList.remove('open');
+                    navDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // Restricción por rol según CONTEXTO_PROYECTO.md
+        const rolActivo = sessionStorage.getItem('rolActivo');
+        if (rolActivo) {
+            document.querySelectorAll('#navDropdown a[data-role]').forEach(link => {
+                const roles = link.getAttribute('data-role');
+                if (!roles.includes(rolActivo)) {
+                    link.style.display = 'none';
+                }
+            });
+        }
+
+        // Alternar categoría
         const cards = document.querySelectorAll('.category-card');
         cards.forEach(card => {
             card.addEventListener('click', () => {
@@ -103,18 +162,11 @@
             });
         });
 
-        const usuarioActual = "voluntario";
-        const links = document.querySelectorAll('#navDropdown a');
-        links.forEach(link => {
-            const rolesPermitidos = link.getAttribute('data-role');
-            if (!rolesPermitidos.includes(usuarioActual)) {
-                link.style.display = 'none';
-            }
-        });
-
+        // Registro con retroalimentación y actualización de stock
         const btnRegistrar = document.getElementById('btnRegistrar');
         const toast = document.getElementById('toastNotif');
         const inputQuantity = document.getElementById('inputQuantity');
+        const inputItemName = document.getElementById('inputItemName');
         const stockActualEl = document.getElementById('stockActual');
         const progressBar = document.getElementById('progressBar');
 
@@ -122,19 +174,23 @@
         const metaTotal = 5000;
 
         btnRegistrar.addEventListener('click', () => {
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            if (!inputItemName.value.trim()) {
+                alert('Por favor describe el artículo antes de registrar.');
+                return;
+            }
 
-            const cantidadAgregada = parseInt(inputQuantity.value) || 0;
-            stockActual += cantidadAgregada;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+
+            const cant = parseFloat(inputQuantity.value) || 0;
+            stockActual += Math.round(cant);
             stockActualEl.textContent = stockActual;
 
-            let porcentaje = (stockActual / metaTotal) * 100;
-            if (porcentaje > 100) porcentaje = 100;
+            let pct = (stockActual / metaTotal) * 100;
+            if (pct > 100) pct = 100;
+            progressBar.style.width = `${pct}%`;
 
-            progressBar.style.width = `${porcentaje}%`;
+            inputItemName.value = '';
             inputQuantity.value = 1;
         });
     </script>
