@@ -263,26 +263,32 @@
                     } else {
                         stockActual += cant;
                     }
+
+                    stockActualEl.textContent = Math.round(stockActual).toLocaleString();
+                    actualizarBarraProgreso();
+
+                    toast.textContent = resData.mensaje || '¡Donación registrada con éxito!';
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 3000);
+
+                    inputItemName.value = '';
+                    inputQuantity.value = 1;
+                    inputDonor.value = '';
                 } else {
-                    stockActual += Math.round(cant);
+                    let errMsg = 'No se pudo guardar la donación en la base de datos.';
+                    try {
+                        const errObj = await response.json();
+                        if (errObj && errObj.mensaje) errMsg = errObj.mensaje;
+                    } catch (_) {}
+                    alert('Error: ' + errMsg);
                 }
             } catch (err) {
-                console.warn('Registro local de contingencia:', err);
-                stockActual += Math.round(cant);
+                console.error('Error al registrar donación:', err);
+                alert('No se pudo conectar con el servidor.');
+            } finally {
+                btnRegistrar.disabled = false;
+                btnRegistrar.textContent = 'Registrar Donación';
             }
-
-            stockActualEl.textContent = Math.round(stockActual).toLocaleString();
-            actualizarBarraProgreso();
-
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-
-            inputItemName.value = '';
-            inputQuantity.value = 1;
-            inputDonor.value = '';
-
-            btnRegistrar.disabled = false;
-            btnRegistrar.textContent = 'Registrar Donación';
         });
     </script>
 </body>

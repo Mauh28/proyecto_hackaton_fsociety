@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ArticuloRepository extends JpaRepository<Articulo, Integer> {
     List<Articulo> findByCategoria(CategoriaArticulo categoria);
+    List<Articulo> findByNombreIgnoreCase(String nombre);
 }

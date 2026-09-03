@@ -103,4 +103,30 @@ class RecepcionControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Solicitud Inválida"));
     }
+
+    @Test
+    @DisplayName("Debe registrar donación exitosamente y persistir en base de datos")
+    void testRegistrarRecepcionExitoso() throws Exception {
+        String jsonPayload = """
+                {
+                    "centroId": 1,
+                    "campaniaId": 1,
+                    "articuloNombre": "Agua embotellada 1L",
+                    "categoria": "NO_PERECEDERO",
+                    "unidad": "PIEZA",
+                    "cantidad": 5.00,
+                    "usuarioId": 3,
+                    "esAnonimo": false,
+                    "donanteNombre": "Donante Test"
+                }
+                """;
+
+        mockMvc.perform(post("/api/recepcion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exito").value(true))
+                .andExpect(jsonPath("$.movimientoId").isNumber())
+                .andExpect(jsonPath("$.stockActual").isNumber());
+    }
 }

@@ -4,19 +4,19 @@ import com.hackaton.prog.dto.ArticuloItemDTO;
 import com.hackaton.prog.dto.RecepcionRequestDTO;
 import com.hackaton.prog.dto.RecepcionResponseDTO;
 import com.hackaton.prog.dto.ResumenRecepcionDTO;
+import com.hackaton.prog.model.Articulo;
+import com.hackaton.prog.model.Movimiento;
+import com.hackaton.prog.model.enums.CategoriaArticulo;
+import com.hackaton.prog.model.enums.UnidadMedida;
+import com.hackaton.prog.repository.ArticuloRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,14 +27,19 @@ public class RecepcionService {
     private static final Logger log = LoggerFactory.getLogger(RecepcionService.class);
 
     private final JdbcTemplate jdbcTemplate;
+    private final MovimientoService movimientoService;
+    private final ArticuloRepository articuloRepository;
 
-    public RecepcionService(JdbcTemplate jdbcTemplate) {
+    public RecepcionService(JdbcTemplate jdbcTemplate,
+                            MovimientoService movimientoService,
+                            ArticuloRepository articuloRepository) {
         this.jdbcTemplate = jdbcTemplate;
+        this.movimientoService = movimientoService;
+        this.articuloRepository = articuloRepository;
     }
 
     /**
-     * Registra una recepción de donación invocando el procedimiento almacenado oficial:
-     * sp_registrar_recepcion_donacion(p_centro_id, p_campania_id, p_articulo_id, p_cantidad, p_usuario_id, p_es_anonimo, p_donante_nombre, p_donante_contacto)
+     * Registra una recepción de donación con persistencia directa en TiDB Cloud.
      */
     @Transactional
     public RecepcionResponseDTO registrarRecepcion(RecepcionRequestDTO request) {
@@ -66,160 +71,106 @@ public class RecepcionService {
                 (request.getDonanteNombre() == null || request.getDonanteNombre().trim().isEmpty());
 
         String donanteNombre = esAnonimo ? null : request.getDonanteNombre().trim();
-        String donanteContacto = esAnonimo ? null : (request.getDonanteContacto() != null ? request.getDonanteContacto().trim() : null);
 
-        String sql = "CALL sp_registrar_recepcion_donacion(?, ?, ?, ?, ?, ?, ?, ?)";
+        // 1. Registrar recepción usando MovimientoService (JPA puro en TiDB Cloud)
+        Movimiento mov = movimientoService.registrarRecepcion(
+                centroId,
+                campaniaId,
+                articuloId,
+                request.getCantidad(),
+                usuarioId,
+                donanteNombre
+        );
 
+        // 2. Calcular stock acumulado del centro y campaña en vivo
+        BigDecimal stockActual = BigDecimal.ZERO;
         try {
-            List<Map<String, Object>> resultList = jdbcTemplate.queryForList(
-                    sql,
+            BigDecimal stock = jdbcTemplate.queryForObject(
+                    "SELECT COALESCE(SUM(stock_disponible), 0) FROM v_stock_actual WHERE centro_id = ? AND campania_id = ?",
+                    BigDecimal.class,
                     centroId,
-                    campaniaId,
-                    articuloId,
-                    request.getCantidad(),
-                    usuarioId,
-                    esAnonimo,
-                    donanteNombre,
-                    donanteContacto
+                    campaniaId
             );
-
-            if (!resultList.isEmpty()) {
-                Map<String, Object> row = resultList.get(0);
-                RecepcionResponseDTO response = new RecepcionResponseDTO();
-                response.setExito(true);
-
-                if (row.get("movimiento_id") != null) {
-                    response.setMovimientoId(((Number) row.get("movimiento_id")).intValue());
-                }
-                response.setTipo((String) row.get("tipo"));
-
-                if (row.get("cantidad_recibida") != null) {
-                    response.setCantidadRecibida(new BigDecimal(row.get("cantidad_recibida").toString()));
-                }
-                if (row.get("stock_actual") != null) {
-                    response.setStockActual(new BigDecimal(row.get("stock_actual").toString()));
-                }
-                response.setMensaje((String) row.get("mensaje"));
-                return response;
-            } else {
-                throw new IllegalStateException("No se obtuvo confirmación del procedimiento almacenado.");
+            if (stock != null) {
+                stockActual = stock;
             }
-        } catch (DataAccessException ex) {
-            Throwable root = ex.getRootCause() != null ? ex.getRootCause() : ex;
-            String cleanMessage = root.getMessage();
-            log.warn("Error devuelto por sp_registrar_recepcion_donacion: {}", cleanMessage);
-            throw new IllegalArgumentException(cleanMessage);
+        } catch (Exception ex) {
+            log.warn("No se pudo consultar v_stock_actual tras recepcion: {}", ex.getMessage());
         }
+
+        RecepcionResponseDTO response = new RecepcionResponseDTO();
+        response.setExito(true);
+        response.setMovimientoId(mov.getId());
+        response.setTipo("RECEPCION");
+        response.setCantidadRecibida(mov.getCantidad());
+        response.setStockActual(stockActual);
+        response.setMensaje("Donación registrada con éxito en el sistema");
+        return response;
     }
 
     /**
-     * Resuelve el ID del artículo por nombre o lo da de alta con sp_crear_articulo.
+     * Resuelve el ID del artículo por nombre o lo registra si no existe.
      */
     private Integer resolverOCrearArticulo(String nombre, String categoria, String unidad) {
-        try {
-            List<Map<String, Object>> existentes = jdbcTemplate.queryForList(
-                    "SELECT id FROM articulos WHERE LOWER(nombre) = LOWER(?) LIMIT 1", nombre
-            );
-            if (!existentes.isEmpty() && existentes.get(0).get("id") != null) {
-                return ((Number) existentes.get(0).get("id")).intValue();
-            }
-
-            // Normalizar categoría
-            String catNormalizada = "OTRO";
-            if (categoria != null && !categoria.trim().isEmpty()) {
-                String c = categoria.trim().toUpperCase().replace("-", "_");
-                if (c.contains("NO_PERECEDERO")) catNormalizada = "NO_PERECEDERO";
-                else if (c.contains("PERECEDERO")) catNormalizada = "PERECEDERO";
-                else if (c.contains("LIMPIEZA")) catNormalizada = "LIMPIEZA";
-                else if (c.contains("ROPA")) catNormalizada = "ROPA";
-                else if (c.contains("MEDICAMENTO")) catNormalizada = "MEDICAMENTO";
-            }
-
-            // Normalizar unidad
-            String unidadNormalizada = "PIEZA";
-            if (unidad != null && !unidad.trim().isEmpty()) {
-                String u = unidad.trim().toUpperCase();
-                if (u.contains("KG")) unidadNormalizada = "KG";
-                else if (u.contains("L")) unidadNormalizada = "L";
-                else if (u.contains("BOLSA")) unidadNormalizada = "BOLSA";
-                else if (u.contains("CAJA")) unidadNormalizada = "CAJA";
-                else if (u.contains("PIEZA") || u.contains("PZA")) unidadNormalizada = "PIEZA";
-            }
-
-            try {
-                List<Map<String, Object>> nuevo = jdbcTemplate.queryForList(
-                        "CALL sp_crear_articulo(?, ?, ?)", nombre, catNormalizada, unidadNormalizada
-                );
-                if (!nuevo.isEmpty() && nuevo.get(0).get("articulo_id") != null) {
-                    return ((Number) nuevo.get(0).get("articulo_id")).intValue();
-                }
-            } catch (Exception eSP) {
-                KeyHolder keyHolder = new GeneratedKeyHolder();
-                jdbcTemplate.update(connection -> {
-                    PreparedStatement ps = connection.prepareStatement(
-                            "INSERT INTO articulos (nombre, categoria, unidad) VALUES (?, ?, ?)",
-                            Statement.RETURN_GENERATED_KEYS
-                    );
-                    ps.setString(1, nombre);
-                    ps.setString(2, catNormalizada);
-                    ps.setString(3, unidadNormalizada);
-                    return ps;
-                }, keyHolder);
-                if (keyHolder.getKey() != null) {
-                    return keyHolder.getKey().intValue();
-                }
-            }
-        } catch (Exception ex) {
-            log.warn("Error al resolver o crear artículo: {}", ex.getMessage());
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return null;
         }
-        return null;
+        String nombreLimpio = nombre.trim();
+        List<Articulo> existentes = articuloRepository.findByNombreIgnoreCase(nombreLimpio);
+        if (!existentes.isEmpty()) {
+            return existentes.get(0).getId();
+        }
+
+        // Si no existe, crearlo con enums validados
+        CategoriaArticulo cat = CategoriaArticulo.OTRO;
+        if (categoria != null && !categoria.trim().isEmpty()) {
+            try {
+                cat = CategoriaArticulo.desdeValorDb(categoria);
+            } catch (Exception e) {
+                cat = CategoriaArticulo.OTRO;
+            }
+        }
+
+        UnidadMedida uni = UnidadMedida.PIEZA;
+        if (unidad != null && !unidad.trim().isEmpty()) {
+            try {
+                uni = UnidadMedida.desdeValorDb(unidad);
+            } catch (Exception e) {
+                uni = UnidadMedida.PIEZA;
+            }
+        }
+
+        Articulo nuevo = new Articulo(nombreLimpio, cat, uni);
+        Articulo guardado = articuloRepository.save(nuevo);
+        return guardado.getId();
     }
 
     /**
-     * Lista los artículos para el catálogo/selector invocando:
-     * sp_listar_articulos(p_categoria) o fallback SQL directo
+     * Lista los artículos para el catálogo/selector utilizando ArticuloRepository
      */
     public List<ArticuloItemDTO> listarArticulos(String categoria) {
-        String sql = "CALL sp_listar_articulos(?)";
-        String catParam = null;
-
+        List<Articulo> articulos;
         if (categoria != null && !categoria.trim().isEmpty() && !categoria.equalsIgnoreCase("TODOS")) {
-            catParam = categoria.trim().toUpperCase().replace("-", "_");
+            try {
+                CategoriaArticulo cat = CategoriaArticulo.desdeValorDb(categoria);
+                articulos = articuloRepository.findByCategoria(cat);
+            } catch (Exception e) {
+                articulos = articuloRepository.findAll();
+            }
+        } else {
+            articulos = articuloRepository.findAll();
         }
 
-        List<ArticuloItemDTO> articulos = new ArrayList<>();
-        try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, catParam);
-            for (Map<String, Object> r : rows) {
-                articulos.add(new ArticuloItemDTO(
-                        ((Number) r.get("id")).intValue(),
-                        (String) r.get("nombre"),
-                        (String) r.get("categoria"),
-                        (String) r.get("unidad")
-                ));
-            }
-        } catch (Exception ex) {
-            log.warn("sp_listar_articulos no disponible, usando consulta SQL directa: {}", ex.getMessage());
-            try {
-                String fallbackSql = (catParam == null)
-                        ? "SELECT id, nombre, categoria, unidad FROM articulos ORDER BY nombre ASC"
-                        : "SELECT id, nombre, categoria, unidad FROM articulos WHERE categoria = ? ORDER BY nombre ASC";
-                List<Map<String, Object>> rows = (catParam == null)
-                        ? jdbcTemplate.queryForList(fallbackSql)
-                        : jdbcTemplate.queryForList(fallbackSql, catParam);
-                for (Map<String, Object> r : rows) {
-                    articulos.add(new ArticuloItemDTO(
-                            ((Number) r.get("id")).intValue(),
-                            (String) r.get("nombre"),
-                            (String) r.get("categoria"),
-                            (String) r.get("unidad")
-                    ));
-                }
-            } catch (Exception e2) {
-                log.error("Error al consultar articulos en fallback: {}", e2.getMessage());
-            }
+        List<ArticuloItemDTO> dtos = new ArrayList<>();
+        for (Articulo art : articulos) {
+            dtos.add(new ArticuloItemDTO(
+                    art.getId(),
+                    art.getNombre(),
+                    art.getCategoria() != null ? art.getCategoria().getValorDb() : "otro",
+                    art.getUnidad() != null ? art.getUnidad().getValorDb() : "pieza"
+            ));
         }
-        return articulos;
+        return dtos;
     }
 
     /**
