@@ -12,7 +12,12 @@
 
     <div class="left-panel">
         <h2>Gestión de Inventario</h2>
-        <p class="text-muted mb-2">Selecciona el tipo de movimiento a registrar[cite: 1].</p>
+        <p class="text-muted mb-2">Selecciona el tipo de movimiento a registrar.</p>
+
+        <!-- Mensaje de alerta / error -->
+        <div id="alertBox" class="alert-error">
+            <span id="alertText"></span>
+        </div>
 
         <!-- Tipos de Movimientos del Encargado -->
         <div class="category-grid" id="movementGrid">
@@ -38,24 +43,16 @@
         <div class="mb-1-5">
             <label for="itemSelect" class="font-semibold">Artículo en Stock</label>
             <select id="itemSelect" required>
-                <option value="">Selecciona un artículo en stock...</option>
-                <option value="agua">Agua Embotellada (150 L disponibles)</option>
-                <option value="arroz">Arroz en grano (45 Kg disponibles)</option>
-                <option value="atun">Atún en lata (80 Piezas disponibles)</option>
-                <option value="cobijas">Cobijas térmicas (30 Piezas disponibles)</option>
+                <option value="">Cargando artículos con stock...</option>
             </select>
         </div>
 
         <div class="mb-2">
-            <label class="font-semibold">Cantidad / Peso a Descontar</label>
+            <label class="font-semibold">Cantidad / Peso a Mover</label>
             <div class="input-unit-group">
                 <input type="number" id="inputQuantity" min="0.1" step="any" value="1" required>
-                <select id="unitSelect">
-                    <option value="kg">Kg (Kilogramos)</option>
-                    <option value="l">L (Litros)</option>
-                    <option value="pieza">Piezas</option>
-                    <option value="caja">Cajas</option>
-                    <option value="bolsa">Bolsas</option>
+                <select id="unitSelect" disabled>
+                    <option value="unidad">Unidad</option>
                 </select>
             </div>
         </div>
@@ -68,9 +65,6 @@
                     <label for="instSelect" class="font-semibold">Institución Receptora</label>
                     <select id="instSelect" required>
                         <option value="">Selecciona la institución...</option>
-                        <option value="cruz-roja">Cruz Roja Mexicana</option>
-                        <option value="banco-alimentos">Banco de Alimentos</option>
-                        <option value="refugio-sur">Refugio Temporal Sur</option>
                     </select>
                 </div>
                 <button type="button" class="btn btn-primary" id="btnEntrega">Registrar Entrega</button>
@@ -79,12 +73,9 @@
             <!-- Campos para Transferencia a otro centro -->
             <div class="form-section" id="sec-transferencia">
                 <div class="mb-1-5">
-                    <label for="centroSelect" class="font-semibold">Centro Destino (Misma Campaña)</label>
+                    <label for="centroSelect" class="font-semibold">Centro Destino</label>
                     <select id="centroSelect" required>
                         <option value="">Selecciona el centro destino...</option>
-                        <option value="centro-norte">Centro Comunitario Norte</option>
-                        <option value="escuela-sur">Escuela Primaria Sur</option>
-                        <option value="auditorio-muni">Auditorio Municipal</option>
                     </select>
                 </div>
                 <button type="button" class="btn btn-primary" id="btnTransferencia">Registrar Transferencia</button>
@@ -97,9 +88,14 @@
                     <select id="motivoMerma" required>
                         <option value="">Selecciona el motivo...</option>
                         <option value="caducidad">Caducidad</option>
-                        <option value="dano">Daño</option>
+                        <option value="daño">Daño</option>
                         <option value="perdida">Pérdida</option>
+                        <option value="otro">Otro</option>
                     </select>
+                </div>
+                <div class="mb-1-5">
+                    <label for="detalleMerma" class="font-semibold">Detalle de Merma (Opcional)</label>
+                    <input type="text" id="detalleMerma" placeholder="Ej. Empaque roto, fecha vencida">
                 </div>
                 <button type="button" class="btn btn-danger" id="btnMerma">Descontar Merma</button>
             </div>
@@ -115,7 +111,15 @@
                 </div>
                 <div class="mb-1-5">
                     <label for="motivoAjuste" class="font-semibold">Motivo de Corrección Obligatorio</label>
-                    <input type="text" id="motivoAjuste" placeholder="Ej. Error de conteo inicial" required>
+                    <select id="motivoAjuste" required>
+                        <option value="correccion_conteo">Corrección de Conteo Físico</option>
+                        <option value="error_captura">Error en Captura Previa</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="mb-1-5">
+                    <label for="detalleAjuste" class="font-semibold">Justificación Detallada</label>
+                    <input type="text" id="detalleAjuste" placeholder="Ej. Re-conteo en estante 3" required>
                 </div>
                 <button type="button" class="btn btn-primary" id="btnAjuste">Aplicar Ajuste</button>
             </div>
@@ -133,34 +137,34 @@
                     <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción</a>
                     <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
                     <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
-                    <a href="index.html" id="btnLogout" onclick="sessionStorage.clear();">Cerrar Sesión</a>
+                    <a href="index.html" id="btnLogout">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
 
         <!-- Tarjeta de Métricas con Barra de Progreso de Campaña -->
         <div class="dashboard-card mb-1-5">
-            <h3 class="mt-0">Dashboard: Centro Principal</h3>
+            <h3 class="mt-0" id="tituloCentro">Dashboard: Sede de Acopio</h3>
 
             <div class="stat-grid mt-2">
                 <div class="stat-box">
                     <h4>Stock Total</h4>
-                    <p id="statStock">1,204</p>
+                    <p id="statStock">0</p>
                 </div>
                 <div class="stat-box">
-                    <h4>Mermas (Mes)</h4>
-                    <p class="text-danger" id="statMerma">12</p>
+                    <h4>Mermas Registradas</h4>
+                    <p class="text-danger" id="statMerma">0</p>
                 </div>
             </div>
 
             <!-- Meta de Recolección de la Campaña -->
             <div class="mt-2 pt-1 border-bottom">
                 <div class="flex-between-end">
-                    <strong class="text-sm">Meta de Campaña (Centro)</strong>
-                    <span class="text-sm text-muted">1,204 / 3,000</span>
+                    <strong class="text-sm" id="campaniaNombreLabel">Meta de Campaña</strong>
+                    <span class="text-sm text-muted" id="metaTexto">0 / 0</span>
                 </div>
                 <div class="progress-container">
-                    <div class="progress-fill"></div>
+                    <div class="progress-fill" id="progressBar"></div>
                 </div>
             </div>
         </div>
@@ -170,25 +174,7 @@
             <h4 class="mt-0 pb-1 border-bottom">Historial de Movimientos</h4>
             <ul class="history-list" id="historyList">
                 <li>
-                    <div>
-                        <strong>Merma</strong> - Agua Embotellada
-                        <div class="text-muted text-sm">Daño (Actor: Encargado 1)</div>
-                    </div>
-                    <strong class="text-danger">-5 L</strong>
-                </li>
-                <li>
-                    <div>
-                        <strong>Transferencia</strong> - Arroz
-                        <div class="text-muted text-sm">Hacia Centro Norte (Actor: Encargado 1)</div>
-                    </div>
-                    <strong class="text-danger">-20 Kg</strong>
-                </li>
-                <li>
-                    <div>
-                        <strong>Recepción</strong> - Atún
-                        <div class="text-muted text-sm">Anónimo (Actor: Voluntario)</div>
-                    </div>
-                    <strong class="text-success">+50 Piezas</strong>
+                    <span class="text-muted text-sm">Cargando movimientos recientes...</span>
                 </li>
             </ul>
         </div>
@@ -197,17 +183,21 @@
     <!-- Contenedor Toast para Notificaciones -->
     <div id="toastNotif" class="toast">¡Operación registrada con éxito!</div>
 
-    <!-- Scripts de interactividad y roles -->
+    <!-- Scripts de interactividad, roles y backend -->
     <script>
         // 1. Control y persistencia estricta de sesión desde sessionStorage
         const rolActivo = sessionStorage.getItem('rolActivo');
+        const usuarioId = parseInt(sessionStorage.getItem('usuarioId') || '2', 10);
+        const centroId = parseInt(sessionStorage.getItem('centroId') || '1', 10);
 
-        if (rolActivo === 'voluntario') {
-            alert("Acceso restringido: Los voluntarios no pueden gestionar mermas ni transferencias[cite: 1]. Redirigiendo a recepción.");
+        if (!rolActivo) {
+            window.location.href = "index.html";
+        } else if (rolActivo === 'voluntario') {
+            alert("Acceso restringido: Los voluntarios no pueden gestionar mermas ni transferencias. Redirigiendo a recepción.");
             window.location.href = "recepcion.html";
         }
 
-        // Control interactivo del menú desplegable (clic persistente y accesibilidad)
+        // Control interactivo del menú desplegable
         const dropdownEl = document.querySelector('.dropdown');
         const dropBtn = document.getElementById('dropBtn');
         const navDropdown = document.getElementById('navDropdown');
@@ -234,7 +224,7 @@
             });
         }
 
-        // Control de visibilidad del menú desplegable basado en el rol de sesión
+        // Control de visibilidad del menú desplegable basado en el rol
         const links = document.querySelectorAll('#navDropdown a[data-role]');
         links.forEach(link => {
             const rolesPermitidos = link.getAttribute('data-role');
@@ -243,15 +233,16 @@
             }
         });
 
-        // Limpiar sesión al cerrar
         const btnLogout = document.getElementById('btnLogout');
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
                 sessionStorage.clear();
+                window.location.href = "index.html";
             });
         }
 
         // 2. Alternar entre tipos de movimientos
+        let tipoMovimientoActivo = 'entrega';
         const cards = document.querySelectorAll('.category-card[data-type]');
         const formSections = document.querySelectorAll('.form-section');
 
@@ -260,14 +251,19 @@
                 cards.forEach(c => c.classList.remove('active'));
                 card.classList.add('active');
 
-                const type = card.getAttribute('data-type');
+                tipoMovimientoActivo = card.getAttribute('data-type');
                 formSections.forEach(sec => sec.classList.remove('active'));
-                document.getElementById(`sec-${type}`).classList.add('active');
+                const targetSec = document.getElementById(`sec-${tipoMovimientoActivo}`);
+                if (targetSec) targetSec.classList.add('active');
+                limpiarAlerta();
             });
         });
 
-        // 3. Sistema de notificaciones Toast animadas
+        // 3. Sistema de Notificaciones Toast y Alertas
         const toast = document.getElementById('toastNotif');
+        const alertBox = document.getElementById('alertBox');
+        const alertText = document.getElementById('alertText');
+
         function dispararNotificacion(mensaje) {
             toast.textContent = mensaje;
             toast.classList.add('show');
@@ -276,21 +272,269 @@
             }, 3000);
         }
 
-        document.getElementById('btnEntrega').addEventListener('click', () => {
-            dispararNotificacion('Entrega institucional registrada con éxito');
+        function mostrarAlerta(mensaje) {
+            alertText.textContent = mensaje;
+            alertBox.style.display = 'block';
+        }
+
+        function limpiarAlerta() {
+            alertBox.style.display = 'none';
+            alertText.textContent = '';
+        }
+
+        // 4. Integración con el Backend: Catálogos y Dashboard
+        let catalogoArticulos = [];
+        let campaniaActivaId = null;
+
+        const itemSelect = document.getElementById('itemSelect');
+        const unitSelect = document.getElementById('unitSelect');
+        const instSelect = document.getElementById('instSelect');
+        const centroSelect = document.getElementById('centroSelect');
+        const inputQuantity = document.getElementById('inputQuantity');
+
+        async function cargarCatalogos() {
+            try {
+                const res = await fetch(`/api/encargado/catalogos?centroId=${centroId}`);
+                if (!res.ok) throw new Error('Error al consultar catálogos');
+                const data = await res.json();
+
+                campaniaActivaId = data.campaniaId;
+                catalogoArticulos = data.articulos || [];
+
+                // Llenar select de artículos
+                itemSelect.innerHTML = '<option value="">Selecciona un artículo en stock...</option>';
+                catalogoArticulos.forEach(art => {
+                    const opt = document.createElement('option');
+                    opt.value = art.id;
+                    opt.textContent = `${art.nombre} (${art.stock} ${art.unidad} disponibles)`;
+                    itemSelect.appendChild(opt);
+                });
+
+                // Llenar select de instituciones
+                instSelect.innerHTML = '<option value="">Selecciona la institución...</option>';
+                (data.instituciones || []).forEach(inst => {
+                    const opt = document.createElement('option');
+                    opt.value = inst.id;
+                    opt.textContent = inst.nombre;
+                    instSelect.appendChild(opt);
+                });
+
+                // Llenar select de centros destino
+                centroSelect.innerHTML = '<option value="">Selecciona el centro destino...</option>';
+                (data.centrosDestino || []).forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.nombre;
+                    centroSelect.appendChild(opt);
+                });
+
+            } catch (err) {
+                console.error('Error al cargar catálogos:', err);
+                mostrarAlerta('No se pudieron cargar los catálogos del centro.');
+            }
+        }
+
+        // Al cambiar de artículo, actualizar la unidad visible
+        itemSelect.addEventListener('change', () => {
+            const artId = parseInt(itemSelect.value, 10);
+            const art = catalogoArticulos.find(a => a.id === artId);
+            if (art) {
+                unitSelect.innerHTML = `<option value="${art.unidad}">${art.unidad.toUpperCase()}</option>`;
+            } else {
+                unitSelect.innerHTML = `<option value="unidad">Unidad</option>`;
+            }
         });
 
-        document.getElementById('btnTransferencia').addEventListener('click', () => {
-            dispararNotificacion('Transferencia de salida enviada correctamente');
+        async function cargarDashboard() {
+            try {
+                const res = await fetch(`/api/encargado/dashboard?centroId=${centroId}`);
+                if (!res.ok) throw new Error('Error al cargar dashboard');
+                const data = await res.json();
+
+                if (data.centroNombre) {
+                    document.getElementById('tituloCentro').textContent = `Dashboard: ${data.centroNombre}`;
+                }
+
+                document.getElementById('statStock').textContent = Number(data.stockTotal || 0).toLocaleString();
+                document.getElementById('statMerma').textContent = Number(data.totalMermasMes || 0).toLocaleString();
+
+                if (data.campaniaNombre) {
+                    document.getElementById('campaniaNombreLabel').textContent = data.campaniaNombre;
+                }
+
+                const stock = Number(data.stockTotal || 0);
+                const meta = Number(data.metaCampania || 3000);
+                document.getElementById('metaTexto').textContent = `${stock.toLocaleString()} / ${meta.toLocaleString()}`;
+
+                let pct = (meta > 0) ? (stock / meta) * 100 : 0;
+                if (pct > 100) pct = 100;
+                document.getElementById('progressBar').style.width = `${pct}%`;
+
+                // Renderizar Historial
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+
+                if (!data.historial || data.historial.length === 0) {
+                    historyList.innerHTML = '<li><span class="text-muted text-sm">Sin movimientos registrados aún.</span></li>';
+                    return;
+                }
+
+                data.historial.forEach(mov => {
+                    const li = document.createElement('li');
+                    const esNegativo = ['entrega', 'merma', 'transferencia_salida', 'ajuste_negativo'].includes((mov.tipo || '').toLowerCase());
+                    const badgeClass = esNegativo ? 'text-danger' : 'text-success';
+                    const signo = esNegativo ? '-' : '+';
+
+                    li.innerHTML = `
+                        <div>
+                            <strong>${mov.tipo}</strong> - ${mov.articuloNombre}
+                            <div class="text-muted text-sm">${mov.detalle || ''} (Actor: ${mov.autor || 'N/A'})</div>
+                        </div>
+                        <strong class="${badgeClass}">${signo}${mov.cantidad} ${mov.unidad || ''}</strong>
+                    `;
+                    historyList.appendChild(li);
+                });
+
+            } catch (err) {
+                console.error('Error al cargar dashboard:', err);
+            }
+        }
+
+        // 5. Enviar Movimientos al Backend
+        async function enviarMovimiento(payload, btn) {
+            limpiarAlerta();
+
+            if (!payload.articuloId) {
+                mostrarAlerta('Por favor selecciona un artículo de la lista.');
+                return;
+            }
+            if (!payload.cantidad || payload.cantidad <= 0) {
+                mostrarAlerta('Ingresa una cantidad válida mayor a cero.');
+                return;
+            }
+
+            const textoOriginal = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Procesando...';
+
+            try {
+                const res = await fetch('/api/encargado/movimiento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    let mensajeError = 'Error al registrar la operación.';
+                    try {
+                        const errData = await res.json();
+                        if (errData && errData.mensaje) mensajeError = errData.mensaje;
+                    } catch (_) { }
+                    mostrarAlerta(mensajeError);
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                    return;
+                }
+
+                dispararNotificacion('Operación registrada con éxito en el sistema');
+                inputQuantity.value = 1;
+
+                // Recargar catálogos y dashboard en tiempo real
+                await Promise.all([cargarCatalogos(), cargarDashboard()]);
+
+            } catch (err) {
+                console.error('Error de conexión:', err);
+                mostrarAlerta('Error al comunicarse con el servidor.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = textoOriginal;
+            }
+        }
+
+        // Botón: Registrar Entrega
+        document.getElementById('btnEntrega').addEventListener('click', (e) => {
+            const instId = parseInt(instSelect.value, 10);
+            if (!instId) {
+                mostrarAlerta('Selecciona la institución receptora.');
+                return;
+            }
+            const payload = {
+                tipo: 'ENTREGA',
+                centroId: centroId,
+                campaniaId: campaniaActivaId,
+                articuloId: parseInt(itemSelect.value, 10),
+                cantidad: parseFloat(inputQuantity.value),
+                usuarioId: usuarioId,
+                institucionId: instId
+            };
+            enviarMovimiento(payload, e.target);
         });
 
-        document.getElementById('btnMerma').addEventListener('click', () => {
-            dispararNotificacion('Merma descontada del inventario');
+        // Botón: Registrar Transferencia
+        document.getElementById('btnTransferencia').addEventListener('click', (e) => {
+            const destinoId = parseInt(centroSelect.value, 10);
+            if (!destinoId) {
+                mostrarAlerta('Selecciona el centro destino.');
+                return;
+            }
+            const payload = {
+                tipo: 'TRANSFERENCIA',
+                centroId: centroId,
+                campaniaId: campaniaActivaId,
+                articuloId: parseInt(itemSelect.value, 10),
+                cantidad: parseFloat(inputQuantity.value),
+                usuarioId: usuarioId,
+                centroDestinoId: destinoId
+            };
+            enviarMovimiento(payload, e.target);
         });
 
-        document.getElementById('btnAjuste').addEventListener('click', () => {
-            dispararNotificacion('Ajuste de inventario aplicado');
+        // Botón: Descontar Merma
+        document.getElementById('btnMerma').addEventListener('click', (e) => {
+            const motivo = document.getElementById('motivoMerma').value;
+            if (!motivo) {
+                mostrarAlerta('Selecciona el motivo obligatorio de la merma.');
+                return;
+            }
+            const payload = {
+                tipo: 'MERMA',
+                centroId: centroId,
+                campaniaId: campaniaActivaId,
+                articuloId: parseInt(itemSelect.value, 10),
+                cantidad: parseFloat(inputQuantity.value),
+                usuarioId: usuarioId,
+                motivo: motivo,
+                motivoDetalle: document.getElementById('detalleMerma').value.trim()
+            };
+            enviarMovimiento(payload, e.target);
         });
+
+        // Botón: Aplicar Ajuste
+        document.getElementById('btnAjuste').addEventListener('click', (e) => {
+            const motivo = document.getElementById('motivoAjuste').value;
+            const detalle = document.getElementById('detalleAjuste').value.trim();
+            if (!detalle) {
+                mostrarAlerta('Ingresa la justificación obligatoria del ajuste.');
+                return;
+            }
+            const esPositivo = document.getElementById('tipoAjuste').value === 'suma';
+            const payload = {
+                tipo: 'AJUSTE',
+                centroId: centroId,
+                campaniaId: campaniaActivaId,
+                articuloId: parseInt(itemSelect.value, 10),
+                cantidad: parseFloat(inputQuantity.value),
+                usuarioId: usuarioId,
+                esPositivo: esPositivo,
+                motivo: motivo,
+                motivoDetalle: detalle
+            };
+            enviarMovimiento(payload, e.target);
+        });
+
+        // Carga inicial
+        cargarCatalogos();
+        cargarDashboard();
     </script>
 </body>
 

@@ -15,6 +15,11 @@
         <h2>Panel de Coordinación</h2>
         <p class="text-muted mb-2">Administra las campañas activas y la red de centros de acopio.</p>
 
+        <!-- Mensaje de alerta / error -->
+        <div id="alertBox" class="alert-error">
+            <span id="alertText"></span>
+        </div>
+
         <!-- Selector de Acción -->
         <div class="category-grid" id="movementGrid">
             <div class="category-card active" data-type="campana">
@@ -40,19 +45,29 @@
                 <div class="flex-gap-1 mb-1-5">
                     <div class="flex-1">
                         <label for="fechaInicio" class="font-semibold">Fecha de Inicio</label>
-                        <input type="text" id="fechaInicio" placeholder="DD/MM/AAAA" required>
+                        <input type="date" id="fechaInicio" required>
                     </div>
                     <div class="flex-1">
                         <label for="fechaFin" class="font-semibold">Fecha de Fin</label>
-                        <input type="text" id="fechaFin" placeholder="DD/MM/AAAA">
+                        <input type="date" id="fechaFin">
                     </div>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="metaUnidades" class="font-semibold">Meta de Recolección (Unidades / Artículos)</label>
+                    <input type="number" id="metaUnidades" placeholder="Ej. 10000" min="1" value="5000" required>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="descripcionCampana" class="font-semibold">Descripción u Objetivo</label>
+                    <input type="text" id="descripcionCampana" placeholder="Ej. Acopio de víveres para afectados">
                 </div>
 
                 <div class="mb-1-5">
                     <label for="estadoCampana" class="font-semibold">Estado de la Campaña</label>
                     <select id="estadoCampana" required>
-                        <option value="activa">Activa (Recibiendo donaciones)</option>
-                        <option value="inactiva">Inactiva (Cerrada)</option>
+                        <option value="true">Activa (Recibiendo donaciones)</option>
+                        <option value="false">Inactiva (Cerrada)</option>
                     </select>
                 </div>
 
@@ -68,35 +83,33 @@
 
                 <div class="mb-1-5">
                     <label for="institucionCentro" class="font-semibold">Institución Sede</label>
-                    <input type="text" id="institucionCentro" placeholder="Ej. Instituto Tecnológico de Ciudad Madero"
-                        required>
+                    <input type="text" id="institucionCentro" placeholder="Ej. Instituto Tecnológico" required>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="ubicacionCentro" class="font-semibold">Dirección o Ubicación</label>
+                    <input type="text" id="ubicacionCentro" placeholder="Ej. Av. Universidad 123" required>
                 </div>
 
                 <div class="mb-1-5">
                     <label for="encargadoCentro" class="font-semibold">Asignar Encargado</label>
                     <select id="encargadoCentro" required>
-                        <option value="">Selecciona al responsable...</option>
-                        <option value="karina">Karina</option>
-                        <option value="hector">Hector</option>
-                        <option value="ale">Ale</option>
-                        <option value="mirari">Mirari</option>
-                        <option value="miguel">Miguel Matos</option>
+                        <option value="">Cargando encargados...</option>
                     </select>
                 </div>
 
                 <div class="mb-1-5">
                     <label for="campanaVinculada" class="font-semibold">Vincular a Campaña</label>
                     <select id="campanaVinculada" required>
-                        <option value="huracan">Contingencia Huracán 2026</option>
-                        <option value="invierno">Campaña Invernal</option>
+                        <option value="">Cargando campañas...</option>
                     </select>
                 </div>
 
                 <div class="mb-1-5">
                     <label for="estadoCentro" class="font-semibold">Estado del Centro</label>
                     <select id="estadoCentro" required>
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">Inactivo</option>
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
                     </select>
                 </div>
 
@@ -116,42 +129,42 @@
                     <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción</a>
                     <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
                     <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
-                    <a href="index.html" onclick="sessionStorage.clear();">Cerrar Sesión</a>
+                    <a href="index.html" id="btnLogout">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
 
         <h3 class="mt-0">Dashboard Global</h3>
-        <p class="text-muted text-sm mt-0 mb-2">Visibilidad total de la campaña activa.</p>
+        <p class="text-muted text-sm mt-0 mb-2" id="subtituloCampana">Visibilidad total de la campaña activa.</p>
 
         <!-- Métricas Maestras y Meta de Campaña -->
         <div class="dashboard-card mb-1-5">
             <div class="stat-grid">
                 <div class="stat-box">
                     <h4>Stock Global</h4>
-                    <p>4,850</p>
+                    <p id="statStockGlobal">0</p>
                 </div>
                 <div class="stat-box">
                     <h4>Merma Total</h4>
-                    <p class="text-danger">34</p>
+                    <p class="text-danger" id="statMermaGlobal">0</p>
                 </div>
                 <div class="stat-box">
                     <h4>Centros Activos</h4>
-                    <p>4</p>
+                    <p id="statCentrosActivos">0</p>
                 </div>
                 <div class="stat-box">
                     <h4>Art. Más Donado</h4>
-                    <p class="stat-text-alt">Agua (L)</p>
+                    <p class="stat-text-alt" id="statArtMasDonado">Cargando...</p>
                 </div>
             </div>
 
             <div class="mt-2 pt-1 border-bottom">
                 <div class="flex-between-end">
-                    <strong class="text-sm">Meta Global de Campaña</strong>
-                    <span class="text-sm text-muted">4,850 / 10,000</span>
+                    <strong class="text-sm" id="metaLabel">Meta Global de Campaña</strong>
+                    <span class="text-sm text-muted" id="metaAvanceTexto">0 / 0</span>
                 </div>
                 <div class="progress-container">
-                    <div class="progress-fill"></div>
+                    <div class="progress-fill" id="progressBar"></div>
                 </div>
             </div>
         </div>
@@ -159,36 +172,9 @@
         <!-- Comparativa de Centros -->
         <div class="dashboard-card flex-1 mb-0">
             <h4 class="mt-0 pb-1 border-bottom">Comparativa de Centros</h4>
-            <ul class="history-list">
+            <ul class="history-list" id="listaCentros">
                 <li>
-                    <div>
-                        <strong>Gimnasio ITCM</strong>
-                        <div class="text-muted text-sm">Encargado: Karina</div>
-                    </div>
-                    <div class="text-right">
-                        <span class="font-bold">2,100</span>
-                        <div class="text-muted text-sm">artículos</div>
-                    </div>
-                </li>
-                <li>
-                    <div>
-                        <strong>Centro Comunitario Norte</strong>
-                        <div class="text-muted text-sm">Encargado: Miguel Matos</div>
-                    </div>
-                    <div class="text-right">
-                        <span class="font-bold">1,450</span>
-                        <div class="text-muted text-sm">artículos</div>
-                    </div>
-                </li>
-                <li>
-                    <div>
-                        <strong>Auditorio Municipal</strong>
-                        <div class="text-muted text-sm">Encargado: Hector</div>
-                    </div>
-                    <div class="text-right">
-                        <span class="font-bold">1,300</span>
-                        <div class="text-muted text-sm">artículos</div>
-                    </div>
+                    <span class="text-muted text-sm">Cargando centros...</span>
                 </li>
             </ul>
         </div>
@@ -198,15 +184,17 @@
     <div id="toastNotif" class="toast">Configuración actualizada exitosamente</div>
 
     <script>
-        // Restricción de sesión dinámica (Requisito del PDF)
+        // 1. Restricción de sesión dinámica
         const rolActivo = sessionStorage.getItem('rolActivo');
 
-        if (rolActivo !== 'coordinador') {
+        if (!rolActivo) {
+            window.location.href = "index.html";
+        } else if (rolActivo !== 'coordinador') {
             alert("Acceso restringido: Solo el Coordinador General puede acceder a la configuración global.");
             window.location.href = (rolActivo === 'encargado') ? 'encargado.html' : 'recepcion.html';
         }
 
-        // Control interactivo del menú desplegable (clic persistente y accesibilidad)
+        // Control interactivo del menú desplegable
         const dropdownEl = document.querySelector('.dropdown');
         const dropBtn = document.getElementById('dropBtn');
         const navDropdown = document.getElementById('navDropdown');
@@ -241,6 +229,14 @@
             }
         });
 
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                sessionStorage.clear();
+                window.location.href = "index.html";
+            });
+        }
+
         // Cambio dinámico de formularios
         const cards = document.querySelectorAll('.category-card[data-type]');
         const formSections = document.querySelectorAll('.form-section');
@@ -251,14 +247,18 @@
                 card.classList.add('active');
 
                 const type = card.getAttribute('data-type');
-
                 formSections.forEach(sec => sec.classList.remove('active'));
-                document.getElementById(`sec-${type}`).classList.add('active');
+                const secTarget = document.getElementById(`sec-${type}`);
+                if (secTarget) secTarget.classList.add('active');
+                limpiarAlerta();
             });
         });
 
-        // Animación de notificaciones al guardar
+        // Notificaciones Toast y Alertas
         const toast = document.getElementById('toastNotif');
+        const alertBox = document.getElementById('alertBox');
+        const alertText = document.getElementById('alertText');
+
         function dispararNotificacion(mensaje) {
             toast.textContent = mensaje;
             toast.classList.add('show');
@@ -267,13 +267,235 @@
             }, 3000);
         }
 
-        document.getElementById('btnGuardarCampana').addEventListener('click', () => {
-            dispararNotificacion('¡Campaña guardada con éxito!');
+        function mostrarAlerta(mensaje) {
+            alertText.textContent = mensaje;
+            alertBox.style.display = 'block';
+        }
+
+        function limpiarAlerta() {
+            alertBox.style.display = 'none';
+            alertText.textContent = '';
+        }
+
+        // Establecer fecha de inicio hoy por defecto
+        const inputFechaInicio = document.getElementById('fechaInicio');
+        if (inputFechaInicio && !inputFechaInicio.value) {
+            inputFechaInicio.value = new Date().toISOString().split('T')[0];
+        }
+
+        // 2. Conexión Backend: Carga de Catálogos y Dashboard
+        const encargadoSelect = document.getElementById('encargadoCentro');
+        const campanaSelect = document.getElementById('campanaVinculada');
+
+        async function cargarCatalogos() {
+            try {
+                const res = await fetch('/api/coordinador/catalogos');
+                if (!res.ok) throw new Error('Error al consultar catálogos de coordinador');
+                const data = await res.json();
+
+                // Llenar select de encargados
+                encargadoSelect.innerHTML = '<option value="">Selecciona al responsable...</option>';
+                (data.encargados || []).forEach(enc => {
+                    const opt = document.createElement('option');
+                    opt.value = enc.id;
+                    opt.textContent = enc.nombre;
+                    encargadoSelect.appendChild(opt);
+                });
+
+                // Llenar select de campañas
+                campanaSelect.innerHTML = '<option value="">Selecciona la campaña...</option>';
+                (data.campanias || []).forEach(cmp => {
+                    const opt = document.createElement('option');
+                    opt.value = cmp.id;
+                    opt.textContent = cmp.nombre;
+                    campanaSelect.appendChild(opt);
+                });
+
+            } catch (err) {
+                console.error('Error al cargar catálogos:', err);
+                mostrarAlerta('No se pudieron cargar los catálogos de encargados y campañas.');
+            }
+        }
+
+        async function cargarDashboardGlobal() {
+            try {
+                const res = await fetch('/api/coordinador/dashboard');
+                if (!res.ok) throw new Error('Error al cargar dashboard global');
+                const data = await res.json();
+
+                const stock = Number(data.stockGlobal || 0);
+                const merma = Number(data.mermaTotal || 0);
+                const meta = Number(data.metaCampania || 10000);
+
+                document.getElementById('statStockGlobal').textContent = stock.toLocaleString();
+                document.getElementById('statMermaGlobal').textContent = merma.toLocaleString();
+                document.getElementById('statCentrosActivos').textContent = data.centrosActivos || 0;
+                document.getElementById('statArtMasDonado').textContent = data.articuloMasDonado || 'N/A';
+
+                if (data.campaniaNombre) {
+                    document.getElementById('subtituloCampana').textContent = `Campaña en curso: ${data.campaniaNombre}`;
+                    document.getElementById('metaLabel').textContent = `Meta: ${data.campaniaNombre}`;
+                }
+
+                document.getElementById('metaAvanceTexto').textContent = `${stock.toLocaleString()} / ${meta.toLocaleString()}`;
+
+                let pct = (meta > 0) ? (stock / meta) * 100 : 0;
+                if (pct > 100) pct = 100;
+                document.getElementById('progressBar').style.width = `${pct}%`;
+
+                // Renderizar comparativa de centros
+                const listaCentros = document.getElementById('listaCentros');
+                listaCentros.innerHTML = '';
+
+                if (!data.centros || data.centros.length === 0) {
+                    listaCentros.innerHTML = '<li><span class="text-muted text-sm">No hay centros registrados aún.</span></li>';
+                    return;
+                }
+
+                data.centros.forEach(c => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div>
+                            <strong>${c.nombre}</strong>
+                            <div class="text-muted text-sm">Encargado: ${c.encargado}</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold">${Number(c.stock || 0).toLocaleString()}</span>
+                            <div class="text-muted text-sm">artículos</div>
+                        </div>
+                    `;
+                    listaCentros.appendChild(li);
+                });
+
+            } catch (err) {
+                console.error('Error al cargar dashboard global:', err);
+            }
+        }
+
+        // 3. Guardar Nueva Campaña
+        document.getElementById('btnGuardarCampana').addEventListener('click', async (e) => {
+            limpiarAlerta();
+            const nombre = document.getElementById('nombreCampana').value.trim();
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const fechaFin = document.getElementById('fechaFin').value || null;
+            const metaUnidades = parseFloat(document.getElementById('metaUnidades').value) || 0;
+            const descripcion = document.getElementById('descripcionCampana').value.trim();
+            const activo = document.getElementById('estadoCampana').value === 'true';
+
+            if (!nombre) {
+                mostrarAlerta('El nombre de la campaña es obligatorio.');
+                return;
+            }
+
+            const btn = e.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
+            try {
+                const res = await fetch('/api/coordinador/campana', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre,
+                        fechaInicio,
+                        fechaFin,
+                        metaUnidades,
+                        descripcion,
+                        activo
+                    })
+                });
+
+                if (!res.ok) {
+                    let msg = 'Error al registrar la campaña.';
+                    try {
+                        const err = await res.json();
+                        if (err && err.mensaje) msg = err.mensaje;
+                    } catch (_) {}
+                    mostrarAlerta(msg);
+                    return;
+                }
+
+                dispararNotificacion('¡Campaña guardada con éxito en el sistema!');
+                document.getElementById('nombreCampana').value = '';
+                document.getElementById('descripcionCampana').value = '';
+
+                // Recargar catálogos y dashboard
+                await Promise.all([cargarCatalogos(), cargarDashboardGlobal()]);
+
+            } catch (err) {
+                console.error('Error de red:', err);
+                mostrarAlerta('No se pudo conectar con el servidor.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         });
 
-        document.getElementById('btnRegistrarCentro').addEventListener('click', () => {
-            dispararNotificacion('¡Centro de acopio registrado!');
+        // 4. Registrar Nuevo Centro de Acopio
+        document.getElementById('btnRegistrarCentro').addEventListener('click', async (e) => {
+            limpiarAlerta();
+            const nombre = document.getElementById('nombreCentro').value.trim();
+            const institucion = document.getElementById('institucionCentro').value.trim();
+            const ubicacion = document.getElementById('ubicacionCentro').value.trim();
+            const encargadoId = document.getElementById('encargadoCentro').value ? parseInt(document.getElementById('encargadoCentro').value, 10) : null;
+            const campaniaId = document.getElementById('campanaVinculada').value ? parseInt(document.getElementById('campanaVinculada').value, 10) : null;
+            const activo = document.getElementById('estadoCentro').value === 'true';
+
+            if (!nombre || !institucion) {
+                mostrarAlerta('El nombre del centro y la institución sede son obligatorios.');
+                return;
+            }
+
+            const btn = e.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Registrando...';
+
+            try {
+                const res = await fetch('/api/coordinador/centro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre,
+                        institucion,
+                        ubicacion,
+                        encargadoId,
+                        campaniaId,
+                        activo
+                    })
+                });
+
+                if (!res.ok) {
+                    let msg = 'Error al registrar el centro.';
+                    try {
+                        const err = await res.json();
+                        if (err && err.mensaje) msg = err.mensaje;
+                    } catch (_) {}
+                    mostrarAlerta(msg);
+                    return;
+                }
+
+                dispararNotificacion('¡Centro de acopio registrado con éxito!');
+                document.getElementById('nombreCentro').value = '';
+                document.getElementById('institucionCentro').value = '';
+                document.getElementById('ubicacionCentro').value = '';
+
+                // Recargar catálogos y dashboard
+                await Promise.all([cargarCatalogos(), cargarDashboardGlobal()]);
+
+            } catch (err) {
+                console.error('Error de red:', err);
+                mostrarAlerta('No se pudo conectar con el servidor.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         });
+
+        // Carga inicial
+        cargarCatalogos();
+        cargarDashboardGlobal();
     </script>
 </body>
 

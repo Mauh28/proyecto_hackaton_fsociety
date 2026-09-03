@@ -14,37 +14,118 @@
         <h2 class="mt-0">Iniciar Sesión</h2>
         <p class="text-muted mb-2">Ingresa tus credenciales para acceder al sistema.</p>
 
+        <!-- Mensaje de error / feedback -->
+        <div id="alertMessage" class="alert-error">
+            <span id="alertText"></span>
+        </div>
+
         <form id="loginForm">
             <div class="mb-1-5">
                 <label for="email" class="font-semibold">Correo Electrónico</label>
-                <input type="text" id="email" placeholder="usuario@universidad.edu" required>
+                <input type="email" id="email" placeholder="usuario@universidad.edu" required autocomplete="username">
             </div>
 
             <div class="mb-2">
                 <label for="password" class="font-semibold">Contraseña</label>
-                <input autocomplete="current-password" type="password" id="password" placeholder="••••••••" required>
+                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
             </div>
 
-            <button type="submit" class="btn btn-primary">Entrar al Sistema</button>
+            <button type="submit" id="btnSubmit" class="btn btn-primary">Entrar al Sistema</button>
         </form>
+
+        <div class="mt-2 pt-1 border-bottom text-muted login-demo-info">
+            <strong>Usuarios de prueba demo:</strong><br>
+            • Coordinador: <code>coordinador@hackaton.org</code> (pass: <code>password123</code>)<br>
+            • Encargado: <code>encargado.central@hackaton.org</code> (pass: <code>password123</code>)<br>
+            • Voluntario: <code>voluntario.central@hackaton.org</code> (pass: <code>password123</code>)
+        </div>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value.toLowerCase();
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const alertMessage = document.getElementById('alertMessage');
+        const alertText = document.getElementById('alertText');
 
-            // Persistencia de rol en sessionStorage
-            if (email.includes('encargado')) {
-                sessionStorage.setItem('rolActivo', 'encargado');
-            } else if (email.includes('coordinador')) {
-                sessionStorage.setItem('rolActivo', 'coordinador');
-            } else {
-                sessionStorage.setItem('rolActivo', 'voluntario');
+        function mostrarError(mensaje) {
+            alertText.textContent = mensaje;
+            alertMessage.style.display = 'block';
+        }
+
+        function limpiarError() {
+            alertMessage.style.display = 'none';
+            alertText.textContent = '';
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            limpiarError();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                mostrarError('Por favor completa todos los campos requeridos.');
+                return;
             }
 
-            // Redirección inmediata al Menú Principal
-            window.location.href = 'menu.html';
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Verificando...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    let mensajeError = 'Credenciales incorrectas o usuario no encontrado.';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData && errorData.mensaje) {
+                            mensajeError = errorData.mensaje;
+                        }
+                    } catch (parseErr) {
+                        // Respuesta sin formato JSON
+                    }
+                    mostrarError(mensajeError);
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = 'Entrar al Sistema';
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Persistir sesión del usuario
+                // Se guarda en minúsculas para compatibilidad con las vistas existentes
+                const rolEnMinuscula = (data.rol || '').toLowerCase();
+                sessionStorage.setItem('rolActivo', rolEnMinuscula);
+                sessionStorage.setItem('usuarioId', data.id);
+                sessionStorage.setItem('usuarioNombre', data.nombre);
+                sessionStorage.setItem('usuarioEmail', data.email);
+                if (data.centroId) {
+                    sessionStorage.setItem('centroId', data.centroId);
+                    sessionStorage.setItem('centroNombre', data.centroNombre || '');
+                }
+                if (data.institucionId) {
+                    sessionStorage.setItem('institucionId', data.institucionId);
+                    sessionStorage.setItem('institucionNombre', data.institucionNombre || '');
+                }
+
+                // Redirección inmediata al Menú Principal
+                window.location.href = 'menu.html';
+
+            } catch (networkError) {
+                console.error('Error de conexión:', networkError);
+                mostrarError('No se pudo conectar con el servidor backend. Verifica tu conexión.');
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Entrar al Sistema';
+            }
         });
     </script>
 </body>

@@ -31,16 +31,24 @@ public class Usuario {
     @Column(nullable = false)
     private RolUsuario rol;
 
+    @Column(nullable = false)
+    private Boolean activo = true;
+
     public Usuario() {
     }
 
     public Usuario(String nombre, String email, String password, Centro centro, InstitucionReceptora institucion, RolUsuario rol) {
+        this(nombre, email, password, centro, institucion, rol, true);
+    }
+
+    public Usuario(String nombre, String email, String password, Centro centro, InstitucionReceptora institucion, RolUsuario rol, Boolean activo) {
         this.nombre = nombre;
         this.email = email;
         this.password = password;
         this.centro = centro;
         this.institucion = institucion;
         this.rol = rol;
+        this.activo = activo != null ? activo : true;
     }
 
     public Integer getId() {
@@ -97,5 +105,13 @@ public class Usuario {
 
     public void setRol(RolUsuario rol) {
         this.rol = rol;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 }

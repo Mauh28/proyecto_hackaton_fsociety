@@ -44,9 +44,18 @@
     <script>
         // Lógica real de restricción basada en el Login
         const rolActivo = sessionStorage.getItem('rolActivo');
+        const usuarioNombre = sessionStorage.getItem('usuarioNombre');
 
-        // Filtrar dinámicamente las tarjetas del menú según el rol validado si existe sesión
-        if (rolActivo) {
+        if (!rolActivo) {
+            window.location.href = 'index.html';
+        } else {
+            if (usuarioNombre) {
+                const parrafoSubtitulo = document.querySelector('.info-card > p.text-muted');
+                if (parrafoSubtitulo) {
+                    parrafoSubtitulo.innerHTML = `Bienvenido(a), <strong>${usuarioNombre}</strong> (${rolActivo.toUpperCase()}). Selecciona el módulo al que deseas ingresar.`;
+                }
+            }
+
             const opcionesMenu = document.querySelectorAll('a[data-role]');
             opcionesMenu.forEach(card => {
                 const rolesPermitidos = card.getAttribute('data-role');

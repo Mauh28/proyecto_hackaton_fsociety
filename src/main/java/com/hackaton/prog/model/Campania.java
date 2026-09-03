@@ -17,11 +17,14 @@ public class Campania {
     @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
 
-    @Column(name = "fecha_fin", nullable = false)
+    @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
     @Column(columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "meta_unidades", precision = 10, scale = 2)
+    private java.math.BigDecimal metaUnidades = java.math.BigDecimal.ZERO;
 
     @Column(nullable = false)
     private Boolean activo = true;
@@ -88,6 +91,14 @@ public class Campania {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public java.math.BigDecimal getMetaUnidades() {
+        return metaUnidades;
+    }
+
+    public void setMetaUnidades(java.math.BigDecimal metaUnidades) {
+        this.metaUnidades = metaUnidades;
     }
 
     public Usuario getLider() {
