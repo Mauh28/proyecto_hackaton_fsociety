@@ -1,68 +1,57 @@
-# Sistema de Registro y Coordinación de Centros de Acopio (<in>Hack)
+<img src="docs/img/logo.png" alt="AMAREA SOFTWARE Logo" width="170" align="left" style="margin-right: 25px; margin-bottom: 15px;" />
 
-> **Proyecto desarrollado por el equipo *fsociety* para el hackatón.**  
-> Plataforma web para la gestión, trazabilidad y coordinación de centros de acopio en situaciones de emergencia y campañas benéficas.
+# AMAREA SOFTWARE
+### Sistema de Registro y Coordinación de Centros de Acopio
+
+**AMAREA SOFTWARE** es una plataforma web desarrollada por el equipo **fsociety** para la trazabilidad de donaciones, control de inventario en tiempo real y coordinación logística estratégica de centros de acopio ante situaciones de emergencia, contingencias naturales y campañas humanitarias.
+
+[![Deploy Render](https://img.shields.io/badge/DEPLOY-RENDER-46E3B7?style=flat-square&logo=render&logoColor=black)](https://proyecto-hackaton-fsociety.onrender.com/)
+[![Java](https://img.shields.io/badge/JAVA-17%2B-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/SPRING_BOOT-4.1.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/)
+[![Database](https://img.shields.io/badge/TIDB_CLOUD-SERVERLESS-0052CC?style=flat-square&logo=mysql&logoColor=white)](https://tidbcloud.com/)
+[![Build Status](https://img.shields.io/badge/BUILD-PASSING-brightgreen?style=flat-square)](https://github.com/Mauh28/proyecto_hackaton_fsociety)
+
+<br clear="left"/>
 
 ---
 
-## 🔗 Repositorio Oficial en GitHub
+## 🌐 Acceso a la Aplicación (Despliegue en Vivo)
 
-* **Repositorio:** [https://github.com/Mauh28/proyecto_hackaton_fsociety](https://github.com/Mauh28/proyecto_hackaton_fsociety)
-* **Rama principal:** `main`
+Puedes acceder a la versión desplegada en producción directamente a través del siguiente enlace:
+
+👉 **[https://proyecto-hackaton-fsociety.onrender.com/](https://proyecto-hackaton-fsociety.onrender.com/)**
 
 ---
 
-## 🛠️ Herramientas y Stack Tecnológico
+## 🛠️ Herramientas y Stack Tecnológico (Resumen)
 
-| Componente | Tecnología / Herramienta | Uso en el Proyecto |
-| :--- | :--- | :--- |
-| **Backend** | **Java 17 & Spring Boot** | Lógica de negocio, API REST, validaciones y arquitectura de servicios. |
-| **Persistencia / ORM** | **Spring Data JPA & Hibernate** | Mapeo y consultas a la base de datos relacional. |
-| **Base de Datos (Cloud)** | **TiDB Cloud (Serverless)** | Base de datos MySQL distribuida de alta disponibilidad alojada en la nube para acceso colaborativo 24/7 y despliegue sin depender de `localhost`. |
-| **Modelado de BD** | **MySQL Workbench** | Diseño relacional, creación y ejecución del script de tablas y procedimientos. |
-| **Frontend** | **HTML5, CSS3, JavaScript & Bootstrap** | Interfaz de usuario responsiva para voluntarios y encargados de centro. |
-| **Motor de Plantillas** | **Thymeleaf** | Renderizado de vistas dinámicas integrado con Spring Boot. |
-| **Entorno & Asistencia IA** | **Antigravity IDE (Gemini 3.8 Flash)** | Asistente de pair programming, arquitectura y depuración de código. |
-| **Control de Versiones** | **Git & GitHub** | Control de versiones y colaboración del equipo en tiempo real. |
+* **Backend:** Java 17 & Spring Boot 4.1.1 (Arquitectura REST, Spring Data JPA, Hibernate).
+* **Base de Datos:** TiDB Cloud Serverless (MySQL distribuido de alta disponibilidad 24/7 en la nube).
+* **Frontend:** HTML5, CSS3 y JavaScript vanilla modular (interfaces responsivas para Voluntarios, Encargados y Coordinación).
+* **Despliegue & DevOps:** Render Cloud Platform, Git & GitHub.
+* **Asistencia Técnica:** Antigravity IDE (Gemini 3.8 Flash).
+
+> ℹ️ *El desglose exhaustivo de la arquitectura técnica, modelo de datos y diseño operativo se presenta a detalle en la presentación oficial que acompaña este proyecto.*
 
 ---
 
 ## 🤖 Declaración de Uso de Herramientas de IA
 
 * **Herramienta:** **Antigravity IDE** con el modelo **Gemini 3.8 Flash**.
-* **Propósito:** Apoyo técnico en diseño de arquitectura, depuración de código y optimización de flujos. La lógica de negocio, requerimientos del evento y validaciones son dirigidas por el equipo.
+* **Propósito:** Apoyo técnico en diseño de arquitectura, depuración de código y saneamiento de servicios. La formulación del problema, la lógica de negocio y las validaciones del sistema son dirigidas por el equipo.
 
 ---
 
-## 🚀 Instrucciones de Instalación y Ejecución
+## 💻 Instrucciones de Instalación y Ejecución Local
 
-### 1. Prerrequisitos
-* **Java JDK 17** o superior instalado en el equipo.
-* **Git** instalado.
-* Conexión a internet (para descargar dependencias Maven y conectarse a Clever Cloud).
-
----
-
-### 2. Clonar el repositorio desde GitHub
-Abre tu terminal y ejecuta:
+### 1. Clonar el Repositorio
 ```bash
 git clone https://github.com/Mauh28/proyecto_hackaton_fsociety.git
 cd proyecto_hackaton_fsociety
 ```
 
----
-
-### 3. Configuración de Base de Datos
-La conexión a la base de datos en la nube ya se encuentra preconfigurada en el archivo `src/main/resources/application.properties`:
-* **Host:** `gateway01.us-east-1.prod.aws.tidbcloud.com`
-* **Base de datos:** `centros_acopio`
-* **Puerto:** `4000`
-
-*(Si necesitas cambiar credenciales, edita directamente `src/main/resources/application.properties`).*
-
----
-
-### 4. Compilar y Ejecutar el Proyecto
+### 2. Compilar y Ejecutar
+La conexión a TiDB Cloud ya se encuentra preconfigurada en `src/main/resources/application.properties`.
 
 * **En Windows (PowerShell / CMD):**
   ```powershell
@@ -74,9 +63,6 @@ La conexión a la base de datos en la nube ya se encuentra preconfigurada en el 
   ./mvnw spring-boot:run
   ```
 
----
-
-### 5. Acceder a la Aplicación
-Una vez que el servidor termine de iniciar en la consola (`Started ProgApplication in ...`), abre tu navegador web e ingresa a:
-
+### 3. Acceder en Local
+Una vez iniciado el servidor, abre tu navegador en:  
 👉 **[http://localhost:8080](http://localhost:8080)**

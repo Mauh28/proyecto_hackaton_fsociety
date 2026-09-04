@@ -438,7 +438,7 @@
                     try {
                         const err = await res.json();
                         if (err && err.mensaje) msg = err.mensaje;
-                    } catch (_) {}
+                    } catch (_) { }
                     mostrarAlerta(msg);
                     return;
                 }
@@ -504,7 +504,7 @@
                     try {
                         const err = await res.json();
                         if (err && err.mensaje) msg = err.mensaje;
-                    } catch (_) {}
+                    } catch (_) { }
                     mostrarAlerta(msg);
                     return;
                 }
