@@ -1,24 +1,19 @@
-<table>
-  <tr>
-    <td width="180" align="center" valign="middle">
-      <img src="docs/img/logo.png" alt="AMAREA SOFTWARE Logo" width="160">
-    </td>
-    <td valign="middle">
-      <h1>AMAREA SOFTWARE</h1>
-      <h3>Sistema de Registro y Coordinación de Centros de Acopio</h3>
-      <p>
-        <strong>AMAREA SOFTWARE</strong> es una plataforma web desarrollada por el equipo <strong>fsociety</strong> para la trazabilidad de donaciones, control de inventario en tiempo real y coordinación logística estratégica de centros de acopio ante situaciones de emergencia, contingencias naturales y campañas humanitarias.
-      </p>
-      <p>
-        <a href="https://proyecto-hackaton-fsociety.onrender.com/"><img src="https://img.shields.io/badge/DEPLOY-RENDER-46E3B7?style=flat-square&logo=render&logoColor=black" alt="Deploy Render"></a>
-        <a href="https://www.oracle.com/java/"><img src="https://img.shields.io/badge/JAVA-17%2B-ED8B00?style=flat-square&logo=openjdk&logoColor=white" alt="Java"></a>
-        <a href="https://spring.io/"><img src="https://img.shields.io/badge/SPRING_BOOT-4.1.1-6DB33F?style=flat-square&logo=springboot&logoColor=white" alt="Spring Boot"></a>
-        <a href="https://tidbcloud.com/"><img src="https://img.shields.io/badge/TIDB_CLOUD-SERVERLESS-0052CC?style=flat-square&logo=mysql&logoColor=white" alt="Database"></a>
-        <a href="https://github.com/Mauh28/proyecto_hackaton_fsociety"><img src="https://img.shields.io/badge/BUILD-PASSING-brightgreen?style=flat-square" alt="Build Status"></a>
-      </p>
-    </td>
-  </tr>
-</table>
+<img src="docs/img/logo.png" alt="AMAREA SOFTWARE Logo" width="165" align="left" style="margin-right: 25px; margin-bottom: 15px;" />
+
+<font size="6"><b>AMAREA SOFTWARE</b></font>
+
+### Sistema de Registro y Coordinación de Centros de Acopio
+
+**AMAREA SOFTWARE** es una plataforma web desarrollada por el equipo **fsociety** para la trazabilidad de donaciones, control de inventario en tiempo real y coordinación logística estratégica de centros de acopio ante situaciones de emergencia, contingencias naturales y campañas humanitarias.
+
+[![Deploy Render](https://img.shields.io/badge/DEPLOY-RENDER-46E3B7?style=flat-square&logo=render&logoColor=black)](https://proyecto-hackaton-fsociety.onrender.com/)
+[![Java](https://img.shields.io/badge/JAVA-17%2B-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/SPRING_BOOT-4.1.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/)
+[![Database](https://img.shields.io/badge/TIDB_CLOUD-SERVERLESS-0052CC?style=flat-square&logo=mysql&logoColor=white)](https://tidbcloud.com/)
+[![Build Status](https://img.shields.io/badge/BUILD-PASSING-brightgreen?style=flat-square)](https://github.com/Mauh28/proyecto_hackaton_fsociety)
+
+<br clear="left"/>
+<br/>
 
 ## 🌐 Acceso a la Aplicación (Despliegue en Vivo)
 
