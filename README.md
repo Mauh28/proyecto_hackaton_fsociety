@@ -1,6 +1,7 @@
-<img src="docs/img/logo.png" alt="AMAREA SOFTWARE Logo" width="170" align="left" style="margin-right: 25px; margin-bottom: 15px;" />
+<img src="docs/img/logo.png" alt="AMAREA SOFTWARE Logo" width="165" align="left" style="margin-right: 25px; margin-bottom: 15px;" />
 
-# AMAREA SOFTWARE
+<font size="6"><b>AMAREA SOFTWARE</b></font>
+
 ### Sistema de Registro y Coordinación de Centros de Acopio
 
 **AMAREA SOFTWARE** es una plataforma web desarrollada por el equipo **fsociety** para la trazabilidad de donaciones, control de inventario en tiempo real y coordinación logística estratégica de centros de acopio ante situaciones de emergencia, contingencias naturales y campañas humanitarias.
@@ -12,6 +13,15 @@
 [![Build Status](https://img.shields.io/badge/BUILD-PASSING-brightgreen?style=flat-square)](https://github.com/Mauh28/proyecto_hackaton_fsociety)
 
 <br clear="left"/>
+<br/>
+
+---
+
+## 📄 Documentación del Proyecto
+
+A continuación se pondrá a disposición la documentación formal y técnica solicitada para el programa:
+
+* 📥 **Documentación Oficial del Sistema (PDF):** [Descargar / Ver Documentación](./docs/documentacion_amarea.pdf) *(Espacio reservado — archivo en proceso de integración)*
 
 ---
 
