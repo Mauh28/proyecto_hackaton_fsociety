@@ -138,16 +138,16 @@
     "semantic_hash": "d98687f4640c4f2456787c6cedce2915"
   },
   "src/main/java/com/hackaton/prog/dto/RegistroMovimientoRequest.java": {
-    "mtime": 1788476782.7012804,
-    "seen": 1788486660.052622,
-    "ast_hash": "045cb7a8d48e4646ec175b30b4cee073",
-    "semantic_hash": "045cb7a8d48e4646ec175b30b4cee073"
+    "mtime": 1788503005.7144847,
+    "seen": 1788503699.222885,
+    "ast_hash": "e42ec830309bacb0904b139064c1363b",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/ResumenRecepcionDTO.java": {
-    "mtime": 1788476445.073359,
-    "seen": 1788486660.052622,
-    "ast_hash": "7e063c9e8dd176d5d53f02d3f5293a01",
-    "semantic_hash": "7e063c9e8dd176d5d53f02d3f5293a01"
+    "mtime": 1788502941.5699482,
+    "seen": 1788503699.222885,
+    "ast_hash": "a16a15ff6ca817b1e1987f8159dbd06e",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/UsuarioContextoDTO.java": {
     "mtime": 1788500211.83353,
@@ -354,9 +354,9 @@
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/EncargadoService.java": {
-    "mtime": 1788495391.2204373,
-    "seen": 1788496991.1513655,
-    "ast_hash": "2905993fcb76d69a9211855d2b8fafb9",
+    "mtime": 1788503136.646849,
+    "seen": 1788503699.2309494,
+    "ast_hash": "5d728bdd7f380f46fd98fb339a4e414d",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/InventarioService.java": {
@@ -372,22 +372,22 @@
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/MovimientoService.java": {
-    "mtime": 1788496536.550528,
-    "seen": 1788496991.1523764,
-    "ast_hash": "42dbd0309867067e42f3a2e3b6b022a1",
+    "mtime": 1788503071.4953837,
+    "seen": 1788503699.2309494,
+    "ast_hash": "4aab7c87abdfb991883bf14f3d821924",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/RecepcionService.java": {
-    "mtime": 1788496536.5515273,
-    "seen": 1788496991.1523764,
-    "ast_hash": "1fde5bf7694b39dcac68f7851043c562",
+    "mtime": 1788502980.577602,
+    "seen": 1788503699.2309494,
+    "ast_hash": "eb1bbff25b38b257d4b771288306b1b2",
     "semantic_hash": ""
   },
   "src/test/java/com/hackaton/prog/EncargadoControllerTest.java": {
-    "mtime": 1788486136.5778337,
-    "seen": 1788486660.052622,
-    "ast_hash": "5c2e29823edcb99f51b759c5c009286d",
-    "semantic_hash": "5c2e29823edcb99f51b759c5c009286d"
+    "mtime": 1788503453.780701,
+    "seen": 1788503699.2309494,
+    "ast_hash": "e1ffb87cb17cdd4111778608b598145f",
+    "semantic_hash": ""
   },
   "src/test/java/com/hackaton/prog/MenuControllerTest.java": {
     "mtime": 1788476300.6914103,
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1788499209.9878707,
-    "seen": 1788499241.2863832,
-    "ast_hash": "f30ac90207380e1275727402ee5eb1c7",
+    "mtime": 1788500858.5476067,
+    "seen": 1788503699.2329478,
+    "ast_hash": "cb64dbbb1ad439b59481e83b47f2891e",
     "semantic_hash": ""
   },
   "docs/GUIA_PROCEDIMIENTOS_ALMACENADOS.md": {
@@ -450,33 +450,33 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/coordinador.html": {
-    "mtime": 1788500417.966433,
-    "seen": 1788500646.1168253,
-    "ast_hash": "4e4dd47c52a6e88fdc2febc6265ae37d",
+    "mtime": 1788503398.7621527,
+    "seen": 1788503699.2329478,
+    "ast_hash": "fb07058e5f65843920ec0eb9ce6acbbb",
     "semantic_hash": ""
   },
   "src/main/resources/static/encargado.html": {
-    "mtime": 1788500428.2461867,
-    "seen": 1788500646.1168253,
-    "ast_hash": "f547c97e9e761e7cf711c02a175cf9ee",
+    "mtime": 1788503259.2705083,
+    "seen": 1788503699.2329478,
+    "ast_hash": "3ba55c3c3076b6b2d3e3d62a2ace7191",
     "semantic_hash": ""
   },
   "src/main/resources/static/index.html": {
-    "mtime": 1788477720.714515,
-    "seen": 1788496991.1533735,
-    "ast_hash": "631e972736dff980876b15132b900b10",
+    "mtime": 1788503165.075609,
+    "seen": 1788503699.2329478,
+    "ast_hash": "2d8ce1aebf28e22dcf06cc85c016fbe0",
     "semantic_hash": ""
   },
   "src/main/resources/static/menu.html": {
-    "mtime": 1788500346.7672946,
-    "seen": 1788500646.1178458,
-    "ast_hash": "644eb3545857211b6cda304c6b7eab68",
+    "mtime": 1788501816.800877,
+    "seen": 1788503699.2329478,
+    "ast_hash": "f9c5d01b28ab137e02b42de5b8998048",
     "semantic_hash": ""
   },
   "src/main/resources/static/recepcion.html": {
-    "mtime": 1788500438.09327,
-    "seen": 1788500646.1178458,
-    "ast_hash": "3eeb409155319a22e4dffa43bca784fd",
+    "mtime": 1788503206.9526055,
+    "seen": 1788503699.2329478,
+    "ast_hash": "11132288bba3b36e27e94056d5e859ca",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/CentroMapaDTO.java": {
@@ -486,9 +486,9 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/institucion.html": {
-    "mtime": 1788499209.9978375,
-    "seen": 1788499241.2863832,
-    "ast_hash": "b68840e67c0fd4c2e6fe475fd1d56c4b",
+    "mtime": 1788501816.7997947,
+    "seen": 1788503699.2329478,
+    "ast_hash": "bb4b482119db924f4251127fde1f9dc8",
     "semantic_hash": ""
   },
   "docs/img/logo.png": {
@@ -543,6 +543,12 @@
     "mtime": 1788500408.4900033,
     "seen": 1788500646.1178458,
     "ast_hash": "2a9dc2d4c0761cc26ffabb47edca8179",
+    "semantic_hash": ""
+  },
+  "src/main/resources/static/logo.png": {
+    "mtime": 1788503165.0783107,
+    "seen": 1788503699.2329478,
+    "ast_hash": "0b7ea1272f6eec56464dd7f43ed6a211",
     "semantic_hash": ""
   }
 }
