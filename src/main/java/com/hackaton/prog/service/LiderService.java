@@ -139,10 +139,11 @@ public class LiderService {
         Campania campania = validarYObtenerCampania(resolvedId, campaniaId);
 
         if (req.getMetaUnidades() != null) {
-            if (req.getMetaUnidades().compareTo(BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("La meta de unidades recolectadas no puede ser negativa.");
+            if (req.getMetaUnidades().compareTo(BigDecimal.ONE) < 0) {
+                throw new IllegalArgumentException("La meta de unidades debe ser un número entero mayor o igual a 1.");
             }
-            campania.setMetaUnidades(req.getMetaUnidades());
+            // Asegurar que la meta sea entera (sin decimales)
+            campania.setMetaUnidades(req.getMetaUnidades().setScale(0, RoundingMode.HALF_UP));
         }
 
         if (req.getDescripcion() != null) {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,8 +125,10 @@ public class CoordinadorService {
         c.setNombre(req.getNombre().trim());
         c.setFechaInicio(req.getFechaInicio());
         c.setFechaFin(req.getFechaFin());
-        c.setDescripcion(req.getDescripcion());
-        c.setMetaUnidades(req.getMetaUnidades() != null ? req.getMetaUnidades() : BigDecimal.valueOf(5000));
+        BigDecimal meta = (req.getMetaUnidades() != null && req.getMetaUnidades().compareTo(BigDecimal.ONE) >= 0)
+                ? req.getMetaUnidades().setScale(0, RoundingMode.HALF_UP)
+                : BigDecimal.valueOf(5000);
+        c.setMetaUnidades(meta);
         c.setActivo(req.getActivo() != null ? req.getActivo() : true);
 
         return campaniaRepository.save(c);

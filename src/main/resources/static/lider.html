@@ -304,33 +304,29 @@
             }
 
             // KPIs Numéricos
-            const stockActual = Number(data.stockActual || 0);
-            const totalRecibido = Number(data.totalRecibido || 0);
-            const totalEntregado = Number(data.totalEntregado || 0);
-            const totalMermas = Number(data.totalMermas || 0);
-            const metaUnidades = Number(data.metaUnidades || 0);
-            const pctAvance = Number(data.porcentajeAvance || 0);
+            const stockActual = Math.max(0, Math.round(Number(data.stockActual || 0)));
+            const totalRecibido = Math.max(0, Math.round(Number(data.totalRecibido || 0)));
+            const totalEntregado = Math.max(0, Math.round(Number(data.totalEntregado || 0)));
+            const totalMermas = Math.max(0, Math.round(Number(data.totalMermas || 0)));
+            const metaUnidades = Math.max(1, Math.round(Number(data.metaUnidades || 1)));
+
+            // Calcular porcentaje real y representarlo de forma robusta
+            const pctCalculado = metaUnidades > 0 ? (stockActual / metaUnidades) * 100 : 0;
+            const pctDisplay = pctCalculado.toFixed(1);
 
             document.getElementById('statStockCampania').innerText = stockActual.toLocaleString();
             document.getElementById('statTotalRecibido').innerText = totalRecibido.toLocaleString();
             document.getElementById('statTotalEntregado').innerText = totalEntregado.toLocaleString();
             document.getElementById('statTotalMermas').innerText = totalMermas.toLocaleString();
 
-            // Barra de Progreso
+            // Barra de Progreso y Texto Informativo
             document.getElementById('metaAvanceTexto').innerText = 
-                `${stockActual.toLocaleString()} / ${metaUnidades.toLocaleString()} unidades (${pctAvance.toFixed(1)}%)`;
+                `${stockActual.toLocaleString()} / ${metaUnidades.toLocaleString()} unidades (${pctDisplay}%)`;
             
             const progressBar = document.getElementById('progressBar');
             if (progressBar) {
-                const anchoPorcentaje = Math.min(Math.max(pctAvance, 0), 100);
+                const anchoPorcentaje = Math.min(Math.max(pctCalculado, 0), 100);
                 progressBar.style.width = `${anchoPorcentaje}%`;
-                if (anchoPorcentaje >= 100) {
-                    progressBar.style.backgroundColor = 'var(--success)';
-                } else if (anchoPorcentaje >= 50) {
-                    progressBar.style.backgroundColor = '#3b82f6';
-                } else {
-                    progressBar.style.backgroundColor = '#f59e0b';
-                }
             }
 
             // Lista de Centros Participantes
@@ -403,17 +399,21 @@
 
         // 7. Evento: Actualizar Metas de la Campaña
         document.getElementById('btnActualizarCampania').addEventListener('click', async () => {
-            const metaVal = document.getElementById('metaUnidades').value;
+            const metaInput = document.getElementById('metaUnidades');
+            const metaVal = Math.floor(Number(metaInput.value));
             const fechaFinVal = document.getElementById('fechaFin').value;
             const descVal = document.getElementById('descripcionCampania').value;
 
-            if (!metaVal || Number(metaVal) <= 0) {
-                mostrarError("Por favor ingresa una meta válida mayor a cero.");
+            if (!metaVal || metaVal < 1) {
+                mostrarError("La meta de recolección debe ser un número entero mayor o igual a 1.");
+                metaInput.focus();
                 return;
             }
 
+            metaInput.value = metaVal;
+
             const payload = {
-                metaUnidades: parseFloat(metaVal),
+                metaUnidades: metaVal,
                 fechaFin: fechaFinVal ? fechaFinVal : null,
                 descripcion: descVal ? descVal.trim() : ""
             };

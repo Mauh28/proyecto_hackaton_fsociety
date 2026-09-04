@@ -15,6 +15,18 @@
         <p class="text-muted mb-2">Revisa y confirma los insumos canalizados hacia tu institución para asegurar la
             trazabilidad oficial.</p>
 
+        <!-- Selector de Institución (Exclusivo para rol COORDINADOR) -->
+        <div id="contenedorSelectorInstitucion" class="info-card mb-1-5" style="display: none; background: #f8fafc; border: 1px solid var(--border);">
+            <div class="flex-between-center mb-1">
+                <label for="selectInstitucionCoordinador" class="font-semibold mb-0" style="margin-top: 0;">Supervisión Institucional (Modo Coordinador)</label>
+                <span class="text-sm" style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 99px; font-weight: 600;">COORDINADOR</span>
+            </div>
+            <select id="selectInstitucionCoordinador">
+                <option value="1">Cargando instituciones receptoras...</option>
+            </select>
+            <small class="text-muted text-sm" style="margin-top: 0.4rem; display: block;">Como coordinador general, puedes auditar y cambiar de institución receptora en cualquier momento.</small>
+        </div>
+
         <!-- Filtros operativos -->
         <div class="category-grid mb-1-5">
             <div class="category-card active" id="filterPending" data-filter="pendientes">
@@ -111,12 +123,61 @@
         // 1. Control y persistencia estricta de sesión (RBAC)
         const rolActivo = (sessionStorage.getItem('rolActivo') || '').toLowerCase();
         const usuarioEmail = sessionStorage.getItem('usuarioEmail') || '';
-        const institucionId = sessionStorage.getItem('institucionId') || '1';
+        let institucionId = sessionStorage.getItem('institucionId') || '1';
 
         // Restricción: solo INSTITUCION o COORDINADOR pueden acceder a este módulo
         if (rolActivo !== 'institucion' && rolActivo !== 'coordinador') {
             alert('Acceso restringido: Se requiere cuenta institucional o de coordinador.');
             window.location.href = 'index.html';
+        }
+
+        // Si es COORDINADOR, mostrar selector de institución y habilitar cambio dinámico
+        const contenedorSelectorInstitucion = document.getElementById('contenedorSelectorInstitucion');
+        const selectInstitucionCoordinador = document.getElementById('selectInstitucionCoordinador');
+
+        if (rolActivo === 'coordinador' && contenedorSelectorInstitucion && selectInstitucionCoordinador) {
+            contenedorSelectorInstitucion.style.display = 'block';
+
+            // Cargar lista de instituciones
+            async function cargarInstitucionesParaCoordinador() {
+                try {
+                    const res = await fetch('/api/encargado/catalogos?centroId=1');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.instituciones && data.instituciones.length > 0) {
+                            selectInstitucionCoordinador.innerHTML = '';
+                            data.instituciones.forEach(inst => {
+                                const opt = document.createElement('option');
+                                opt.value = inst.id;
+                                opt.textContent = `${inst.nombre} (ID: ${inst.id})`;
+                                if (String(inst.id) === String(institucionId)) {
+                                    opt.selected = true;
+                                }
+                                selectInstitucionCoordinador.appendChild(opt);
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Fallback catálogo instituciones para coordinador:', e);
+                    selectInstitucionCoordinador.innerHTML = `
+                        <option value="1" ${institucionId == '1' ? 'selected' : ''}>Albergue Comunitario Esperanza (ID: 1)</option>
+                        <option value="2" ${institucionId == '2' ? 'selected' : ''}>Comedor Solidario San José (ID: 2)</option>
+                    `;
+                }
+            }
+
+            cargarInstitucionesParaCoordinador();
+
+            selectInstitucionCoordinador.addEventListener('change', (e) => {
+                institucionId = e.target.value;
+                const nombreSeleccionado = e.target.options[e.target.selectedIndex].text;
+                const institutionTitle = document.getElementById('institutionTitle');
+                if (institutionTitle) {
+                    institutionTitle.textContent = `Dashboard: ${nombreSeleccionado}`;
+                }
+                dispararNotificacion(`Visualizando entregas para: ${nombreSeleccionado}`);
+                cargarEntregas();
+            });
         }
 
         // Control interactivo y cierre del menú desplegable

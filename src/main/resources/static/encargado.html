@@ -48,9 +48,9 @@
         </div>
 
         <div class="mb-2">
-            <label class="font-semibold">Cantidad / Peso a Mover</label>
+            <label class="font-semibold">Cantidad / Unidades a Mover</label>
             <div class="input-unit-group">
-                <input type="number" id="inputQuantity" min="0.1" step="any" value="1" required>
+                <input type="number" id="inputQuantity" min="1" step="1" value="1" required>
                 <select id="unitSelect" disabled>
                     <option value="unidad">Unidad</option>
                 </select>
@@ -433,10 +433,15 @@
                 mostrarAlerta('Por favor selecciona un artículo de la lista.');
                 return;
             }
-            if (!payload.cantidad || payload.cantidad <= 0) {
-                mostrarAlerta('Ingresa una cantidad válida mayor a cero.');
+
+            const cantEntera = Math.floor(Number(payload.cantidad));
+            if (!cantEntera || cantEntera < 1) {
+                mostrarAlerta('Ingresa una cantidad válida entera mayor o igual a 1.');
+                inputQuantity.focus();
                 return;
             }
+            payload.cantidad = cantEntera;
+            inputQuantity.value = cantEntera;
 
             const textoOriginal = btn.textContent;
             btn.disabled = true;

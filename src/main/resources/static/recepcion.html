@@ -53,7 +53,7 @@
         <div class="mb-1-5">
             <label class="font-semibold">Cantidad y Unidad de Medida</label>
             <div class="input-unit-group">
-                <input type="number" id="inputQuantity" min="0.1" step="any" value="1" placeholder="Cantidad / Peso"
+                <input type="number" id="inputQuantity" min="1" step="1" value="1" placeholder="Cantidad entera"
                     required>
                 <select id="selectUnit">
                     <option value="kg">kg (Kilogramos)</option>
@@ -233,11 +233,13 @@
                 return;
             }
 
-            const cant = parseFloat(inputQuantity.value) || 0;
-            if (cant <= 0) {
-                alert('Ingresa una cantidad válida mayor a cero.');
+            const cant = Math.floor(Number(inputQuantity.value)) || 0;
+            if (cant < 1) {
+                alert('Ingresa una cantidad válida entera mayor o igual a 1.');
+                inputQuantity.focus();
                 return;
             }
+            inputQuantity.value = cant;
 
             const donor = inputDonor.value.trim();
             const esAnonimo = (donor === '');
