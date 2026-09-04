@@ -188,13 +188,33 @@ public class RecepcionService {
         String centroNombre = (centro != null && centro.getNombre() != null)
                 ? centro.getNombre() : "Campus Central - Explanada";
 
-        // Obtener campaña activa del centro o la primera campaña activa global
+        // Obtener campañas activas del centro (o todas las activas si no hay específicas)
         List<CentroCampania> asignadas = centroCampaniaRepository.findByCentroIdAndActivoTrue(centroId);
+        List<com.hackaton.prog.dto.OpcionSimpleDTO> campaniasOpciones = new ArrayList<>();
         Campania campania = null;
-        if (!asignadas.isEmpty() && Boolean.TRUE.equals(asignadas.get(0).getCampania().getActivo())) {
-            campania = asignadas.get(0).getCampania();
-        } else {
-            campania = campaniaRepository.findByActivoTrue().stream().findFirst().orElse(null);
+
+        if (!asignadas.isEmpty()) {
+            for (CentroCampania cc : asignadas) {
+                if (Boolean.TRUE.equals(cc.getCampania().getActivo())) {
+                    campaniasOpciones.add(new com.hackaton.prog.dto.OpcionSimpleDTO(
+                            cc.getCampania().getId(),
+                            cc.getCampania().getNombre()
+                    ));
+                    if (campania == null) {
+                        campania = cc.getCampania();
+                    }
+                }
+            }
+        }
+
+        if (campaniasOpciones.isEmpty()) {
+            List<Campania> activasGlobal = campaniaRepository.findByActivoTrue();
+            for (Campania c : activasGlobal) {
+                campaniasOpciones.add(new com.hackaton.prog.dto.OpcionSimpleDTO(c.getId(), c.getNombre()));
+                if (campania == null) {
+                    campania = c;
+                }
+            }
         }
 
         Integer campaniaId = (campania != null) ? campania.getId() : 1;
@@ -214,6 +234,7 @@ public class RecepcionService {
         resumen.setCentroNombre(centroNombre);
         resumen.setCampaniaId(campaniaId);
         resumen.setCampaniaNombre(campaniaNombre);
+        resumen.setCampaniasActivas(campaniasOpciones);
         resumen.setMetaTotal(metaTotal);
         resumen.setStockActual(stockActual);
 

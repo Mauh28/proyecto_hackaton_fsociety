@@ -44,4 +44,23 @@ class EncargadoControllerTest {
                     "El primer movimiento debe tener un ID mayor que el segundo (orden descendente, más reciente primero)");
         }
     }
+
+    @Test
+    @DisplayName("Debe registrar entrega hacia beneficiario directo correctamente")
+    void testRegistrarEntregaBeneficiarioDirecto() {
+        var req = new com.hackaton.prog.dto.RegistroMovimientoRequest();
+        req.setTipo("ENTREGA");
+        req.setTipoEntrega("beneficiario");
+        req.setCentroId(1);
+        req.setCampaniaId(1);
+        req.setArticuloId(1);
+        req.setCantidad(java.math.BigDecimal.valueOf(1.0));
+        req.setUsuarioId(2);
+        req.setBeneficiarioNombre("Familia Prueba Flujo 6.2");
+
+        var response = encargadoController.registrarMovimiento(req);
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertTrue((Boolean) response.getBody().get("exito"));
+    }
 }
