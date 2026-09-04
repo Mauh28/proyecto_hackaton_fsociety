@@ -87,11 +87,30 @@ public class DashboardCentroDTO {
         this.metaCampania = metaCampania;
     }
 
+    private List<OpcionSimpleDTO> campaniasDisponibles = new ArrayList<>();
+    private List<OpcionSimpleDTO> centrosDisponibles = new ArrayList<>();
+
     public List<MovimientoHistorialDTO> getHistorial() {
         return historial;
     }
 
     public void setHistorial(List<MovimientoHistorialDTO> historial) {
         this.historial = historial;
+    }
+
+    public List<OpcionSimpleDTO> getCampaniasDisponibles() {
+        return campaniasDisponibles;
+    }
+
+    public void setCampaniasDisponibles(List<OpcionSimpleDTO> campaniasDisponibles) {
+        this.campaniasDisponibles = campaniasDisponibles;
+    }
+
+    public List<OpcionSimpleDTO> getCentrosDisponibles() {
+        return centrosDisponibles;
+    }
+
+    public void setCentrosDisponibles(List<OpcionSimpleDTO> centrosDisponibles) {
+        this.centrosDisponibles = centrosDisponibles;
     }
 }

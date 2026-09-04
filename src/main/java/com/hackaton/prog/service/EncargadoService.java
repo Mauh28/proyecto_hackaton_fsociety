@@ -57,15 +57,23 @@ public class EncargadoService {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public Campania obtenerCampaniaParaCentro(Integer centroId, Integer campaniaId) {
+        if (campaniaId != null) {
+            return campaniaRepository.findById(campaniaId).orElseGet(() -> obtenerCampaniaActivaParaCentro(centroId));
+        }
+        return obtenerCampaniaActivaParaCentro(centroId);
+    }
+
     /**
      * Obtiene los catálogos necesarios para los formularios de encargado.html
      */
     @Transactional(readOnly = true)
-    public CatalogosEncargadoDTO obtenerCatalogos(Integer centroId) {
+    public CatalogosEncargadoDTO obtenerCatalogos(Integer centroId, Integer campaniaId) {
         CatalogosEncargadoDTO dto = new CatalogosEncargadoDTO();
         dto.setCentroId(centroId);
 
-        Campania campania = obtenerCampaniaActivaParaCentro(centroId);
+        Campania campania = obtenerCampaniaParaCentro(centroId, campaniaId);
         if (campania != null) {
             dto.setCampaniaId(campania.getId());
             dto.setCampaniaNombre(campania.getNombre());
@@ -113,19 +121,43 @@ public class EncargadoService {
 
         dto.setCentrosDestino(centrosDestinoDto);
 
+        // Campañas disponibles
+        List<CentroCampania> asignadasCentro = centroCampaniaRepository.findByCentroIdAndActivoTrue(centroId);
+        List<Campania> campaniasDisponiblesList;
+        if (!asignadasCentro.isEmpty()) {
+            campaniasDisponiblesList = asignadasCentro.stream().map(CentroCampania::getCampania).filter(c -> Boolean.TRUE.equals(c.getActivo())).collect(Collectors.toList());
+        } else {
+            campaniasDisponiblesList = campaniaRepository.findByActivoTrue();
+        }
+        if (campaniasDisponiblesList.isEmpty()) {
+            campaniasDisponiblesList = campaniaRepository.findAll();
+        }
+
+        dto.setCampaniasDisponibles(campaniasDisponiblesList.stream()
+                .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre() + (Boolean.TRUE.equals(c.getActivo()) ? " (Activa)" : " (Inactiva)")))
+                .collect(Collectors.toList()));
+
+        dto.setCentrosDisponibles(centrosDb.stream()
+                .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre() + " (" + c.getInstitucion() + ")"))
+                .collect(Collectors.toList()));
+
         return dto;
+    }
+
+    public CatalogosEncargadoDTO obtenerCatalogos(Integer centroId) {
+        return obtenerCatalogos(centroId, null);
     }
 
     /**
      * Obtiene métricas en vivo e historial para el Dashboard del Centro.
      */
     @Transactional(readOnly = true)
-    public DashboardCentroDTO obtenerDashboardCentro(Integer centroId) {
+    public DashboardCentroDTO obtenerDashboardCentro(Integer centroId, Integer campaniaId) {
         Centro centro = centroRepository.findById(centroId)
                 .orElseThrow(() -> new IllegalArgumentException("Centro no encontrado: " + centroId));
 
-        Campania campania = obtenerCampaniaActivaParaCentro(centroId);
-        Integer campaniaId = campania != null ? campania.getId() : null;
+        Campania campania = obtenerCampaniaParaCentro(centroId, campaniaId);
+        Integer resolvedCampaniaId = campania != null ? campania.getId() : null;
         String campaniaNombre = campania != null ? campania.getNombre() : "Sin Campaña Activa";
         BigDecimal metaCampania = (campania != null && campania.getMetaUnidades() != null)
                 ? campania.getMetaUnidades() : BigDecimal.valueOf(3000);
@@ -138,16 +170,41 @@ public class EncargadoService {
                 .map(this::mapearHistorial)
                 .collect(Collectors.toList());
 
-        return new DashboardCentroDTO(
+        DashboardCentroDTO dashboardDTO = new DashboardCentroDTO(
                 centro.getId(),
                 centro.getNombre(),
-                campaniaId,
+                resolvedCampaniaId,
                 campaniaNombre,
                 stockTotal,
                 totalMermasMes,
                 metaCampania,
                 historialDto
         );
+
+        List<CentroCampania> asignadasCentro = centroCampaniaRepository.findByCentroIdAndActivoTrue(centroId);
+        List<Campania> campaniasDisponiblesList;
+        if (!asignadasCentro.isEmpty()) {
+            campaniasDisponiblesList = asignadasCentro.stream().map(CentroCampania::getCampania).filter(c -> Boolean.TRUE.equals(c.getActivo())).collect(Collectors.toList());
+        } else {
+            campaniasDisponiblesList = campaniaRepository.findByActivoTrue();
+        }
+        if (campaniasDisponiblesList.isEmpty()) {
+            campaniasDisponiblesList = campaniaRepository.findAll();
+        }
+
+        dashboardDTO.setCampaniasDisponibles(campaniasDisponiblesList.stream()
+                .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre() + (Boolean.TRUE.equals(c.getActivo()) ? " (Activa)" : " (Inactiva)")))
+                .collect(Collectors.toList()));
+
+        dashboardDTO.setCentrosDisponibles(centroRepository.findByActivoTrue().stream()
+                .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre() + " (" + c.getInstitucion() + ")"))
+                .collect(Collectors.toList()));
+
+        return dashboardDTO;
+    }
+
+    public DashboardCentroDTO obtenerDashboardCentro(Integer centroId) {
+        return obtenerDashboardCentro(centroId, null);
     }
 
     /**

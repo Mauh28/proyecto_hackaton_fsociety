@@ -105,7 +105,20 @@ public class LiderService {
                 .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre() + " (" + c.getInstitucion() + ")"))
                 .collect(Collectors.toList());
 
-        return new DashboardLiderDTO(
+        // Obtener campañas disponibles para el selector del dashboard
+        Usuario usuario = usuarioRepository.findById(resolvedId).orElse(null);
+        List<Campania> campaniasSelector;
+        if (usuario != null && usuario.getRol() == RolUsuario.COORDINADOR) {
+            campaniasSelector = campaniaRepository.findAll();
+        } else {
+            campaniasSelector = campaniaRepository.findByLiderId(resolvedId);
+        }
+
+        List<OpcionSimpleDTO> campaniasDisponibles = campaniasSelector.stream()
+                .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre() + (Boolean.TRUE.equals(c.getActivo()) ? " (Activa)" : " (Inactiva)")))
+                .collect(Collectors.toList());
+
+        DashboardLiderDTO dashboardDTO = new DashboardLiderDTO(
                 campania.getId(),
                 campania.getNombre(),
                 campania.getDescripcion(),
@@ -121,6 +134,8 @@ public class LiderService {
                 centrosParticipantes,
                 centrosDisponibles
         );
+        dashboardDTO.setCampaniasDisponibles(campaniasDisponibles);
+        return dashboardDTO;
     }
 
     public DashboardLiderDTO obtenerDashboard(Integer usuarioId, Integer campaniaId) {
@@ -267,15 +282,22 @@ public class LiderService {
                                 .orElseThrow(() -> new IllegalArgumentException("No hay campañas registradas en el sistema.")));
             }
         } else if (usuario.getRol() == RolUsuario.LIDER) {
-            Campania campania = campaniaRepository.findFirstByLiderIdAndActivoTrue(usuario.getId())
-                    .orElseGet(() -> campaniaRepository.findByLiderId(usuario.getId()).stream().findFirst()
-                            .orElseThrow(() -> new IllegalArgumentException("El usuario Líder no tiene asignada ninguna campaña actualmente.")));
-
-            if (campaniaId != null && !campania.getId().equals(campaniaId)) {
-                throw new AccesoDenegadoException("Acceso restringido: No tiene permisos para gestionar una campaña distinta a la suya.");
+            List<Campania> campaniasLider = campaniaRepository.findByLiderId(usuario.getId());
+            if (campaniasLider.isEmpty()) {
+                throw new IllegalArgumentException("El usuario Líder no tiene asignada ninguna campaña actualmente.");
             }
 
-            return campania;
+            if (campaniaId != null) {
+                return campaniasLider.stream()
+                        .filter(c -> c.getId().equals(campaniaId))
+                        .findFirst()
+                        .orElseThrow(() -> new AccesoDenegadoException("Acceso restringido: No tiene permisos para gestionar una campaña distinta a la suya."));
+            } else {
+                return campaniasLider.stream()
+                        .filter(c -> Boolean.TRUE.equals(c.getActivo()))
+                        .findFirst()
+                        .orElse(campaniasLider.get(0));
+            }
         } else {
             throw new AccesoDenegadoException("Acceso denegado: El rol " + usuario.getRol() + " no tiene permisos de Líder de Campaña.");
         }

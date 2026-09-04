@@ -38,9 +38,15 @@ public class CoordinadorService {
 
     /**
      * Devuelve las métricas consolidadas del Dashboard Global y la comparativa por centro.
+     * Permite al Coordinador alternar entre campañas o ver la campaña activa por defecto.
      */
     @Transactional(readOnly = true)
     public DashboardGlobalDTO obtenerDashboardGlobal() {
+        return obtenerDashboardGlobal(null);
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardGlobalDTO obtenerDashboardGlobal(Integer campaniaIdSeleccionada) {
         BigDecimal stockGlobal = movimientoRepository.calcularStockGlobal();
         BigDecimal mermaTotal = movimientoRepository.calcularMermaGlobal();
 
@@ -52,16 +58,43 @@ public class CoordinadorService {
             artMasDonado = "Agua embotellada 1L";
         }
 
-        // Obtener la campaña activa principal
-        Campania campaniaActiva = campaniaRepository.findByActivoTrue().stream().findFirst().orElse(null);
-        String campaniaNombre = campaniaActiva != null ? campaniaActiva.getNombre() : "Sin Campaña Activa";
-        BigDecimal metaCampania = (campaniaActiva != null && campaniaActiva.getMetaUnidades() != null)
-                ? campaniaActiva.getMetaUnidades() : BigDecimal.valueOf(10000);
+        // Listado de todas las campañas para el selector exclusivo del Coordinador
+        List<Campania> todasCampanias = campaniaRepository.findAll();
+        List<OpcionSimpleDTO> campaniasOpciones = todasCampanias.stream()
+                .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre() + (Boolean.TRUE.equals(c.getActivo()) ? " (Activa)" : " (Inactiva)")))
+                .collect(Collectors.toList());
+
+        // Resolver la campaña elegida o la primera activa por defecto
+        Campania campaniaSeleccionada = null;
+        if (campaniaIdSeleccionada != null) {
+            campaniaSeleccionada = campaniaRepository.findById(campaniaIdSeleccionada).orElse(null);
+        }
+        if (campaniaSeleccionada == null) {
+            campaniaSeleccionada = campaniaRepository.findByActivoTrue().stream().findFirst()
+                    .orElseGet(() -> todasCampanias.stream().findFirst().orElse(null));
+        }
+
+        Integer campaniaId = campaniaSeleccionada != null ? campaniaSeleccionada.getId() : null;
+        String campaniaNombre = campaniaSeleccionada != null ? campaniaSeleccionada.getNombre() : "Sin Campaña Activa";
+        BigDecimal metaCampania = (campaniaSeleccionada != null && campaniaSeleccionada.getMetaUnidades() != null)
+                ? campaniaSeleccionada.getMetaUnidades() : BigDecimal.valueOf(10000);
+
+        // Stock acumulado específico de la campaña seleccionada
+        BigDecimal stockCampania = BigDecimal.ZERO;
+        if (campaniaId != null) {
+            stockCampania = movimientoRepository.calcularStockCampania(campaniaId);
+            if (stockCampania == null) stockCampania = BigDecimal.ZERO;
+        } else {
+            stockCampania = stockGlobal;
+        }
 
         // Construir comparativa de centros con su encargado y stock total
         List<CentroComparativaDTO> comparativa = new ArrayList<>();
         for (Centro centro : centros) {
-            BigDecimal stockCentro = movimientoRepository.calcularStockTotalCentro(centro.getId());
+            BigDecimal stockCentro = (campaniaId != null)
+                    ? movimientoRepository.calcularStockCentroCampania(centro.getId(), campaniaId)
+                    : movimientoRepository.calcularStockTotalCentro(centro.getId());
+            if (stockCentro == null) stockCentro = BigDecimal.ZERO;
 
             // Buscar encargado asignado a este centro
             List<Usuario> usuariosCentro = usuarioRepository.findByCentroId(centro.getId());
@@ -79,7 +112,7 @@ public class CoordinadorService {
             ));
         }
 
-        return new DashboardGlobalDTO(
+        DashboardGlobalDTO dto = new DashboardGlobalDTO(
                 stockGlobal,
                 mermaTotal,
                 centrosActivos,
@@ -88,6 +121,11 @@ public class CoordinadorService {
                 metaCampania,
                 comparativa
         );
+        dto.setCampaniaId(campaniaId);
+        dto.setStockCampania(stockCampania);
+        dto.setCampaniasDisponibles(campaniasOpciones);
+
+        return dto;
     }
 
     /**

@@ -10,8 +10,11 @@ public class DashboardGlobalDTO {
     private BigDecimal mermaTotal;
     private long centrosActivos;
     private String articuloMasDonado;
+    private Integer campaniaId;
     private String campaniaNombre;
     private BigDecimal metaCampania;
+    private BigDecimal stockCampania;
+    private List<OpcionSimpleDTO> campaniasDisponibles = new ArrayList<>();
     private List<CentroComparativaDTO> centros = new ArrayList<>();
 
     public DashboardGlobalDTO() {
@@ -26,7 +29,9 @@ public class DashboardGlobalDTO {
         this.articuloMasDonado = articuloMasDonado != null ? articuloMasDonado : "N/A";
         this.campaniaNombre = campaniaNombre != null ? campaniaNombre : "Sin Campaña";
         this.metaCampania = metaCampania != null ? metaCampania : BigDecimal.ZERO;
+        this.stockCampania = stockGlobal != null ? stockGlobal : BigDecimal.ZERO;
         this.centros = centros != null ? centros : new ArrayList<>();
+        this.campaniasDisponibles = new ArrayList<>();
     }
 
     public BigDecimal getStockGlobal() {
@@ -61,6 +66,14 @@ public class DashboardGlobalDTO {
         this.articuloMasDonado = articuloMasDonado;
     }
 
+    public Integer getCampaniaId() {
+        return campaniaId;
+    }
+
+    public void setCampaniaId(Integer campaniaId) {
+        this.campaniaId = campaniaId;
+    }
+
     public String getCampaniaNombre() {
         return campaniaNombre;
     }
@@ -75,6 +88,22 @@ public class DashboardGlobalDTO {
 
     public void setMetaCampania(BigDecimal metaCampania) {
         this.metaCampania = metaCampania;
+    }
+
+    public BigDecimal getStockCampania() {
+        return stockCampania;
+    }
+
+    public void setStockCampania(BigDecimal stockCampania) {
+        this.stockCampania = stockCampania;
+    }
+
+    public List<OpcionSimpleDTO> getCampaniasDisponibles() {
+        return campaniasDisponibles;
+    }
+
+    public void setCampaniasDisponibles(List<OpcionSimpleDTO> campaniasDisponibles) {
+        this.campaniasDisponibles = campaniasDisponibles;
     }
 
     public List<CentroComparativaDTO> getCentros() {

@@ -21,8 +21,9 @@ public class CoordinadorController {
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<DashboardGlobalDTO> obtenerDashboard() {
-        DashboardGlobalDTO dashboard = coordinadorService.obtenerDashboardGlobal();
+    public ResponseEntity<DashboardGlobalDTO> obtenerDashboard(
+            @RequestParam(name = "campaniaId", required = false) Integer campaniaId) {
+        DashboardGlobalDTO dashboard = coordinadorService.obtenerDashboardGlobal(campaniaId);
         return ResponseEntity.ok(dashboard);
     }
 

@@ -55,11 +55,30 @@ public class CatalogosEncargadoDTO {
         this.instituciones = instituciones;
     }
 
+    private List<OpcionSimpleDTO> campaniasDisponibles = new ArrayList<>();
+    private List<OpcionSimpleDTO> centrosDisponibles = new ArrayList<>();
+
     public List<OpcionSimpleDTO> getCentrosDestino() {
         return centrosDestino;
     }
 
     public void setCentrosDestino(List<OpcionSimpleDTO> centrosDestino) {
         this.centrosDestino = centrosDestino;
+    }
+
+    public List<OpcionSimpleDTO> getCampaniasDisponibles() {
+        return campaniasDisponibles;
+    }
+
+    public void setCampaniasDisponibles(List<OpcionSimpleDTO> campaniasDisponibles) {
+        this.campaniasDisponibles = campaniasDisponibles;
+    }
+
+    public List<OpcionSimpleDTO> getCentrosDisponibles() {
+        return centrosDisponibles;
+    }
+
+    public void setCentrosDisponibles(List<OpcionSimpleDTO> centrosDisponibles) {
+        this.centrosDisponibles = centrosDisponibles;
     }
 }
