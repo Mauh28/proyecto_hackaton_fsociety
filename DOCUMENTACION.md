@@ -28,29 +28,40 @@ Construir una plataforma tecnológica centralizada, robusta, auditable y accesib
 
 ## 2. Mapa Arquitectónico de la Documentación
 
-El presente documento está estructurado de forma modular para consolidar la arquitectura completa del proyecto. En esta versión se presenta de manera exhaustiva la **Capa de Persistencia y Base de Datos**. Las secciones subsecuentes se integrarán progresivamente conforme se ensamblen los módulos correspondientes:
+El presente documento consolida la arquitectura y especificación integral del proyecto en base a los requerimientos y reglas del reto (`CONTEXTO_PROYECTO.md`). Está estructurado en cuatro secciones técnicas maestras:
 
 ```
-DOCUMENTACIÓN DEL PROYECTO
+DOCUMENTACIÓN INTEGRAL DEL PROYECTO
 │
 ├── 📁 SECCIÓN I: ARQUITECTURA DE BASE DE DATOS Y PERSISTENCIA (COMPLETO)
 │   ├── 1. Fundamentos y Decisiones de Diseño
-│   ├── 2. Correcciones Recientes y Adaptación a Clever Cloud
+│   ├── 2. Correcciones Técnicas y Adaptación a TiDB Cloud / MySQL Serverless
 │   ├── 3. Modelo Conceptual y Diagrama Entidad-Relación (EER)
 │   ├── 4. Diccionario de Datos y Especificación DDL (centros_acopio_db.sql)
 │   ├── 5. Vista Oficial de Stock y Lógica Inmutable de Inventario
-│   ├── 6. Guía Operativa de los 31 Procedimientos Almacenados (GUIA_PROCEDIMIENTOS_ALMACENADOS.md)
+│   ├── 6. Guía Operativa de Procedimientos Almacenados
 │   ├── 7. Datos Semilla (Seeds / Fixtures) para Demostración
-│   └── 8. Guía de Despliegue y Ejecución en Clever Cloud / Local
+│   └── 8. Guía de Despliegue y Ejecución SQL
 │
-├── 📁 SECCIÓN II: CAPA BACKEND Y REGLAS DE NEGOCIO (Próximamente)
-│   ├── [Spring Boot 3 / Java 17, JPA Entities, Services & REST APIs]
+├── 📁 SECCIÓN II: CAPA BACKEND Y REGLAS DE NEGOCIO (COMPLETO)
+│   ├── 1. Stack Tecnológico y Configuración (Java 17 / Spring Boot 3)
+│   ├── 2. Arquitectura en Capas (Controller - Service - Repository - Model - DTO)
+│   ├── 3. Matriz de Control de Acceso y Roles (RBAC)
+│   ├── 4. Catálogo de APIs REST y Contratos de Entrada/Salida
+│   └── 5. Reglas de Negocio, Trazabilidad y Prevención de Stock Negativo
 │
-├── 📁 SECCIÓN III: CAPA FRONTEND Y EXPERIENCIA DE USUARIO (Próximamente)
-│   ├── [Bootstrap 5, Maquetación Responsiva, Dashboards y Leaflet Maps]
+├── 📁 SECCIÓN III: CAPA FRONTEND Y EXPERIENCIA DE USUARIO (COMPLETO)
+│   ├── 1. Estructura de Vistas e Interfaces de Usuario
+│   ├── 2. Flujo de Navegación y Permisos Visuales Dinámicos
+│   ├── 3. Pantalla de Recepción de Donaciones
+│   ├── 4. Panel Operativo de Encargado de Centro
+│   └── 5. Dashboard Global y Centro de Mando del Coordinador
 │
-└── 📁 SECCIÓN IV: DEPLOYMENT, CLOUD Y DEVOPS (Próximamente)
-    ├── [TiDB Cloud Serverless, Docker & Despliegue en Plataforma Pública]
+└── 📁 SECCIÓN IV: MATRIZ DE CRITERIOS DE ACEPTACIÓN, DEPLOYMENT Y DEVOPS (COMPLETO)
+    ├── 1. Checklist de Criterios de Aceptación del MVP (<in>Hack)
+    ├── 2. Cuentas de Acceso de Prueba para Evaluación
+    ├── 3. Empaquetado, Dockerización y Ejecución Multiplataforma
+    └── 4. Declaración de Uso de IA y Diferenciadores de Innovación
 ```
 
 ---
@@ -718,26 +729,274 @@ mysql -u root -p b0efvzjhpegivufhzick < db/centros_acopio_db.sql
 
 ---
 
-## 4. SECCIÓN II: CAPA BACKEND Y REGLAS DE NEGOCIO (PRÓXIMAMENTE)
+## 4. SECCIÓN II: CAPA BACKEND Y REGLAS DE NEGOCIO
 
-> [!NOTE]
-> Esta sección se completará formalmente una vez que se integre la capa de Controladores REST (`@RestController`) y se configuren los endpoints que comunicarán la base de datos con las vistas web.
-
-* **Stack:** Java 17, Spring Boot 3, Spring Data JPA, Hibernate, MySQL Connector/J.
-* **Componentes Construidos Actualmente:**
-  * Entidades del Dominio: [Articulo.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Articulo.java), [Campania.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Campania.java), [Centro.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Centro.java), [Movimiento.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Movimiento.java), [Transferencia.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Transferencia.java), [Usuario.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Usuario.java).
-  * Lógica de Servicios: [InventarioService.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/service/InventarioService.java) y [MovimientoService.java](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/service/MovimientoService.java) con validación estricta de existencias y excepciones `StockInsuficienteException`.
+> **Stack Base:** Java 17 LTS, Spring Boot 3.x (Spring WebMVC, Spring Data JPA, Hibernate, Actuator)  
+> **Conector de Base de Datos:** MySQL Connector/J (`com.mysql:mysql-connector-j`)  
+> **Patrón Arquitectónico:** Arquitectura en N Capas (Controller $\to$ Service $\to$ Repository / Procedimientos Almacenados $\to$ Database)
 
 ---
 
-## 5. SECCIÓN III: CAPA FRONTEND Y EXPERIENCIA DE USUARIO (PRÓXIMAMENTE)
+### 4.1 Arquitectura en Capas y Responsabilidades
 
-> [!NOTE]
-> Esta sección documentará la maquetación responsiva con **Bootstrap 5.3**, el consumo asíncrono de APIs con `fetch()`, el renderizado de mapas con Leaflet y los componentes de dashboards.
+El backend de la plataforma desacopla rigurosamente la captura de peticiones HTTP, la orquestación de reglas de negocio y la persistencia de datos:
+
+1. **Capa de Controladores (`com.hackaton.prog.controller`):**
+   * Exponen endpoints REST bajo formato JSON.
+   * Manejan la deserialización de DTOs de entrada y devuelven respuestas estandarizadas con códigos HTTP semánticos (`200 OK`, `400 Bad Request`, `401 Unauthorized`, `500 Internal Error`).
+   * No contienen lógica de negocio ni sentencias SQL/JPA directas.
+2. **Capa de Servicios (`com.hackaton.prog.service`):**
+   * Implementan las reglas de negocio, validaciones transaccionales y transformaciones entre modelos y DTOs.
+   * Gestionan transacciones declarativas mediante `@Transactional`.
+   * Realizan la invocación de Stored Procedures y queries optimizadas sobre los repositorios.
+3. **Capa de Repositorios (`com.hackaton.prog.repository`):**
+   * Interfaces que extienden `JpaRepository` para operaciones CRUD y consultas nativas/JPQL especializadas.
+   * Ejecución nativa de llamadas a procedimientos almacenados (`CALL sp_...`).
+4. **Capa de Dominio y Modelos (`com.hackaton.prog.model`):**
+   * Entidades JPA mapeadas a las tablas relacionales: [Articulo.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Articulo.java), [Campania.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Campania.java), [Centro.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Centro.java), [Movimiento.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Movimiento.java), [Transferencia.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Transferencia.java), [Usuario.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Usuario.java), [Donante.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Donante.java), [InstitucionReceptora.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/InstitucionReceptora.java).
+5. **Capa de Transferencia de Datos (`com.hackaton.prog.dto`):**
+   * DTOs inmutables para desacoplar el contrato de la API del esquema interno de la base de datos, evitando sobreexposición de campos sensibles (como contraseñas o llaves internas).
 
 ---
 
-## 6. SECCIÓN IV: DEPLOYMENT Y DEVOPS (PRÓXIMAMENTE)
+### 4.2 Matriz de Control de Acceso y Roles (RBAC)
 
-> [!NOTE]
-> Esta sección documentará el empaquetado del artefacto (`.jar`), variables de entorno para producción, orquestación con Docker y URL pública de despliegue para la evaluación del jurado.
+De acuerdo con el documento de especificación funcional ([CONTEXTO_PROYECTO.md](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/CONTEXTO_PROYECTO.md)), el sistema establece una jerarquía operativa estricta:
+
+| Rol | Alcance de Datos | Permisos Operativos | Módulos Accesibles |
+| :--- | :--- | :--- | :--- |
+| **Coordinador** (`COORDINADOR`) | **Global (Todos los Centros y Campañas)** | • Alta y configuración de Campañas y Centros.<br>• Consulta de stock y movimientos globales en tiempo real.<br>• Visualización de métricas analíticas (mermas, categorías, metas).<br>• Acceso de supervisión a cualquier módulo. | • Dashboard Global (`coordinador.html`)<br>• Gestión de Encargado (`encargado.html`)<br>• Recepción (`recepcion.html`) |
+| **Encargado** (`ENCARGADO`) | **Local (Sede Asignada)** | • Registro de Entregas a beneficiarios.<br>• Registro de Mermas (caducidad, daño, pérdida).<br>• Solicitud y registro de Transferencias entre sedes.<br>• Registro de Ajustes de inventario (físico vs sistema).<br>• Visualización de stock de su centro en tiempo real. | • Gestión de Encargado (`encargado.html`)<br>• Recepción (`recepcion.html`) |
+| **Voluntario** (`VOLUNTARIO`) | **Local (Sede Asignada)** | • Registro rápido de Donaciones/Recepciones físicas.<br>• Captura de datos de donante o donación anónima.<br>• **Restricción:** No tiene acceso a ajustes, mermas, transferencias ni configuración de sedes. | • Recepción (`recepcion.html`) |
+| **Donante** | *Sin cuenta* | • No inicia sesión. Sus donaciones son capturadas por el personal operativo. | *N/A* |
+
+---
+
+### 4.3 Catálogo de Controladores y Endpoints REST
+
+#### A. Autenticación (`AuthController.java` - `/api/auth`)
+* `POST /api/auth/login`
+  * **Propósito:** Valida las credenciales del usuario contra la base de datos vía [AuthService.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/service/AuthService.java).
+  * **Payload Request:**
+    ```json
+    {
+      "email": "coordinador@tec.mx",
+      "password": "password123"
+    }
+    ```
+  * **Payload Response (200 OK):**
+    ```json
+    {
+      "id": 1,
+      "nombre": "Dr. Roberto Garza",
+      "email": "coordinador@tec.mx",
+      "rol": "COORDINADOR",
+      "centroId": null,
+      "centroNombre": null
+    }
+    ```
+
+#### B. Contexto de Navegación y Permisos (`MenuController.java` - `/api/menu`)
+* `GET /api/menu/contexto?email={email}`: Retorna el perfil y los módulos a los que el usuario tiene autorización de acceso.
+* `GET /api/menu/validar-acceso?email={email}&modulo={modulo}`: Verifica si el usuario cuenta con permisos para entrar a un módulo específico (`recepcion`, `encargado`, `coordinador`).
+
+#### C. Módulo de Recepción (`RecepcionController.java` - `/api/recepcion`)
+* `GET /api/recepcion/resumen?centroId={id}`: Obtiene el centro activo, campaña vigente y métricas de recepción del día.
+* `GET /api/recepcion/articulos?categoria={categoria}`: Consulta el catálogo de artículos disponibles filtrado opcionalmente por categoría.
+* `POST /api/recepcion`: Registra una entrada por donación invocando la regla de negocio y el procedimiento almacenado.
+  * **Payload Request:**
+    ```json
+    {
+      "centroId": 1,
+      "campaniaId": 1,
+      "articuloId": 3,
+      "cantidad": 50,
+      "donanteAnonimo": false,
+      "donanteNombre": "María Fernández",
+      "donanteContacto": "555-123-4567"
+    }
+    ```
+
+#### D. Módulo de Encargado de Centro (`EncargadoController.java` - `/api/encargado`)
+* `GET /api/encargado/catalogos?centroId={id}`: Retorna artículos, campañas y otros centros para operaciones de entrega o transferencia.
+* `GET /api/encargado/dashboard?centroId={id}`: Retorna el stock consolidado del centro por artículo, balance de entradas/salidas y el historial de los últimos movimientos.
+* `POST /api/encargado/movimiento`: Registra una operación de almacén (`ENTREGA`, `MERMA`, `TRANSFERENCIA` o `AJUSTE`).
+  * **Validación:** Comprueba existencia previa de stock para evitar valores negativos.
+  * **Payload Request:**
+    ```json
+    {
+      "tipo": "ENTREGA",
+      "centroId": 1,
+      "campaniaId": 1,
+      "articuloId": 2,
+      "cantidad": 20,
+      "destino": "Refugio Comunitario San Pedro",
+      "motivo": null
+    }
+    ```
+
+#### E. Módulo de Coordinación Global (`CoordinadorController.java` - `/api/coordinador`)
+* `GET /api/coordinador/dashboard`: Retorna métricas globales de toda la red de acopio: total de insumos recaudados, total entregado, merma global acumulada, inventario por centro y comparativa de categorías.
+* `GET /api/coordinador/catalogos`: Retorna la lista completa de centros, campañas, artículos y encargados para formularios de alta.
+* `POST /api/coordinador/campana`: Registra y habilita una nueva campaña institucional.
+* `POST /api/coordinador/centro`: Registra una nueva sede de acopio con geolocalización (latitud, longitud) y asignación de encargado.
+
+---
+
+### 4.4 Reglas Fundamentales de Negocio y Prevención de Stock Negativo
+
+1. **Inmutabilidad del Inventario:**  
+   El stock nunca se edita manualmente en la base de datos mediante comandos `UPDATE`. Se calcula dinámicamente mediante la vista oficial `v_stock_actual` sumando recepciones, entradas de transferencias y ajustes positivos, y restando entregas, mermas, transferencias salientes y ajustes negativos.
+2. **Prohibición Estricta de Stock Negativo:**  
+   Cualquier movimiento que represente un egreso (`ENTREGA`, `MERMA`, `TRANSFERENCIA_SALIDA`, `AJUSTE_NEGATIVO`) es verificado atómicamente por [MovimientoService.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/service/MovimientoService.java) y por los Stored Procedures. Si la cantidad solicitada excede el stock actual, se aborta la transacción y se lanza una excepción de negocio `StockInsuficienteException`.
+3. **Motivo Obligatorio en Mermas y Ajustes:**  
+   No se permite registrar una merma sin especificar el motivo de la baja (`CADUCIDAD`, `DAÑO`, `PERDIDA`). De igual forma, las correcciones por auditoría física requieren declarar la causal del ajuste (`ERROR_CONTEO`, `CORRECCION_SISTEMA`).
+
+---
+
+## 5. SECCIÓN III: CAPA FRONTEND Y EXPERIENCIA DE USUARIO
+
+> **Tecnologías:** HTML5 Semántico, CSS3 Vanilla estructurado (`estilos.css`), JavaScript ES6+ (asíncrono con `fetch`), Bootstrap 5 / Modern Web Design.
+
+---
+
+### 5.1 Estructura de Vistas y Flujo de Navegación
+
+La capa de presentación provee interfaces especializadas y adaptadas para dispositivos móviles y de escritorio:
+
+```mermaid
+graph TD
+    Login["1. Inicio de Sesión (index.html)"] -->|Autenticación Exitosa| Menu["2. Menú Principal (menu.html)"]
+    Menu -->|Voluntario / Encargado / Coordinador| Recepcion["3. Registro de Recepción (recepcion.html)"]
+    Menu -->|Encargado / Coordinador| Encargado["4. Gestión de Encargado (encargado.html)"]
+    Menu -->|Coordinador General| Coordinador["5. Dashboard Global (coordinador.html)"]
+```
+
+### 5.2 Detalle de Pantallas Implementadas
+
+#### 1. Pantalla de Acceso (`index.html`)
+* Interfaz con diseño minimalista y tarjetas flotantes de autenticación.
+* Validación asíncrona mediante llamada `fetch('/api/auth/login')`.
+* Almacena en `sessionStorage` el correo, nombre y rol del usuario para la persistencia del estado en el cliente.
+* Manejo visual de errores ante credenciales inválidas.
+
+#### 2. Menú Centralizado Dinámico (`menu.html`)
+* Reconoce el usuario activo y muestra saludo personalizado con su rol.
+* **Control Visual Dinámico:** Oculta o deshabilita automáticamente las tarjetas a las que el rol no tiene privilegio (por ejemplo, los voluntarios no ven el botón de Coordinador ni de Gestión de Encargado).
+* Botón de cierre de sesión seguro que limpia el almacenamiento local.
+
+#### 3. Módulo de Recepción de Donaciones (`recepcion.html`)
+* Diseñado para máxima velocidad de captura por parte de voluntarios en campo.
+* Selector de categoría (No Perecedero, Perecedero, Ropa, Limpieza, Medicamento, etc.) que filtra reactivamente los artículos disponibles.
+* Indicador de unidad de medida automática según el artículo seleccionado (`KG`, `PIEZA`, `LITRO`, `CAJA`).
+* Toggle rápido para registrar donaciones anónimas con un solo clic o capturar nombre y teléfono del donante.
+* Panel lateral con el resumen en vivo de donaciones ingresadas en el centro.
+
+#### 4. Panel Operativo de Encargado (`encargado.html`)
+* Visualización en tiempo real del inventario del centro con badges de advertencia de stock bajo.
+* Pestañas operativas para:
+  * **Registrar Entrega:** Formulario para registrar salidas con beneficiario/institución receptora.
+  * **Registrar Merma:** Salidas con selección obligatoria de causa (`Caducidad`, `Daño en Transporte`, `Pérdida`).
+  * **Transferencias:** Formulario para transferir excedentes a otra sede participante.
+  * **Ajustes:** Correcciones de inventario con justificación para auditoría.
+* Historial cronológico tabular de todos los movimientos generados en la sede.
+
+#### 5. Dashboard Global y Administración (`coordinador.html`)
+* **Centro de Mando:** Tarjetas de métricas agregadas globales (Total Recaudado, Total Entregado, Merma Total, Centros Activos).
+* **Gestión de Sedes y Campañas:** Modales y formularios para dar de alta nuevos centros y habilitar campañas de emergencia.
+* **Comparativa de Centros:** Tablas y desgloses de rendimiento logístico entre las diferentes sedes universitarias y comunitarias.
+
+---
+
+## 6. SECCIÓN IV: MATRIZ DE EVALUACIÓN (<in>Hack), DEPLOYMENT Y DEVOPS
+
+---
+
+### 6.1 Matriz de Criterios de Aceptación del MVP (<in>Hack - Checklist Oficial)
+
+El sistema satisface integralmente los 8 criterios de aceptación obligatorios definidos en [CONTEXTO_PROYECTO.md](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/CONTEXTO_PROYECTO.md):
+
+| # | Criterio de Aceptación Oficial | Estado | Componente / Implementación Técnica |
+| :---: | :--- | :---: | :--- |
+| **1** | **Registro Maestro:** El coordinador puede registrar un nuevo centro de acopio y una campaña. | ✅ **Cumplido** | Endpoints `POST /api/coordinador/centro` y `POST /api/coordinador/campana` en [CoordinadorController.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/controller/CoordinadorController.java) con formularios en `coordinador.html`. |
+| **2** | **Recepción:** Un encargado o voluntario registra una recepción (donación anónima o con datos) y el stock aumenta. | ✅ **Cumplido** | Endpoint `POST /api/recepcion` que invoca `sp_registrar_recepcion_donacion`. El stock se refleja de inmediato en `v_stock_actual`. |
+| **3** | **Entrega:** Se registra una entrega de insumos y el stock disminuye. | ✅ **Cumplido** | Endpoint `POST /api/encargado/movimiento` con tipo `ENTREGA`, validando existencias previas para impedir stock negativo. |
+| **4** | **Merma con motivo:** Se registra merma indicando motivo obligatorio y aparece en el historial. | ✅ **Cumplido** | Validación en `EncargadoService` y Stored Procedure `sp_registrar_merma` con enum de causas (`CADUCIDAD`, `DAÑO`, `PERDIDA`). |
+| **5** | **Transferencia entre centros:** Se registra transferencia y el stock pasa de un centro a otro. | ✅ **Cumplido** | Procedimiento `sp_registrar_transferencia` y entidad [Transferencia.java](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/src/main/java/com/hackaton/prog/model/Transferencia.java), generando movimientos emparejados de salida y entrada atómicamente. |
+| **6** | **Ajuste manual con motivo:** El stock se corrige mediante movimiento de ajuste con justificación. | ✅ **Cumplido** | Procedimientos `sp_registrar_ajuste_positivo` y `sp_registrar_ajuste_negativo` con campo `motivo` obligatorio para auditoría. |
+| **7** | **Dashboard global:** El coordinador accede a vista global con totales agregados de campaña y centros. | ✅ **Cumplido** | Endpoint `GET /api/coordinador/dashboard` y vista `coordinador.html` con agregaciones analíticas de inventario y mermas. |
+| **8** | **Entorno ejecutable externo:** El sistema puede ejecutarse o visualizarse desde otra computadora sin depender de `localhost`. | ✅ **Cumplido** | Base de datos distribuida en la nube (**TiDB Cloud MySQL Serverless**), empaquetado autónomo con Maven Wrapper y [Dockerfile](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/Dockerfile) multi-etapa listo para despliegue en Render/Cloud. |
+
+---
+
+### 6.2 Cuentas de Acceso de Prueba para la Demo del Jurado
+
+Para que los evaluadores puedan verificar la visibilidad jerárquica y el funcionamiento de cada rol sin fricción:
+
+| Rol Evaluado | Correo Electrónico | Contraseña | Centro Vinculado | Alcance en la Demo |
+| :--- | :--- | :--- | :--- | :--- |
+| **Coordinador General** | `coordinador@tec.mx` | `password123` | *Global (Todos)* | Acceso total al Dashboard Global, creación de campañas y centros, auditoría completa. |
+| **Encargado de Centro 1** | `encargado1@tec.mx` | `password123` | Campus Central (ID: 1) | Entregas, mermas, transferencias, ajustes y stock local de Campus Central. |
+| **Encargado de Centro 2** | `encargado2@tec.mx` | `password123` | Campus Norte (ID: 2) | Entregas, transferencias y stock local de Campus Norte. |
+| **Voluntario de Campo** | `voluntario1@tec.mx` | `password123` | Campus Central (ID: 1) | Registro ágil de donaciones físicas con datos o anónimas. |
+
+---
+
+### 6.3 Despliegue, Contenerización y Ejecución Multiplataforma
+
+#### A. Ejecución Rápida Local con Maven Wrapper
+No requiere tener instalado Maven en el equipo host, únicamente Java 17:
+```powershell
+# En Windows
+.\mvnw.cmd spring-boot:run
+
+# En Linux / macOS
+./mvnw spring-boot:run
+```
+Acceso local: `http://localhost:8080`
+
+#### B. Construcción del Artefacto JAR
+```bash
+./mvnw clean package -DskipTests
+java -jar target/prog-0.0.1-SNAPSHOT.jar
+```
+
+#### C. Despliegue con Docker (Render / AWS / Servidor Cloud)
+El proyecto cuenta con un [Dockerfile](file:///c:/Users/a03bl/Documents/doc's%20TEC/proyecto_hackaton_fsociety/Dockerfile) multi-etapa optimizado que compila y empaqueta la aplicación sobre un entorno Alpine ligero:
+
+```dockerfile
+# Etapa 1: Compilación
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Etapa 2: Ejecución
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/prog-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+**Comandos de despliegue Docker:**
+```bash
+# Construir la imagen
+docker build -t fsociety-centros-acopio:latest .
+
+# Ejecutar el contenedor mapeando el puerto 8080
+docker run -d -p 8080:8080 --name centros-acopio-app fsociety-centros-acopio:latest
+```
+
+---
+
+### 6.4 Declaración de Uso de Herramientas de IA y Diferenciadores de Innovación
+
+* **Declaración Oficial de IA:** Se utilizó **Antigravity IDE** asistido por el modelo **Gemini 3.8 Flash** como copiloto de ingeniería de software para el diseño arquitectónico, estructuración de esquemas relacionales DDL y procedimientos almacenados, así como para la integración ágil de servicios Spring Boot y contratos REST.
+* **Diferenciadores de Innovación Incorporados:**
+  1. **Libro Mayor Inmutable y Auditoría Estricta:** Implementación de un modelo de movimientos aditivos sin `UPDATE` directo a stock, garantizando cero discrepancias y trazabilidad total de autor y fecha.
+  2. **Persistencia Cloud Distribuida (TiDB Cloud MySQL):** Alta disponibilidad con acceso multi-usuario concurrente en tiempo real sin dependencia de entornos locales.
+  3. **Control de Acceso Reactivo y Jerárquico:** Separación funcional integral en backend y frontend para roles de Coordinador, Encargado y Voluntario.
+  4. **Preparación para Georreferenciación:** Modelo de datos enriquecido con coordenadas (`latitud`, `longitud`) para despliegue de mapas interactivos de centros de acopio.
+
