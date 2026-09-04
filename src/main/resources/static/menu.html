@@ -75,14 +75,15 @@
         // Filtrar dinámicamente las tarjetas según el rol activo
         function aplicarFiltroRol(rol) {
             if (!rol) return;
-            const rolNorm = rol.toLowerCase();
+            const rolNorm = rol.trim().toLowerCase();
             const opcionesMenu = document.querySelectorAll('a[data-role]');
             opcionesMenu.forEach(card => {
-                const rolesPermitidos = (card.getAttribute('data-role') || '').toLowerCase();
-                if (!rolesPermitidos.includes(rolNorm)) {
-                    card.style.display = 'none';
-                } else {
+                const rolesRaw = card.getAttribute('data-role') || '';
+                const rolesPermitidos = rolesRaw.toLowerCase().split(',').map(r => r.trim());
+                if (rolesPermitidos.includes(rolNorm) || rolNorm === 'coordinador') {
                     card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
                 }
             });
         }
