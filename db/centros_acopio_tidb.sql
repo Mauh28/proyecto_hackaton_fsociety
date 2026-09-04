@@ -256,3 +256,107 @@ INSERT INTO movimientos (
 (5, 'RECEPCION', 2, 1, 1, 100.00, 1, NULL, 2, NULL, NULL, 'APROBADO', FALSE), -- 100 Agua en Norte
 (6, 'RECEPCION', 2, 1, 3, 60.00, 1, NULL, 1, NULL, NULL, 'APROBADO', FALSE)   -- 60 Kg Frijol en Norte
 ON DUPLICATE KEY UPDATE id = VALUES(id);
+
+
+
+-- ==========================================================
+-- SCRIPT DE REGISTROS ADICIONALES (TAMPICO, TAMAULIPAS)
+-- Compatible con TiDB Cloud Serverless / MySQL 8
+-- ==========================================================
+
+USE centros_acopio;
+
+-- ----------------------------------------------------------
+-- 1. INSTITUCIONES RECEPTORAS (3 Nuevas en Tampico)
+-- ----------------------------------------------------------
+INSERT INTO instituciones_receptoras (id, nombre, direccion, contacto) VALUES
+(3, 'Casa Hogar San Pedro', 'Av. Miguel Hidalgo 3405, Col. Águila, Tampico, Tamaulipas', '833-213-4567'),
+(4, 'Comedor Comunitario Cascajal', 'Calle Francisco I. Madero 112, Col. Cascajal, Tampico, Tamaulipas', '833-214-8899'),
+(5, 'Refugio Temporal Ejército de Salvación', 'Calle Venustiano Carranza 502, Zona Centro, Tampico, Tamaulipas', '833-212-3344')
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), direccion = VALUES(direccion), contacto = VALUES(contacto);
+
+-- ----------------------------------------------------------
+-- 2. CENTROS DE ACOPIO (3 Nuevos en Tampico, Tamaulipas)
+-- Coordenadas reales georreferenciadas para el mapa
+-- ----------------------------------------------------------
+INSERT INTO centros (id, nombre, institucion, ubicacion, latitud, longitud, activo) VALUES
+(3, 'Centro Laguna del Carpintero', 'DIF Tampico', 'Blvd. Perimetral Fidel Velázquez s/n, Col. Obrera, Tampico, Tamaulipas', 22.23560000, -97.85640000, TRUE),
+(4, 'Centro Comunitario UAT Tampico', 'Universidad Autónoma de Tamaulipas (UAT Campus Sur)', 'Centro Universitario Tampico-Madero, Col. Universidad, Tampico, Tamaulipas', 22.27890000, -97.83890000, TRUE),
+(5, 'Sede Operativa Zona Centro Tampico', 'Cruz Roja Mexicana Delegación Tampico', 'Calle Tamaulipas 201, Zona Centro, Tampico, Tamaulipas', 22.21580000, -97.85720000, TRUE)
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), ubicacion = VALUES(ubicacion), latitud = VALUES(latitud), longitud = VALUES(longitud);
+
+-- ----------------------------------------------------------
+-- 3. USUARIOS Y ROLES (3 Nuevos para los centros de Tampico)
+-- Contraseña genérica de prueba: 'password123'
+-- ----------------------------------------------------------
+INSERT INTO usuario (id, nombre, email, password, centro_id, institucion_id, rol, activo) VALUES
+(6, 'Carlos Méndez (Encargado Laguna)', 'carlos.mendez@amarea.org', 'password123', 3, NULL, 'ENCARGADO', TRUE),
+(7, 'Mariana Garza (Voluntaria UAT)', 'mariana.garza@amarea.org', 'password123', 4, NULL, 'VOLUNTARIO', TRUE),
+(8, 'Dra. Patricia Silva (Hogar San Pedro)', 'patricia.silva@casahogar.org', 'password123', NULL, 3, 'INSTITUCION', TRUE)
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), email = VALUES(email);
+
+-- ----------------------------------------------------------
+-- 4. CAMPAÑAS (3 Nuevas Campañas Locales y Regionales)
+-- ----------------------------------------------------------
+INSERT INTO campanias (id, nombre, fecha_inicio, fecha_fin, descripcion, meta_unidades, activo, lider_id) VALUES
+(3, 'Contingencia Inundaciones Río Pánuco', '2026-09-02', NULL, 'Apoyo emergente a colonias ribereñas vulnerables del sur de Tamaulipas.', 8000.00, TRUE, 1),
+(4, 'Acopio Solidario Zona Conurbada Sur', '2026-09-05', '2026-11-30', 'Recolección de víveres, agua y botiquines médicos en Tampico y Madero.', 6500.00, TRUE, 5),
+(5, 'Campaña Salud y Alivio Huasteca', '2026-09-10', '2026-12-15', 'Kits de curación y desinfectantes para brigadas comunitarias.', 3500.00, TRUE, 1)
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), descripcion = VALUES(descripcion);
+
+-- ----------------------------------------------------------
+-- 5. CENTROS PARTICIPANTES POR CAMPAÑA (Vinculaciones)
+-- ----------------------------------------------------------
+INSERT INTO centros_campanias (id_centro, id_campania, activo) VALUES
+(3, 1, TRUE), -- Centro Laguna en Campaña Huracán
+(4, 1, TRUE), -- Centro UAT en Campaña Huracán
+(5, 1, TRUE), -- Centro Cruz Roja en Campaña Huracán
+(3, 3, TRUE), -- Centro Laguna en Inundaciones Río Pánuco
+(4, 4, TRUE), -- Centro UAT en Zona Conurbada Sur
+(5, 5, TRUE)  -- Centro Cruz Roja en Salud Huasteca
+ON DUPLICATE KEY UPDATE activo = VALUES(activo);
+
+-- ----------------------------------------------------------
+-- 6. CATÁLOGO DE ARTÍCULOS (3 Nuevos Insumos)
+-- ----------------------------------------------------------
+INSERT INTO articulos (id, nombre, categoria, unidad) VALUES
+(11, 'Kit de Primeros Auxilios', 'MEDICAMENTO', 'CAJA'),
+(12, 'Papel Higiénico (paquete 4 rollos)', 'LIMPIEZA', 'BOLSA'),
+(13, 'Fórmula Infantil en Polvo 400g', 'PERECEDERO', 'PIEZA')
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), categoria = VALUES(categoria);
+
+-- ----------------------------------------------------------
+-- 7. DONANTES (3 Nuevos Donantes Locales)
+-- ----------------------------------------------------------
+INSERT INTO donantes (id, nombre, contacto, es_anonimo) VALUES
+(3, 'Empacadora del Golfo Tampico', '833-228-9000', FALSE),
+(4, 'Sociedad Civil Tampiqueña', '833-219-5566', FALSE),
+(5, 'Comerciantes Unidos Zona Centro', NULL, TRUE)
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), contacto = VALUES(contacto);
+
+-- ----------------------------------------------------------
+-- 8. TRANSFERENCIAS ENTRE CENTROS (3 Registros de prueba)
+-- ----------------------------------------------------------
+INSERT INTO transferencias (id, centro_origen_id, centro_destino_id, campania_id, articulo_id, cantidad, usuario_id, estado, fecha) VALUES
+(1, 1, 3, 1, 1, 50.00, 2, 'COMPLETADA', '2026-09-03 10:00:00'), -- 50L Agua de Campus Central a Laguna Tampico
+(2, 2, 4, 1, 2, 30.00, 1, 'COMPLETADA', '2026-09-03 12:30:00'), -- 30kg Arroz de Sede Norte a UAT Tampico
+(3, 3, 5, 1, 7, 25.00, 6, 'PENDIENTE', '2026-09-03 15:45:00')   -- 25 Jabones de Laguna a Cruz Roja Tampico
+ON DUPLICATE KEY UPDATE estado = VALUES(estado);
+
+-- ----------------------------------------------------------
+-- 9. MOVIMIENTOS DE INVENTARIO (3 Nuevos Movimientos)
+-- Generan stock positivo inicial en los nuevos centros de Tampico
+-- ----------------------------------------------------------
+INSERT INTO movimientos (
+    id, tipo, centro_id, campania_id, articulo_id, cantidad, fecha, usuario_id, 
+    motivo, donante_id, institucion_receptora_id, transferencia_id, estado_aprobacion, entrega_confirmada
+) VALUES
+-- Recepción de 120 botellas de agua en Centro Laguna donadas por Empacadora del Golfo
+(10, 'RECEPCION', 3, 1, 1, 120.00, '2026-09-03 09:00:00', 6, NULL, 3, NULL, NULL, 'APROBADO', FALSE),
+
+-- Recepción de 25 Kits de Primeros Auxilios en Centro UAT donados por Sociedad Civil Tampiqueña
+(11, 'RECEPCION', 4, 1, 11, 25.00, '2026-09-03 11:15:00', 7, NULL, 4, NULL, NULL, 'APROBADO', FALSE),
+
+-- Entrega benéfica de 30 botellas de agua desde Centro Laguna hacia Casa Hogar San Pedro
+(12, 'ENTREGA', 3, 1, 1, 30.00, '2026-09-03 14:00:00', 6, NULL, NULL, 3, NULL, 'APROBADO', TRUE)
+ON DUPLICATE KEY UPDATE cantidad = VALUES(cantidad);
