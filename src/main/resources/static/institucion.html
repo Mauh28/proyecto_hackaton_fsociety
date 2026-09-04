@@ -16,15 +16,15 @@
             trazabilidad oficial.</p>
 
         <!-- Selector de Institución (Exclusivo para rol COORDINADOR) -->
-        <div id="contenedorSelectorInstitucion" class="info-card mb-1-5" style="display: none; background: #f8fafc; border: 1px solid var(--border);">
+        <div id="contenedorSelectorInstitucion" class="info-card mb-1-5 supervisor-card">
             <div class="flex-between-center mb-1">
-                <label for="selectInstitucionCoordinador" class="font-semibold mb-0" style="margin-top: 0;">Supervisión Institucional (Modo Coordinador)</label>
-                <span class="text-sm" style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 99px; font-weight: 600;">COORDINADOR</span>
+                <label for="selectInstitucionCoordinador" class="font-semibold mb-0 mt-0">Supervisión Institucional (Modo Coordinador)</label>
+                <span class="text-sm badge-coordinator">COORDINADOR</span>
             </div>
             <select id="selectInstitucionCoordinador">
                 <option value="1">Cargando instituciones receptoras...</option>
             </select>
-            <small class="text-muted text-sm" style="margin-top: 0.4rem; display: block;">Como coordinador general, puedes auditar y cambiar de institución receptora en cualquier momento.</small>
+            <small class="text-muted text-sm supervisor-help-text">Como coordinador general, puedes auditar y cambiar de institución receptora en cualquier momento.</small>
         </div>
 
         <!-- Filtros operativos -->

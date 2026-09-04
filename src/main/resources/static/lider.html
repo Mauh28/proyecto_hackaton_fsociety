@@ -50,7 +50,7 @@
 
                 <div class="mb-1-5">
                     <label for="descripcionCampania" class="font-semibold">Descripción y Enfoque Estratégico</label>
-                    <textarea id="descripcionCampania" rows="3" class="w-full" style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; resize: vertical;" placeholder="Detalles de la contingencia, prioridades de ayuda humanitaria..."></textarea>
+                    <textarea id="descripcionCampania" rows="3" class="w-full textarea-lider" placeholder="Detalles de la contingencia, prioridades de ayuda humanitaria..."></textarea>
                 </div>
 
                 <button type="button" class="btn btn-primary" id="btnActualizarCampania">Actualizar Parámetros</button>
@@ -66,7 +66,7 @@
                     <small class="text-muted text-sm">Centros de la red que aún no participan en esta campaña.</small>
                 </div>
 
-                <div class="info-card mb-1-5" style="background: #f8fafc; border: 1px dashed var(--border);">
+                <div class="info-card mb-1-5 info-card-dashed">
                     <p class="text-sm text-muted mb-0">
                         Al vincular un centro de acopio, sus encargados y voluntarios podrán registrar recepciones, transferencias y canalizaciones asignadas directamente a tu campaña.
                     </p>
@@ -104,7 +104,7 @@
                 <p class="text-muted text-sm mt-0" id="campaniaSubtitulo">Monitoreo y rendimiento en tiempo real.</p>
             </div>
             <div>
-                <span class="legend-item" id="badgeEstadoCampania" style="padding: 0.35rem 0.75rem; border-radius: 99px; background: #e0f2fe; color: #0369a1; font-weight: 600; font-size: 0.85rem;">
+                <span class="legend-item badge-campania-activa" id="badgeEstadoCampania">
                     Campaña Activa
                 </span>
             </div>
@@ -341,24 +341,19 @@
             } else {
                 participantes.forEach(c => {
                     const li = document.createElement('li');
-                    li.style.display = 'flex';
-                    li.style.justifyContent = 'space-between';
-                    li.style.alignItems = 'center';
-                    li.style.padding = '0.75rem 0';
-                    li.style.borderBottom = '1px solid var(--border)';
+                    li.className = 'participante-item';
 
                     li.innerHTML = `
-                        <div style="flex: 1; padding-right: 1rem;">
+                        <div class="participante-info">
                             <strong>${c.nombreCentro}</strong>
                             <div class="text-muted text-sm">${c.institucion} &bull; ${c.ubicacion}</div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="participante-actions">
                             <div class="text-right">
                                 <span class="font-bold">${Number(c.stockAportado || 0).toLocaleString()}</span>
                                 <div class="text-muted text-sm">arts. en campaña</div>
                             </div>
-                            <button type="button" class="btn btn-secondary text-danger" 
-                                style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem;" 
+                            <button type="button" class="btn btn-secondary text-danger btn-desvincular" 
                                 onclick="desvincularCentro(${c.idCentro}, '${c.nombreCentro.replace(/'/g, "\\'")}')">
                                 Desvincular
                             </button>

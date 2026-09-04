@@ -735,3 +735,74 @@ select:focus {
     border: 1px solid var(--border);
     z-index: 1;
 }
+
+/* ==========================================================================
+   15. Supervisor Institucional (institucion.html - Modo Coordinador)
+   ========================================================================== */
+.supervisor-card {
+    display: none;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+}
+
+.badge-coordinator {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-weight: 600;
+}
+
+.supervisor-help-text {
+    margin-top: 0.4rem;
+    display: block;
+}
+
+/* ==========================================================================
+   16. Panel Líder de Campaña (lider.html)
+   ========================================================================== */
+.textarea-lider {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    resize: vertical;
+}
+
+.info-card-dashed {
+    background: #f8fafc;
+    border: 1px dashed var(--border);
+}
+
+.badge-campania-activa {
+    padding: 0.35rem 0.75rem;
+    border-radius: 99px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.participante-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.participante-info {
+    flex: 1;
+    padding-right: 1rem;
+}
+
+.participante-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-desvincular {
+    width: auto;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+}
