@@ -806,3 +806,50 @@ select:focus {
     padding: 0.35rem 0.75rem;
     font-size: 0.8rem;
 }
+
+/* ==========================================================================
+   17. Predicción Predictiva de Desabasto y Utilidades Dinámicas
+   ========================================================================== */
+.d-none {
+    display: none !important;
+}
+
+.prediccion-box {
+    grid-column: span 2;
+    background: #fdf2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.prediccion-box.estable {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.prediccion-box.moderado {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.prediccion-box h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.35rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.prediccion-valor {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: bold;
+}
+
+.prediccion-detalle {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}

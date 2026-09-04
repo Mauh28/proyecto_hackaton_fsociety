@@ -23,17 +23,20 @@ public class CoordinadorService {
     private final CentroCampaniaRepository centroCampaniaRepository;
     private final UsuarioRepository usuarioRepository;
     private final MovimientoRepository movimientoRepository;
+    private final InventarioService inventarioService;
 
     public CoordinadorService(CampaniaRepository campaniaRepository,
                               CentroRepository centroRepository,
                               CentroCampaniaRepository centroCampaniaRepository,
                               UsuarioRepository usuarioRepository,
-                              MovimientoRepository movimientoRepository) {
+                              MovimientoRepository movimientoRepository,
+                              InventarioService inventarioService) {
         this.campaniaRepository = campaniaRepository;
         this.centroRepository = centroRepository;
         this.centroCampaniaRepository = centroCampaniaRepository;
         this.usuarioRepository = usuarioRepository;
         this.movimientoRepository = movimientoRepository;
+        this.inventarioService = inventarioService;
     }
 
     /**
@@ -112,6 +115,8 @@ public class CoordinadorService {
             ));
         }
 
+        List<AlertaDesabastoDTO> alertasDesabasto = inventarioService.calcularRiesgoDesabasto(null, campaniaId);
+
         DashboardGlobalDTO dto = new DashboardGlobalDTO(
                 stockGlobal,
                 mermaTotal,
@@ -119,7 +124,8 @@ public class CoordinadorService {
                 artMasDonado,
                 campaniaNombre,
                 metaCampania,
-                comparativa
+                comparativa,
+                alertasDesabasto
         );
         dto.setCampaniaId(campaniaId);
         dto.setStockCampania(stockCampania);
