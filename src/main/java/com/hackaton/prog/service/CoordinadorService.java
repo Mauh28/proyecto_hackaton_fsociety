@@ -146,6 +146,8 @@ public class CoordinadorService {
         centro.setNombre(req.getNombre().trim());
         centro.setInstitucion(req.getInstitucion().trim());
         centro.setUbicacion(req.getUbicacion() != null ? req.getUbicacion().trim() : "Sede Central");
+        centro.setLatitud(req.getLatitud());
+        centro.setLongitud(req.getLongitud());
         centro.setActivo(req.getActivo() != null ? req.getActivo() : true);
         centro = centroRepository.save(centro);
 
@@ -168,5 +170,56 @@ public class CoordinadorService {
         }
 
         return centro;
+    }
+
+    /**
+     * Retorna los centros activos para pintar en el mapa geográfico interactivo con sus métricas y nivel de suministro.
+     */
+    @Transactional(readOnly = true)
+    public List<CentroMapaDTO> obtenerCentrosMapa() {
+        List<Centro> centros = centroRepository.findByActivoTrue();
+        List<CentroMapaDTO> resultado = new ArrayList<>();
+
+        for (Centro centro : centros) {
+            if (centro.getLatitud() == null || centro.getLongitud() == null) {
+                continue;
+            }
+
+            BigDecimal stockTotal = movimientoRepository.calcularStockTotalCentro(centro.getId());
+            if (stockTotal == null) {
+                stockTotal = BigDecimal.ZERO;
+            }
+
+            List<Usuario> usuariosCentro = usuarioRepository.findByCentroId(centro.getId());
+            String nombreEncargado = usuariosCentro.stream()
+                    .filter(u -> u.getRol() == RolUsuario.ENCARGADO)
+                    .map(Usuario::getNombre)
+                    .findFirst()
+                    .orElse(centro.getInstitucion());
+
+            String nivelSuministro;
+            if (stockTotal.compareTo(BigDecimal.valueOf(1500)) >= 0) {
+                nivelSuministro = "OPTIMO";
+            } else if (stockTotal.compareTo(BigDecimal.valueOf(500)) >= 0) {
+                nivelSuministro = "NORMAL";
+            } else {
+                nivelSuministro = "CRITICO";
+            }
+
+            resultado.add(new CentroMapaDTO(
+                    centro.getId(),
+                    centro.getNombre(),
+                    centro.getInstitucion(),
+                    centro.getUbicacion(),
+                    centro.getLatitud(),
+                    centro.getLongitud(),
+                    stockTotal,
+                    nombreEncargado,
+                    nivelSuministro,
+                    centro.getActivo()
+            ));
+        }
+
+        return resultado;
     }
 }

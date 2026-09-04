@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Coordinador - Dashboard Global</title>
     <link rel="stylesheet" href="estilos.css">
+    <!-- Leaflet.js para Mapa Interactivo de Centros (Open Source / CDN Gratuito) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 
 <body>
@@ -91,6 +94,17 @@
                     <input type="text" id="ubicacionCentro" placeholder="Ej. Av. Universidad 123" required>
                 </div>
 
+                <div class="flex-gap-1 mb-1-5">
+                    <div class="flex-1">
+                        <label for="latitudCentro" class="font-semibold">Latitud (Mapa)</label>
+                        <input type="number" step="any" id="latitudCentro" placeholder="Ej. 19.332300">
+                    </div>
+                    <div class="flex-1">
+                        <label for="longitudCentro" class="font-semibold">Longitud (Mapa)</label>
+                        <input type="number" step="any" id="longitudCentro" placeholder="Ej. -99.186500">
+                    </div>
+                </div>
+
                 <div class="mb-1-5">
                     <label for="encargadoCentro" class="font-semibold">Asignar Encargado</label>
                     <select id="encargadoCentro" required>
@@ -167,6 +181,19 @@
                     <div class="progress-fill" id="progressBar"></div>
                 </div>
             </div>
+        </div>
+
+        <!-- Mapa Interactivo de la Red de Centros (Diferenciador / Innovación) -->
+        <div class="dashboard-card mb-1-5" id="mapCard">
+            <div class="flex-between-center mb-1">
+                <h4 class="mt-0 mb-0">Red Geográfica de Centros de Acopio</h4>
+                <div class="map-legend">
+                    <span class="legend-item"><span class="legend-dot dot-green"></span> Óptimo (&ge;1,500)</span>
+                    <span class="legend-item"><span class="legend-dot dot-yellow"></span> En Rango</span>
+                    <span class="legend-item"><span class="legend-dot dot-red"></span> Desabasto (&lt;500)</span>
+                </div>
+            </div>
+            <div id="mapaCentros" style="height: 320px; width: 100%; border-radius: 8px; border: 1px solid var(--border); z-index: 1;"></div>
         </div>
 
         <!-- Comparativa de Centros -->
@@ -438,6 +465,10 @@
             const nombre = document.getElementById('nombreCentro').value.trim();
             const institucion = document.getElementById('institucionCentro').value.trim();
             const ubicacion = document.getElementById('ubicacionCentro').value.trim();
+            const latVal = document.getElementById('latitudCentro').value.trim();
+            const lonVal = document.getElementById('longitudCentro').value.trim();
+            const latitud = latVal ? parseFloat(latVal) : null;
+            const longitud = lonVal ? parseFloat(lonVal) : null;
             const encargadoId = document.getElementById('encargadoCentro').value ? parseInt(document.getElementById('encargadoCentro').value, 10) : null;
             const campaniaId = document.getElementById('campanaVinculada').value ? parseInt(document.getElementById('campanaVinculada').value, 10) : null;
             const activo = document.getElementById('estadoCentro').value === 'true';
@@ -460,6 +491,8 @@
                         nombre,
                         institucion,
                         ubicacion,
+                        latitud,
+                        longitud,
                         encargadoId,
                         campaniaId,
                         activo
@@ -480,9 +513,11 @@
                 document.getElementById('nombreCentro').value = '';
                 document.getElementById('institucionCentro').value = '';
                 document.getElementById('ubicacionCentro').value = '';
+                document.getElementById('latitudCentro').value = '';
+                document.getElementById('longitudCentro').value = '';
 
-                // Recargar catálogos y dashboard
-                await Promise.all([cargarCatalogos(), cargarDashboardGlobal()]);
+                // Recargar catálogos, dashboard y mapa
+                await Promise.all([cargarCatalogos(), cargarDashboardGlobal(), cargarMapaCentros()]);
 
             } catch (err) {
                 console.error('Error de red:', err);
@@ -493,9 +528,106 @@
             }
         });
 
+        // 5. Inicialización del Mapa Geográfico Interactivo con Leaflet.js
+        let mapaInstancia = null;
+        let markersGroup = null;
+
+        async function cargarMapaCentros() {
+            const mapContainer = document.getElementById('mapaCentros');
+            if (!mapContainer || typeof L === 'undefined') return;
+
+            try {
+                const res = await fetch('/api/coordinador/mapa');
+                if (!res.ok) return;
+                const centros = await res.json();
+
+                if (!mapaInstancia) {
+                    // Inicializar mapa centrado en Valle de México
+                    mapaInstancia = L.map('mapaCentros').setView([19.3758, -99.1687], 11);
+
+                    // Mosaico Voyager de CartoDB (elegante, limpio y contrastado)
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                        subdomains: 'abcd',
+                        maxZoom: 19
+                    }).addTo(mapaInstancia);
+
+                    markersGroup = L.featureGroup().addTo(mapaInstancia);
+                } else {
+                    markersGroup.clearLayers();
+                }
+
+                if (!centros || centros.length === 0) return;
+
+                centros.forEach(c => {
+                    if (c.latitud == null || c.longitud == null) return;
+
+                    let colorHex = '#10b981'; // Óptimo (Verde)
+                    let statusTxt = 'Stock Óptimo';
+
+                    if (c.nivelSuministro === 'CRITICO') {
+                        colorHex = '#ef4444'; // Crítico (Rojo)
+                        statusTxt = 'Desabasto Crítico';
+                    } else if (c.nivelSuministro === 'NORMAL') {
+                        colorHex = '#f59e0b'; // Normal (Ámbar)
+                        statusTxt = 'En Rango Normal';
+                    }
+
+                    const pinHtml = `
+                        <div style="background-color: ${colorHex}; width: 22px; height: 22px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.35); cursor: pointer;"></div>
+                    `;
+
+                    const customPin = L.divIcon({
+                        className: 'custom-map-pin',
+                        html: pinHtml,
+                        iconSize: [22, 22],
+                        iconAnchor: [11, 11]
+                    });
+
+                    const popupBody = `
+                        <div style="font-family: inherit; font-size: 0.88rem; min-width: 190px;">
+                            <strong style="font-size: 0.98rem; color: #111827; display: block; margin-bottom: 2px;">${c.nombre}</strong>
+                            <div style="color: #6b7280; font-size: 0.78rem; margin-bottom: 6px;">${c.institucion}</div>
+                            <div style="margin-bottom: 6px;">
+                                <span style="background-color: ${colorHex}20; color: ${colorHex}; font-weight: 600; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; display: inline-block;">
+                                    ${statusTxt}
+                                </span>
+                            </div>
+                            <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 6px; display: flex; justify-content: space-between;">
+                                <span style="color: #4b5563;">Stock Total:</span>
+                                <strong style="color: #111827;">${Number(c.stockTotal).toLocaleString()} u.</strong>
+                            </div>
+                            <div style="color: #6b7280; font-size: 0.76rem; margin-top: 4px;">
+                                Ubicación: ${c.ubicacion}
+                            </div>
+                            <div style="color: #6b7280; font-size: 0.76rem; margin-top: 2px;">
+                                Encargado: <em>${c.encargado}</em>
+                            </div>
+                        </div>
+                    `;
+
+                    const marker = L.marker([c.latitud, c.longitud], { icon: customPin })
+                        .bindPopup(popupBody);
+                    markersGroup.addLayer(marker);
+                });
+
+                if (markersGroup.getLayers().length > 0) {
+                    mapaInstancia.fitBounds(markersGroup.getBounds(), { padding: [35, 35], maxZoom: 14 });
+                }
+
+                setTimeout(() => {
+                    if (mapaInstancia) mapaInstancia.invalidateSize();
+                }, 300);
+
+            } catch (err) {
+                console.warn('Advertencia al cargar mapa de centros:', err);
+            }
+        }
+
         // Carga inicial
         cargarCatalogos();
         cargarDashboardGlobal();
+        cargarMapaCentros();
     </script>
 </body>
 

@@ -1,50 +1,35 @@
-package com.hackaton.prog.model;
+package com.hackaton.prog.dto;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "centros")
-public class Centro {
+public class CentroMapaDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(nullable = false, length = 150)
     private String nombre;
-
-    @Column(nullable = false, length = 150)
     private String institucion;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
     private String ubicacion;
-
-    @Column(precision = 10, scale = 8)
     private BigDecimal latitud;
-
-    @Column(precision = 11, scale = 8)
     private BigDecimal longitud;
+    private BigDecimal stockTotal;
+    private String encargado;
+    private String nivelSuministro;
+    private Boolean activo;
 
-    @Column(nullable = false)
-    private Boolean activo = true;
-
-    public Centro() {
+    public CentroMapaDTO() {
     }
 
-    public Centro(String nombre, String institucion, String ubicacion, Boolean activo) {
-        this.nombre = nombre;
-        this.institucion = institucion;
-        this.ubicacion = ubicacion;
-        this.activo = activo != null ? activo : true;
-    }
-
-    public Centro(String nombre, String institucion, String ubicacion, BigDecimal latitud, BigDecimal longitud, Boolean activo) {
+    public CentroMapaDTO(Integer id, String nombre, String institucion, String ubicacion,
+                          BigDecimal latitud, BigDecimal longitud, BigDecimal stockTotal,
+                          String encargado, String nivelSuministro, Boolean activo) {
+        this.id = id;
         this.nombre = nombre;
         this.institucion = institucion;
         this.ubicacion = ubicacion;
         this.latitud = latitud;
         this.longitud = longitud;
+        this.stockTotal = stockTotal != null ? stockTotal : BigDecimal.ZERO;
+        this.encargado = encargado != null ? encargado : "Sin Asignar";
+        this.nivelSuministro = nivelSuministro != null ? nivelSuministro : "NORMAL";
         this.activo = activo != null ? activo : true;
     }
 
@@ -94,6 +79,30 @@ public class Centro {
 
     public void setLongitud(BigDecimal longitud) {
         this.longitud = longitud;
+    }
+
+    public BigDecimal getStockTotal() {
+        return stockTotal;
+    }
+
+    public void setStockTotal(BigDecimal stockTotal) {
+        this.stockTotal = stockTotal;
+    }
+
+    public String getEncargado() {
+        return encargado;
+    }
+
+    public void setEncargado(String encargado) {
+        this.encargado = encargado;
+    }
+
+    public String getNivelSuministro() {
+        return nivelSuministro;
+    }
+
+    public void setNivelSuministro(String nivelSuministro) {
+        this.nivelSuministro = nivelSuministro;
     }
 
     public Boolean getActivo() {

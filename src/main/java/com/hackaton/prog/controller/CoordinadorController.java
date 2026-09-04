@@ -51,4 +51,10 @@ public class CoordinadorController {
         resp.put("id", centro.getId());
         return ResponseEntity.ok(resp);
     }
+
+    @GetMapping("/mapa")
+    public ResponseEntity<java.util.List<CentroMapaDTO>> obtenerCentrosMapa() {
+        java.util.List<CentroMapaDTO> centros = coordinadorService.obtenerCentrosMapa();
+        return ResponseEntity.ok(centros);
+    }
 }
