@@ -3,7 +3,7 @@
 
 [![Deploy Render](https://img.shields.io/badge/DEPLOY-RENDER-46E3B7?style=flat-square&logo=render&logoColor=black)](https://proyecto-hackaton-fsociety.onrender.com/)
 [![Java](https://img.shields.io/badge/JAVA-17%2B-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/SPRING_BOOT-3.X-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/)
+[![Spring Boot](https://img.shields.io/badge/SPRING_BOOT-4.1.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/)
 [![Database](https://img.shields.io/badge/TIDB_CLOUD-SERVERLESS-0052CC?style=flat-square&logo=mysql&logoColor=white)](https://tidbcloud.com/)
 [![Build Status](https://img.shields.io/badge/BUILD-PASSING-brightgreen?style=flat-square)](https://github.com/Mauh28/proyecto_hackaton_fsociety)
 
@@ -21,7 +21,7 @@ Puedes acceder a la versión desplegada en producción directamente a través de
 
 ## 🛠️ Herramientas y Stack Tecnológico (Resumen)
 
-* **Backend:** Java 17 & Spring Boot (Arquitectura REST, Spring Data JPA, Hibernate).
+* **Backend:** Java 17 & Spring Boot 4.1.1 (Arquitectura REST, Spring Data JPA, Hibernate).
 * **Base de Datos:** TiDB Cloud Serverless (MySQL distribuido de alta disponibilidad 24/7 en la nube).
 * **Frontend:** HTML5, CSS3 y JavaScript vanilla modular (interfaces responsivas para Voluntarios, Encargados y Coordinación).
 * **Despliegue & DevOps:** Render Cloud Platform, Git & GitHub.
