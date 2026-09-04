@@ -14,13 +14,15 @@ public class DashboardCentroDTO {
     private BigDecimal totalMermasMes;
     private BigDecimal metaCampania;
     private List<MovimientoHistorialDTO> historial = new ArrayList<>();
+    private List<AlertaDesabastoDTO> alertasDesabasto = new ArrayList<>();
 
     public DashboardCentroDTO() {
     }
 
     public DashboardCentroDTO(Integer centroId, String centroNombre, Integer campaniaId,
                               String campaniaNombre, BigDecimal stockTotal, BigDecimal totalMermasMes,
-                              BigDecimal metaCampania, List<MovimientoHistorialDTO> historial) {
+                              BigDecimal metaCampania, List<MovimientoHistorialDTO> historial,
+                              List<AlertaDesabastoDTO> alertasDesabasto) {
         this.centroId = centroId;
         this.centroNombre = centroNombre;
         this.campaniaId = campaniaId;
@@ -29,6 +31,7 @@ public class DashboardCentroDTO {
         this.totalMermasMes = totalMermasMes != null ? totalMermasMes : BigDecimal.ZERO;
         this.metaCampania = metaCampania != null ? metaCampania : BigDecimal.ZERO;
         this.historial = historial != null ? historial : new ArrayList<>();
+        this.alertasDesabasto = alertasDesabasto != null ? alertasDesabasto : new ArrayList<>();
     }
 
     public Integer getCentroId() {
@@ -93,5 +96,13 @@ public class DashboardCentroDTO {
 
     public void setHistorial(List<MovimientoHistorialDTO> historial) {
         this.historial = historial;
+    }
+
+    public List<AlertaDesabastoDTO> getAlertasDesabasto() {
+        return alertasDesabasto;
+    }
+
+    public void setAlertasDesabasto(List<AlertaDesabastoDTO> alertasDesabasto) {
+        this.alertasDesabasto = alertasDesabasto;
     }
 }

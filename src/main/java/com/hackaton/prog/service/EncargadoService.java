@@ -138,6 +138,8 @@ public class EncargadoService {
                 .map(this::mapearHistorial)
                 .collect(Collectors.toList());
 
+        List<AlertaDesabastoDTO> alertasDesabasto = inventarioService.calcularRiesgoDesabasto(centroId, campaniaId);
+
         return new DashboardCentroDTO(
                 centro.getId(),
                 centro.getNombre(),
@@ -146,7 +148,8 @@ public class EncargadoService {
                 stockTotal,
                 totalMermasMes,
                 metaCampania,
-                historialDto
+                historialDto,
+                alertasDesabasto
         );
     }
 

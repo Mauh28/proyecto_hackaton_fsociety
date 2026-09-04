@@ -224,6 +224,11 @@
                     <h4>Art. Más Donado</h4>
                     <p class="stat-text-alt" id="statArtMasDonado">Cargando...</p>
                 </div>
+                <div class="stat-box prediccion-box" id="boxPrediccionGlobal">
+                    <h4><span>⚡</span> Monitoreo Predictivo de Desabasto</h4>
+                    <p class="prediccion-valor" id="prediccionTextoGlobal">Procesando Burn Rate de la red...</p>
+                    <div class="prediccion-detalle" id="prediccionDetalleGlobal">Análisis en memoria de salidas y reservas críticas</div>
+                </div>
             </div>
 
             <div class="mt-2 pt-1 border-bottom">
@@ -424,6 +429,35 @@
                 let pct = (meta > 0) ? (stock / meta) * 100 : 0;
                 if (pct > 100) pct = 100;
                 document.getElementById('progressBar').style.width = `${pct}%`;
+
+                // Renderizar Predicción Predictiva de Desabasto Global
+                const boxPredG = document.getElementById('boxPrediccionGlobal');
+                const txtPredG = document.getElementById('prediccionTextoGlobal');
+                const detPredG = document.getElementById('prediccionDetalleGlobal');
+
+                boxPredG.classList.remove('estable', 'moderado');
+
+                const alertasG = data.alertasDesabasto || [];
+                const criticas = alertasG.filter(a => a.nivelRiesgo === 'CRITICO');
+                const moderadas = alertasG.filter(a => a.nivelRiesgo === 'MODERADO');
+
+                if (criticas.length > 0) {
+                    txtPredG.className = 'prediccion-valor text-danger';
+                    const primerItem = criticas[0];
+                    txtPredG.textContent = `⚠️ Riesgo Crítico: ${primerItem.articulo} (${primerItem.diasRestantes <= 1 ? '< 24 hrs' : primerItem.diasRestantes + ' días'})`;
+                    detPredG.textContent = `${criticas.length} insumo(s) con ritmo de agotamiento inminente en la red`;
+                } else if (moderadas.length > 0) {
+                    boxPredG.classList.add('moderado');
+                    txtPredG.className = 'prediccion-valor';
+                    const primerItem = moderadas[0];
+                    txtPredG.textContent = `⚡ Atención: ${primerItem.articulo} (${primerItem.diasRestantes} días de cobertura)`;
+                    detPredG.textContent = `${moderadas.length} insumo(s) bajo monitoreo preventivo`;
+                } else {
+                    boxPredG.classList.add('estable');
+                    txtPredG.className = 'prediccion-valor text-success';
+                    txtPredG.textContent = '✅ Cobertura Global Estable en Toda la Red';
+                    detPredG.textContent = 'Las reservas de la campaña cubren la demanda proyectada (> 5 días)';
+                }
 
                 // Renderizar comparativa de centros
                 const listaCentros = document.getElementById('listaCentros');

@@ -19,6 +19,16 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     List<Movimiento> findTop10ByCentroIdOrderByIdDesc(Integer centroId);
 
     /**
+     * Obtiene todos los movimientos de un centro y campaña específicos para cálculo analítico.
+     */
+    List<Movimiento> findByCentroIdAndCampaniaId(Integer centroId, Integer campaniaId);
+
+    /**
+     * Obtiene todos los movimientos de una campaña para análisis global.
+     */
+    List<Movimiento> findByCampaniaId(Integer campaniaId);
+
+    /**
      * Calcula el stock disponible en tiempo real para la combinación (Centro, Campaña, Artículo)
      * Suma recepciones, transferencias entrantes y ajustes positivos.
      * Resta entregas, mermas, transferencias salientes y ajustes negativos.

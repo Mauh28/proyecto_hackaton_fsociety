@@ -76,7 +76,7 @@
                     </select>
                 </div>
 
-                <div class="mb-1-5" id="groupBeneficiario" style="display: none;">
+                <div class="mb-1-5 d-none" id="groupBeneficiario">
                     <label for="inputBeneficiario" class="font-semibold">Nombre / Identificación del Beneficiario</label>
                     <input type="text" id="inputBeneficiario" placeholder="Ej. Familia Pérez / Juan Gómez (Damnificado)">
                 </div>
@@ -170,6 +170,11 @@
                 <div class="stat-box">
                     <h4>Mermas Registradas</h4>
                     <p class="text-danger" id="statMerma">0</p>
+                </div>
+                <div class="stat-box prediccion-box" id="boxPrediccionEncargado">
+                    <h4><span>⚡</span> Predicción de Abasto Preventiva</h4>
+                    <p class="prediccion-valor" id="prediccionTextoEncargado">Analizando ritmo de consumo...</p>
+                    <div class="prediccion-detalle" id="prediccionDetalleEncargado">Tasa de salida en tiempo real (Burn Rate)</div>
                 </div>
             </div>
 
@@ -391,6 +396,33 @@
                 if (pct > 100) pct = 100;
                 document.getElementById('progressBar').style.width = `${pct}%`;
 
+                // Renderizar Predicción Predictiva de Desabasto (Burn Rate)
+                const boxPred = document.getElementById('boxPrediccionEncargado');
+                const txtPred = document.getElementById('prediccionTextoEncargado');
+                const detPred = document.getElementById('prediccionDetalleEncargado');
+
+                boxPred.classList.remove('estable', 'moderado');
+
+                const alertas = data.alertasDesabasto || [];
+                const alertaCritica = alertas.find(a => a.nivelRiesgo === 'CRITICO');
+                const alertaModerada = alertas.find(a => a.nivelRiesgo === 'MODERADO');
+
+                if (alertaCritica) {
+                    txtPred.className = 'prediccion-valor text-danger';
+                    txtPred.textContent = `⚠️ ${alertaCritica.articulo}: Agotamiento estimado en ${alertaCritica.diasRestantes <= 1 ? '< 24 hrs' : alertaCritica.diasRestantes + ' días'}`;
+                    detPred.textContent = `Ritmo de salida: ${alertaCritica.consumoDiarioPromedio} unid/día | Stock disponible: ${alertaCritica.stockActual}`;
+                } else if (alertaModerada) {
+                    boxPred.classList.add('moderado');
+                    txtPred.className = 'prediccion-valor';
+                    txtPred.textContent = `⚡ ${alertaModerada.articulo}: Cobertura para ~${alertaModerada.diasRestantes} días`;
+                    detPred.textContent = `Consumo promedio: ${alertaModerada.consumoDiarioPromedio} unid/día | Nivel moderado`;
+                } else {
+                    boxPred.classList.add('estable');
+                    txtPred.className = 'prediccion-valor text-success';
+                    txtPred.textContent = '✅ Abasto Estable: Cobertura estimada > 5 días en todos los insumos';
+                    detPred.textContent = 'El ritmo de salidas actual no compromete las reservas críticas';
+                }
+
                 // Renderizar Historial
                 const historyList = document.getElementById('historyList');
                 historyList.innerHTML = '';
@@ -505,14 +537,14 @@
         if (destInstitucionRadio && destBeneficiarioRadio) {
             destInstitucionRadio.addEventListener('change', () => {
                 if (destInstitucionRadio.checked) {
-                    groupInstitucion.style.display = 'block';
-                    groupBeneficiario.style.display = 'none';
+                    groupInstitucion.classList.remove('d-none');
+                    groupBeneficiario.classList.add('d-none');
                 }
             });
             destBeneficiarioRadio.addEventListener('change', () => {
                 if (destBeneficiarioRadio.checked) {
-                    groupInstitucion.style.display = 'none';
-                    groupBeneficiario.style.display = 'block';
+                    groupInstitucion.classList.add('d-none');
+                    groupBeneficiario.classList.remove('d-none');
                 }
             });
         }

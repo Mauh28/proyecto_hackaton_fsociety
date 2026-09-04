@@ -13,13 +13,14 @@ public class DashboardGlobalDTO {
     private String campaniaNombre;
     private BigDecimal metaCampania;
     private List<CentroComparativaDTO> centros = new ArrayList<>();
+    private List<AlertaDesabastoDTO> alertasDesabasto = new ArrayList<>();
 
     public DashboardGlobalDTO() {
     }
 
     public DashboardGlobalDTO(BigDecimal stockGlobal, BigDecimal mermaTotal, long centrosActivos,
                               String articuloMasDonado, String campaniaNombre, BigDecimal metaCampania,
-                              List<CentroComparativaDTO> centros) {
+                              List<CentroComparativaDTO> centros, List<AlertaDesabastoDTO> alertasDesabasto) {
         this.stockGlobal = stockGlobal != null ? stockGlobal : BigDecimal.ZERO;
         this.mermaTotal = mermaTotal != null ? mermaTotal : BigDecimal.ZERO;
         this.centrosActivos = centrosActivos;
@@ -27,6 +28,7 @@ public class DashboardGlobalDTO {
         this.campaniaNombre = campaniaNombre != null ? campaniaNombre : "Sin Campaña";
         this.metaCampania = metaCampania != null ? metaCampania : BigDecimal.ZERO;
         this.centros = centros != null ? centros : new ArrayList<>();
+        this.alertasDesabasto = alertasDesabasto != null ? alertasDesabasto : new ArrayList<>();
     }
 
     public BigDecimal getStockGlobal() {
@@ -83,5 +85,13 @@ public class DashboardGlobalDTO {
 
     public void setCentros(List<CentroComparativaDTO> centros) {
         this.centros = centros;
+    }
+
+    public List<AlertaDesabastoDTO> getAlertasDesabasto() {
+        return alertasDesabasto;
+    }
+
+    public void setAlertasDesabasto(List<AlertaDesabastoDTO> alertasDesabasto) {
+        this.alertasDesabasto = alertasDesabasto;
     }
 }
