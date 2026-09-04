@@ -400,11 +400,15 @@
                     return;
                 }
 
-                data.historial.forEach(mov => {
+                data.historial.forEach((mov, idx) => {
                     const li = document.createElement('li');
                     const esNegativo = ['entrega', 'merma', 'transferencia_salida', 'ajuste_negativo'].includes((mov.tipo || '').toLowerCase());
                     const badgeClass = esNegativo ? 'text-danger' : 'text-success';
                     const signo = esNegativo ? '-' : '+';
+
+                    if (idx === 0) {
+                        li.classList.add('item-highlight-pulse');
+                    }
 
                     const detalleTexto = (mov.detalle && mov.detalle.trim() !== '')
                         ? mov.detalle.trim()
