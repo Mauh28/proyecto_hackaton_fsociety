@@ -14,6 +14,7 @@ public class ResumenRecepcionDTO {
     private BigDecimal metaTotal;
     private BigDecimal porcentajeAvance;
     private List<OpcionSimpleDTO> campaniasActivas = new ArrayList<>();
+    private List<OpcionSimpleDTO> centrosDisponibles = new ArrayList<>();
 
     public ResumenRecepcionDTO() {
     }
@@ -28,6 +29,7 @@ public class ResumenRecepcionDTO {
         this.metaTotal = metaTotal;
         this.porcentajeAvance = porcentajeAvance;
         this.campaniasActivas = new ArrayList<>();
+        this.centrosDisponibles = new ArrayList<>();
     }
 
     public Integer getCentroId() {
@@ -92,5 +94,13 @@ public class ResumenRecepcionDTO {
 
     public void setCampaniasActivas(List<OpcionSimpleDTO> campaniasActivas) {
         this.campaniasActivas = campaniasActivas;
+    }
+
+    public List<OpcionSimpleDTO> getCentrosDisponibles() {
+        return centrosDisponibles;
+    }
+
+    public void setCentrosDisponibles(List<OpcionSimpleDTO> centrosDisponibles) {
+        this.centrosDisponibles = centrosDisponibles;
     }
 }

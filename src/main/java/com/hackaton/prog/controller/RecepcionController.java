@@ -44,8 +44,9 @@ public class RecepcionController {
      */
     @GetMapping("/resumen")
     public ResponseEntity<ResumenRecepcionDTO> obtenerResumen(
-            @RequestParam(value = "centroId", required = false, defaultValue = "1") Integer centroId) {
-        ResumenRecepcionDTO resumen = recepcionService.obtenerResumenCentro(centroId);
+            @RequestParam(value = "centroId", required = false) Integer centroId,
+            @RequestParam(value = "campaniaId", required = false) Integer campaniaId) {
+        ResumenRecepcionDTO resumen = recepcionService.obtenerResumenCentro(centroId, campaniaId);
         return ResponseEntity.ok(resumen);
     }
 }

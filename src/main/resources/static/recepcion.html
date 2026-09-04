@@ -14,12 +14,30 @@
         <h2>Registrar Donación</h2>
         <p class="text-muted mb-2">Ingresa los datos del artículo recibido en el centro.</p>
 
+        <!-- Selector de Centro / Sede (Visible si el usuario no tiene centro asignado o es coordinador) -->
+        <div class="mb-1-5" id="contenedorSelectorCentro" style="display: none;">
+            <label for="selectCentroRecepcion" class="font-semibold">Sede / Centro de Acopio</label>
+            <select id="selectCentroRecepcion" class="w-full" required>
+                <option value="">Cargando centros...</option>
+            </select>
+            <small class="text-muted text-sm">Selecciona la sede de acopio donde te encuentras operando.</small>
+        </div>
+
+        <!-- Indicador de Centro Fijo Asignado (Visible si el usuario tiene un centro fijo asignado) -->
+        <div class="mb-1-5" id="contenedorCentroFijo" style="display: none;">
+            <label class="font-semibold">Centro de Acopio Asignado</label>
+            <div style="padding: 9px 12px; background: #f3f4f6; border-radius: 6px; border: 1px solid var(--border); font-weight: 600; color: #1f2937;" id="textoCentroFijo">
+                Cargando centro...
+            </div>
+        </div>
+
         <!-- Selector de Campaña Activa (Requisito 6.1.2) -->
         <div class="mb-1-5">
             <label for="selectCampania" class="font-semibold">Campaña Activa de Destino</label>
             <select id="selectCampania" class="w-full" required>
                 <option value="">Cargando campañas activas...</option>
             </select>
+            <small class="text-muted text-sm">Campañas activas en las que participa esta sede.</small>
         </div>
 
         <!-- Selector de Categoría (Sección 4 del PDF) -->
@@ -101,7 +119,7 @@
         </div>
 
         <div class="info-card w-full">
-            <h3 class="mt-0">Resumen del Centro</h3>
+            <h3 class="mt-0" id="resumenCentroTitulo">Resumen del Centro</h3>
             <div class="flex-center-gap-1 mb-1-5 mt-2">
                 <div class="circle-icon">1</div>
                 <div>
@@ -189,10 +207,20 @@
         const inputDonor = document.getElementById('inputDonor');
         const selectUnit = document.getElementById('selectUnit');
         const selectCampania = document.getElementById('selectCampania');
+        const selectCentroRecepcion = document.getElementById('selectCentroRecepcion');
+        const contenedorSelectorCentro = document.getElementById('contenedorSelectorCentro');
+        const contenedorCentroFijo = document.getElementById('contenedorCentroFijo');
+        const textoCentroFijo = document.getElementById('textoCentroFijo');
+        const resumenCentroTitulo = document.getElementById('resumenCentroTitulo');
         const stockActualEl = document.getElementById('stockActual');
         const metaTotalEl = document.getElementById('metaTotal');
         const progressBar = document.getElementById('progressBar');
         const campaniaNombreEl = document.getElementById('resumenCampaniaNombre');
+
+        // Determinar si el usuario tiene un centro fijo asignado en su cuenta
+        const tieneCentroAsignado = (sessionStorage.getItem('tieneCentroAsignado') === 'true') && 
+                                    (sessionStorage.getItem('rolActivo') !== 'coordinador') && 
+                                    Boolean(sessionStorage.getItem('centroId'));
 
         let stockActual = 0;
         let metaTotal = 5000;
@@ -210,12 +238,52 @@
             progressBar.style.width = `${pct}%`;
         }
 
-        // Cargar datos en vivo del centro si el backend está activo
-        async function cargarResumen() {
+        // Cargar datos en vivo del centro y campañas vinculadas
+        async function cargarResumen(targetCentroId, targetCampaniaId) {
             try {
-                const res = await fetch(`/api/recepcion/resumen?centroId=${centroId}`);
+                const idParaConsulta = targetCentroId || centroId;
+                let url = `/api/recepcion/resumen?centroId=${idParaConsulta}`;
+                if (targetCampaniaId) {
+                    url += `&campaniaId=${targetCampaniaId}`;
+                }
+
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
+                    if (data.centroId) {
+                        centroId = data.centroId;
+                    }
+
+                    // Gestión visual del centro: selector para rol coordinador/sin asignar, fijo para asignados
+                    if (data.centrosDisponibles && data.centrosDisponibles.length > 0) {
+                        if (!tieneCentroAsignado) {
+                            contenedorSelectorCentro.style.display = 'block';
+                            if (contenedorCentroFijo) contenedorCentroFijo.style.display = 'none';
+                            
+                            selectCentroRecepcion.innerHTML = '';
+                            data.centrosDisponibles.forEach(c => {
+                                const opt = document.createElement('option');
+                                opt.value = c.id;
+                                opt.textContent = c.nombre;
+                                if (c.id === centroId) opt.selected = true;
+                                selectCentroRecepcion.appendChild(opt);
+                            });
+                        }
+                    }
+
+                    if (tieneCentroAsignado) {
+                        if (contenedorSelectorCentro) contenedorSelectorCentro.style.display = 'none';
+                        if (contenedorCentroFijo) {
+                            contenedorCentroFijo.style.display = 'block';
+                            textoCentroFijo.textContent = data.centroNombre || ('Centro #' + centroId);
+                        }
+                    }
+
+                    // Título del resumen con el nombre del centro en pantalla
+                    if (resumenCentroTitulo) {
+                        resumenCentroTitulo.textContent = `Resumen: ${data.centroNombre || 'Sede de Acopio'}`;
+                    }
+
                     if (data.campaniaNombre) campaniaNombreEl.textContent = data.campaniaNombre;
                     if (data.metaTotal) {
                         metaTotal = parseFloat(data.metaTotal);
@@ -227,10 +295,9 @@
                     }
                     actualizarBarraProgreso();
 
-                    // Rellenar selector de campañas activas (Punto 6.1.2)
+                    // Rellenar selector de campañas activas que están vinculadas a este centro
+                    selectCampania.innerHTML = '';
                     if (data.campaniasActivas && data.campaniasActivas.length > 0) {
-                        const seleccionPrevia = selectCampania.value;
-                        selectCampania.innerHTML = '';
                         data.campaniasActivas.forEach(c => {
                             const opt = document.createElement('option');
                             opt.value = c.id;
@@ -238,11 +305,10 @@
                             if (c.id === data.campaniaId) opt.selected = true;
                             selectCampania.appendChild(opt);
                         });
-                        if (seleccionPrevia) {
-                            selectCampania.value = seleccionPrevia;
-                        }
                     } else if (data.campaniaId && data.campaniaNombre) {
                         selectCampania.innerHTML = `<option value="${data.campaniaId}">${data.campaniaNombre}</option>`;
+                    } else {
+                        selectCampania.innerHTML = '<option value="">Sin campañas activas en esta sede</option>';
                     }
                 }
             } catch (e) {
@@ -252,14 +318,32 @@
             }
         }
 
-        selectCampania.addEventListener('change', () => {
+        // Listener: cambio de sede en el selector
+        if (selectCentroRecepcion) {
+            selectCentroRecepcion.addEventListener('change', async () => {
+                const nuevoCentroId = parseInt(selectCentroRecepcion.value, 10);
+                if (nuevoCentroId && nuevoCentroId !== centroId) {
+                    centroId = nuevoCentroId;
+                    sessionStorage.setItem('centroId', centroId);
+                    await cargarResumen(centroId);
+                }
+            });
+        }
+
+        // Listener: cambio de campaña en el selector
+        selectCampania.addEventListener('change', async () => {
             const selectedText = selectCampania.options[selectCampania.selectedIndex]?.text;
             if (selectedText) {
                 campaniaNombreEl.textContent = selectedText;
             }
+            const selCampId = parseInt(selectCampania.value, 10);
+            if (selCampId) {
+                await cargarResumen(centroId, selCampId);
+            }
         });
 
-        cargarResumen();
+        // Inicializar carga de datos
+        cargarResumen(centroId);
 
         btnRegistrar.addEventListener('click', async () => {
             const nombreItem = inputItemName.value.trim();
@@ -284,7 +368,7 @@
             btnRegistrar.textContent = 'Registrando...';
 
             try {
-                // Registrar en el backend con la campaña activa elegida por el voluntario/encargado
+                // Registrar en el backend con el centro y campaña seleccionados
                 const response = await fetch('/api/recepcion', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -317,7 +401,7 @@
                     setTimeout(() => toast.classList.remove('show'), 3000);
 
                     limpiarFormulario();
-                    await cargarResumen();
+                    await cargarResumen(centroId, campaniaIdSel);
                 } else {
                     let errMsg = 'No se pudo guardar la donación en la base de datos.';
                     try {

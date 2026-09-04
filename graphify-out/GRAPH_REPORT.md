@@ -1,16 +1,16 @@
 # Graph Report - proyecto_hackaton_fsociety  (2026-09-04)
 
 ## Corpus Check
-- 86 files · ~77,190 words
+- 86 files · ~77,716 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1110 nodes · 2088 edges · 53 communities (31 shown, 22 thin omitted)
-- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 280 edges (avg confidence: 0.8)
+- 1112 nodes · 2094 edges · 62 communities (33 shown, 29 thin omitted)
+- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 282 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c1ea4058`
+- Built from commit: `00501af4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,12 +21,12 @@
 - RecepcionRequestDTO
 - ResumenRecepcionDTO
 - MovimientoHistorialDTO
-- LiderService
+- LiderController
 - RegistroMovimientoRequest
 - DashboardCentroDTO
 - org.junit.jupiter.api.Test
 - DashboardGlobalDTO
-- .getId
+- .obtenerDashboardCentro
 - GuardarCentroRequest
 - GuardarCampaniaRequest
 - UsuarioContextoDTO
@@ -41,7 +41,7 @@
 - Override
 - RolUsuario
 - 3. SECCIÓN I: ARQUITECTURA Y DESARROLLO DE LA BASE DE DATOS
-- UsuarioRepository
+- org.springframework.web.bind.annotation.ExceptionHandler
 - Centro
 - README.md
 - CentroComparativaDTO
@@ -57,7 +57,7 @@
 - DashboardLiderDTO
 - .actualizarCampania
 - CategoriaArticulo
-- Articulo
+- RecepcionService.java
 - 3.4 Diccionario de Datos y Especificación DDL
 - 4.3 Catálogo de Controladores y Endpoints REST
 - 5.2 Detalle de Pantallas Implementadas
@@ -66,65 +66,74 @@
 - CentroAporteCampaniaDTO
 - OpcionSimpleDTO
 - ArticuloStockDTO
-- LoginRequest
+- .obtenerContextoValidado
+- ErrorResponse
+- .obtenerDashboard
+- CentroCampania
 - org.springframework.http.ResponseEntity
+- Articulo
+- .validarPermisoModulo
+- StockInsuficienteException
+- AccesoDenegadoException
+- CredencialesInvalidasException
+- UsuarioNoEncontradoException
 
 ## God Nodes (most connected - your core abstractions)
 1. `Movimiento` - 57 edges
 2. `Campania` - 46 edges
 3. `DashboardLiderDTO` - 44 edges
 4. `Centro` - 43 edges
-5. `Usuario` - 40 edges
-6. `OpcionSimpleDTO` - 39 edges
+5. `OpcionSimpleDTO` - 41 edges
+6. `Usuario` - 40 edges
 7. `Transferencia` - 35 edges
 8. `UsuarioContextoDTO` - 32 edges
 9. `MovimientoRepository` - 32 edges
 10. `RegistroMovimientoRequest` - 31 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `EncargadoControllerTest` --references--> `EncargadoController`  [EXTRACTED]
-  src/test/java/com/hackaton/prog/EncargadoControllerTest.java → src/main/java/com/hackaton/prog/controller/EncargadoController.java
+- `CoordinadorController` --references--> `CoordinadorService`  [EXTRACTED]
+  src/main/java/com/hackaton/prog/controller/CoordinadorController.java → src/main/java/com/hackaton/prog/service/CoordinadorService.java
+- `EncargadoController` --references--> `EncargadoService`  [EXTRACTED]
+  src/main/java/com/hackaton/prog/controller/EncargadoController.java → src/main/java/com/hackaton/prog/service/EncargadoService.java
+- `LiderController` --references--> `LiderService`  [EXTRACTED]
+  src/main/java/com/hackaton/prog/controller/LiderController.java → src/main/java/com/hackaton/prog/service/LiderService.java
 - `LiderControllerTest` --references--> `LiderController`  [EXTRACTED]
   src/test/java/com/hackaton/prog/LiderControllerTest.java → src/main/java/com/hackaton/prog/controller/LiderController.java
 - `MenuController` --references--> `MenuService`  [EXTRACTED]
   src/main/java/com/hackaton/prog/controller/MenuController.java → src/main/java/com/hackaton/prog/service/MenuService.java
-- `RecepcionControllerTest` --references--> `RecepcionController`  [EXTRACTED]
-  src/test/java/com/hackaton/prog/RecepcionControllerTest.java → src/main/java/com/hackaton/prog/controller/RecepcionController.java
-- `DashboardCentroDTO` --references--> `AlertaDesabastoDTO`  [EXTRACTED]
-  src/main/java/com/hackaton/prog/dto/DashboardCentroDTO.java → src/main/java/com/hackaton/prog/dto/AlertaDesabastoDTO.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (53 total, 22 thin omitted)
+## Communities (62 total, 29 thin omitted)
 
 ### Community 0 - "MovimientoRepository"
-Cohesion: 0.06
-Nodes (21): jakarta.persistence.Embeddable, org.springframework.data.jpa.repository.JpaRepository, org.springframework.data.jpa.repository.Query, org.springframework.stereotype.Repository, org.springframework.transaction.annotation.Transactional, CoordinadorController, RequestMapping, RestController (+13 more)
+Cohesion: 0.11
+Nodes (23): org.springframework.data.jpa.repository.JpaRepository, org.springframework.stereotype.Repository, org.springframework.stereotype.Service, org.springframework.transaction.annotation.Transactional, AuthController, RequestMapping, RestController, desdeValorDb() (+15 more)
 
 ### Community 1 - "Movimiento"
 Cohesion: 0.09
-Nodes (9): Donante, Entity, Table, Entity, PrePersist, Table, Movimiento, DonanteRepository (+1 more)
+Nodes (7): Donante, Entity, Table, Entity, PrePersist, Table, Movimiento
 
 ### Community 3 - "RecepcionRequestDTO"
 Cohesion: 0.07
 Nodes (3): PostMapping, RecepcionRequestDTO, RecepcionResponseDTO
 
 ### Community 4 - "ResumenRecepcionDTO"
-Cohesion: 0.07
-Nodes (7): GetMapping, RequestMapping, RestController, RecepcionController, ArticuloItemDTO, ResumenRecepcionDTO, RecepcionService
+Cohesion: 0.06
+Nodes (6): GetMapping, RequestMapping, RestController, RecepcionController, ArticuloItemDTO, ResumenRecepcionDTO
 
-### Community 6 - "LiderService"
-Cohesion: 0.13
-Nodes (8): DeleteMapping, GetMapping, PostMapping, RequestMapping, RestController, LiderController, AsociarCentroCampaniaRequest, LiderService
+### Community 6 - "LiderController"
+Cohesion: 0.14
+Nodes (7): DeleteMapping, GetMapping, PostMapping, RequestMapping, RestController, LiderController, AsociarCentroCampaniaRequest
 
 ### Community 9 - "org.junit.jupiter.api.Test"
-Cohesion: 0.12
-Nodes (14): org.junit.jupiter.api.BeforeEach, org.junit.jupiter.api.DisplayName, org.junit.jupiter.api.Test, org.springframework.boot.test.context.SpringBootTest, org.springframework.test.web.servlet.MockMvc, RequestMapping, RestController, MenuController (+6 more)
+Cohesion: 0.09
+Nodes (18): org.junit.jupiter.api.BeforeEach, org.junit.jupiter.api.DisplayName, org.junit.jupiter.api.Test, org.springframework.boot.test.context.SpringBootTest, org.springframework.test.web.servlet.MockMvc, EncargadoController, GetMapping, RequestMapping (+10 more)
 
 ### Community 15 - "Transferencia"
-Cohesion: 0.08
-Nodes (9): EstadoTransferencia, CANCELADA, COMPLETADA, PENDIENTE, Entity, PrePersist, Table, Transferencia (+1 more)
+Cohesion: 0.09
+Nodes (10): desdeValorDb(), EstadoTransferencia, CANCELADA, COMPLETADA, PENDIENTE, Entity, PrePersist, Table (+2 more)
 
 ### Community 16 - "Guía de Especificación de Operaciones, Parámetros y Validaciones del Backend"
 Cohesion: 0.04
@@ -135,36 +144,36 @@ Cohesion: 0.05
 Nodes (40): 3.6 Catálogo y Guía Operativa de los 31 Procedimientos Almacenados, MÓDULO 1: Core de Inventario y Movimientos de Almacén, MÓDULO 2: Autenticación, Sesión y RBAC, MÓDULO 3: Gestión Maestra de Centros y Campañas, MÓDULO 4: Catálogos y Selectores Dinámicos (Dropdowns de Formularios), MÓDULO 5: Institución Receptora y Confirmaciones Externas, MÓDULO 6: Kárdex, Auditoría y Stock en Vivo, MÓDULO 7: Dashboards y Analítica Ejecutiva (+32 more)
 
 ### Community 20 - "Campania"
-Cohesion: 0.12
-Nodes (4): Campania, Entity, Table, CampaniaRepository
+Cohesion: 0.14
+Nodes (3): Campania, Entity, Table
 
 ### Community 21 - "Contexto del Proyecto: Sistema de Registro y Coordinación de Centros de Acopio (<in>Hack)"
 Cohesion: 0.06
 Nodes (31): 10.1 Innovación (25 pts), 10.2 Calidad Técnica (25 pts), 10.3 Impacto y Adecuación al Reto (25 pts), 10.4 Presentación y Demo (25 pts), 10. Rúbrica de Evaluación (<in>Hack - 100 Puntos), 11. Entregables Obligatorios, 1.1 Antecedentes, 1.2 La Problemática Actual (+23 more)
 
 ### Community 22 - "Usuario"
-Cohesion: 0.12
-Nodes (4): PostMapping, Entity, Table, Usuario
+Cohesion: 0.15
+Nodes (3): Entity, Table, Usuario
 
 ### Community 23 - "Override"
-Cohesion: 0.24
+Cohesion: 0.23
 Nodes (8): jakarta.persistence.AttributeConverter, jakarta.persistence.Converter, CategoriaArticuloConverter, EnumsConverters, EstadoTransferenciaConverter, Override, RolUsuarioConverter, UnidadMedidaConverter
 
 ### Community 24 - "RolUsuario"
-Cohesion: 0.14
+Cohesion: 0.18
 Nodes (7): desdeValorDb(), RolUsuario, COORDINADOR, ENCARGADO, INSTITUCION, LIDER, VOLUNTARIO
 
 ### Community 25 - "3. SECCIÓN I: ARQUITECTURA Y DESARROLLO DE LA BASE DE DATOS"
 Cohesion: 0.17
 Nodes (12): 3.1 Fundamentos y Decisiones de Diseño de la Base de Datos, 3.2 Correcciones Técnicas Recientes y Adaptaciones Cloud (Clever Cloud), 3.3 Diagrama Entidad-Relación Conceptual (EER), 3.5 Vista Oficial de Stock Actual (`v_stock_actual`), 3.7 Datos Semilla (Fixtures / Seeds para Demostración), 3.8 Guía de Despliegue y Ejecución del Script SQL, 3. SECCIÓN I: ARQUITECTURA Y DESARROLLO DE LA BASE DE DATOS, A. Adaptación del Nombre de Esquema por Políticas de PaaS Cloud (+4 more)
 
-### Community 26 - "UsuarioRepository"
-Cohesion: 0.24
-Nodes (6): AuthController, RequestMapping, RestController, CuentaInactivaException, UsuarioRepository, MenuService
+### Community 26 - "org.springframework.web.bind.annotation.ExceptionHandler"
+Cohesion: 0.20
+Nodes (4): MethodArgumentTypeMismatchException, org.springframework.web.bind.annotation.ExceptionHandler, org.springframework.web.method.annotation.MethodArgumentTypeMismatchException, CuentaInactivaException
 
 ### Community 27 - "Centro"
-Cohesion: 0.10
-Nodes (6): Centro, Entity, Table, CentroCampania, Entity, Table
+Cohesion: 0.18
+Nodes (3): Centro, Entity, Table
 
 ### Community 28 - "README.md"
 Cohesion: 0.20
@@ -187,16 +196,16 @@ Cohesion: 0.40
 Nodes (4): Getting Started, Guides, Maven Parent overrides, Reference Documentation
 
 ### Community 38 - "TipoMovimiento"
-Cohesion: 0.12
-Nodes (11): TipoMovimientoConverter, desdeValorDb(), desdeValorDb(), TipoMovimiento, AJUSTE_NEGATIVO, AJUSTE_POSITIVO, ENTREGA, MERMA (+3 more)
+Cohesion: 0.22
+Nodes (9): TipoMovimientoConverter, TipoMovimiento, AJUSTE_NEGATIVO, AJUSTE_POSITIVO, ENTREGA, MERMA, RECEPCION, TRANSFERENCIA_ENTRADA (+1 more)
 
 ### Community 41 - "CategoriaArticulo"
-Cohesion: 0.17
+Cohesion: 0.18
 Nodes (8): CategoriaArticulo, LIMPIEZA, MEDICAMENTO, NO_PERECEDERO, OTRO, PERECEDERO, ROPA, desdeValorDb()
 
-### Community 42 - "Articulo"
-Cohesion: 0.10
-Nodes (11): org.springframework.stereotype.Service, Articulo, Entity, Table, desdeValorDb(), UnidadMedida, BOLSA, CAJA (+3 more)
+### Community 42 - "RecepcionService.java"
+Cohesion: 0.18
+Nodes (7): desdeValorDb(), UnidadMedida, BOLSA, CAJA, KG, L, PIEZA
 
 ### Community 43 - "3.4 Diccionario de Datos y Especificación DDL"
 Cohesion: 0.20
@@ -218,29 +227,37 @@ Nodes (8): 6.1 Matriz de Criterios de Aceptación del MVP (<in>Hack - Checklist 
 Cohesion: 0.33
 Nodes (5): 1.1 Contexto y Problemática, 1.2 Objetivo del Sistema, 1. Introducción y Visión General del Proyecto, 2. Mapa Arquitectónico de la Documentación, Documentación Técnica del Sistema de Registro y Coordinación de Centros de Acopio (<in>Hack)
 
-### Community 52 - "org.springframework.http.ResponseEntity"
-Cohesion: 0.07
-Nodes (11): MethodArgumentTypeMismatchException, org.springframework.http.ResponseEntity, org.springframework.web.bind.annotation.ExceptionHandler, org.springframework.web.bind.annotation.RestControllerAdvice, org.springframework.web.method.annotation.MethodArgumentTypeMismatchException, GetMapping, ErrorResponse, AccesoDenegadoException (+3 more)
+### Community 54 - "CentroCampania"
+Cohesion: 0.12
+Nodes (6): jakarta.persistence.Embeddable, CentroCampania, Entity, Table, CentroCampaniaId, Override
+
+### Community 55 - "org.springframework.http.ResponseEntity"
+Cohesion: 0.24
+Nodes (5): org.springframework.http.ResponseEntity, CoordinadorController, GetMapping, RequestMapping, RestController
+
+### Community 56 - "Articulo"
+Cohesion: 0.18
+Nodes (3): Articulo, Entity, Table
 
 ## Knowledge Gaps
 - **176 isolated node(s):** `com.hackaton:prog`, `NO_PERECEDERO`, `PERECEDERO`, `ROPA`, `LIMPIEZA` (+171 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **29 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Centro` connect `Centro` to `MovimientoRepository`, `Movimiento`, `Articulo`, `.getId`, `GuardarCentroRequest`, `Transferencia`, `OpcionSimpleDTO`, `Campania`, `Usuario`, `RolUsuario`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
-- **Why does `Movimiento` connect `Movimiento` to `MovimientoRepository`, `TipoMovimiento`, `Articulo`, `Transferencia`, `Campania`, `Usuario`, `Centro`, `MotivoMovimiento`, `InstitucionReceptora`?**
+- **Why does `Movimiento` connect `Movimiento` to `MovimientoRepository`, `TipoMovimiento`, `RecepcionService.java`, `.obtenerDashboardCentro`, `Transferencia`, `Campania`, `Usuario`, `Articulo`, `Centro`, `MotivoMovimiento`, `InstitucionReceptora`?**
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+- **Why does `Centro` connect `Centro` to `MovimientoRepository`, `Movimiento`, `RecepcionService.java`, `.obtenerDashboardCentro`, `GuardarCentroRequest`, `Transferencia`, `.obtenerContextoValidado`, `.obtenerDashboard`, `CentroCampania`, `org.springframework.http.ResponseEntity`, `Usuario`, `RolUsuario`?**
   _High betweenness centrality (0.080) - this node is a cross-community bridge._
-- **Why does `OpcionSimpleDTO` connect `OpcionSimpleDTO` to `MovimientoRepository`, `CatalogosEncargadoDTO`, `ResumenRecepcionDTO`, `DashboardLiderDTO`, `DashboardCentroDTO`, `DashboardGlobalDTO`, `CentroAporteCampaniaDTO`, `Campania`?**
-  _High betweenness centrality (0.061) - this node is a cross-community bridge._
+- **Why does `OpcionSimpleDTO` connect `OpcionSimpleDTO` to `MovimientoRepository`, `CatalogosEncargadoDTO`, `ResumenRecepcionDTO`, `DashboardLiderDTO`, `DashboardCentroDTO`, `DashboardGlobalDTO`, `.obtenerDashboardCentro`, `CentroAporteCampaniaDTO`, `.obtenerDashboard`?**
+  _High betweenness centrality (0.068) - this node is a cross-community bridge._
 - **What connects `com.hackaton:prog`, `NO_PERECEDERO`, `PERECEDERO` to the rest of the system?**
   _176 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `MovimientoRepository` be split into smaller, more focused modules?**
-  _Cohesion score 0.06293965198074787 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10650281618023553 - nodes in this community are weakly interconnected._
 - **Should `Movimiento` be split into smaller, more focused modules?**
-  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09143686502177069 - nodes in this community are weakly interconnected._
 - **Should `RecepcionRequestDTO` be split into smaller, more focused modules?**
   _Cohesion score 0.06765327695560254 - nodes in this community are weakly interconnected._

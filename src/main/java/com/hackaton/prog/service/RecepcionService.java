@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -180,41 +181,63 @@ public class RecepcionService {
      */
     @Transactional(readOnly = true)
     public ResumenRecepcionDTO obtenerResumenCentro(Integer centroId) {
-        if (centroId == null || centroId <= 0) {
+        return obtenerResumenCentro(centroId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ResumenRecepcionDTO obtenerResumenCentro(Integer centroId, Integer campaniaIdParam) {
+        List<Centro> todosCentros = centroRepository.findByActivoTrue();
+        if (todosCentros == null) {
+            todosCentros = new ArrayList<>();
+        }
+
+        if ((centroId == null || centroId <= 0) && !todosCentros.isEmpty()) {
+            centroId = todosCentros.get(0).getId();
+        } else if (centroId == null || centroId <= 0) {
             centroId = 1;
         }
 
-        Centro centro = centroRepository.findById(centroId).orElse(null);
+        final Integer finalCentroId = centroId;
+        Centro centro = centroRepository.findById(finalCentroId).orElse(null);
         String centroNombre = (centro != null && centro.getNombre() != null)
                 ? centro.getNombre() : "Campus Central - Explanada";
 
-        // Obtener campañas activas del centro (o todas las activas si no hay específicas)
-        List<CentroCampania> asignadas = centroCampaniaRepository.findByCentroIdAndActivoTrue(centroId);
+        // Obtener campañas activas relacionadas con este centro
+        List<CentroCampania> asignadas = centroCampaniaRepository.findByCentroIdAndActivoTrue(finalCentroId);
         List<com.hackaton.prog.dto.OpcionSimpleDTO> campaniasOpciones = new ArrayList<>();
         Campania campania = null;
 
         if (!asignadas.isEmpty()) {
             for (CentroCampania cc : asignadas) {
-                if (Boolean.TRUE.equals(cc.getCampania().getActivo())) {
+                if (cc.getCampania() != null && Boolean.TRUE.equals(cc.getCampania().getActivo())) {
                     campaniasOpciones.add(new com.hackaton.prog.dto.OpcionSimpleDTO(
                             cc.getCampania().getId(),
                             cc.getCampania().getNombre()
                     ));
-                    if (campania == null) {
+                    if (campaniaIdParam != null && cc.getCampania().getId().equals(campaniaIdParam)) {
+                        campania = cc.getCampania();
+                    } else if (campania == null && campaniaIdParam == null) {
                         campania = cc.getCampania();
                     }
                 }
             }
         }
 
+        // Si el centro no tiene campañas asignadas específicamente, cargar campañas activas globales
         if (campaniasOpciones.isEmpty()) {
             List<Campania> activasGlobal = campaniaRepository.findByActivoTrue();
             for (Campania c : activasGlobal) {
                 campaniasOpciones.add(new com.hackaton.prog.dto.OpcionSimpleDTO(c.getId(), c.getNombre()));
-                if (campania == null) {
+                if (campaniaIdParam != null && c.getId().equals(campaniaIdParam)) {
+                    campania = c;
+                } else if (campania == null && campaniaIdParam == null) {
                     campania = c;
                 }
             }
+        }
+
+        if (campania == null && campaniaIdParam != null) {
+            campania = campaniaRepository.findById(campaniaIdParam).orElse(null);
         }
 
         Integer campaniaId = (campania != null) ? campania.getId() : 1;
@@ -224,19 +247,25 @@ public class RecepcionService {
                 ? campania.getMetaUnidades() : new BigDecimal("5000.00");
 
         // Stock actual acumulado en este centro
-        BigDecimal stockActual = movimientoRepository.calcularStockTotalCentro(centroId);
+        BigDecimal stockActual = movimientoRepository.calcularStockTotalCentro(finalCentroId);
         if (stockActual == null) {
             stockActual = BigDecimal.ZERO;
         }
 
         ResumenRecepcionDTO resumen = new ResumenRecepcionDTO();
-        resumen.setCentroId(centroId);
+        resumen.setCentroId(finalCentroId);
         resumen.setCentroNombre(centroNombre);
         resumen.setCampaniaId(campaniaId);
         resumen.setCampaniaNombre(campaniaNombre);
         resumen.setCampaniasActivas(campaniasOpciones);
         resumen.setMetaTotal(metaTotal);
         resumen.setStockActual(stockActual);
+
+        // Lista de centros activos disponibles para que el usuario elija su sede si no la tiene asignada
+        List<com.hackaton.prog.dto.OpcionSimpleDTO> centrosDisponibles = todosCentros.stream()
+                .map(c -> new com.hackaton.prog.dto.OpcionSimpleDTO(c.getId(), c.getNombre()))
+                .collect(Collectors.toList());
+        resumen.setCentrosDisponibles(centrosDisponibles);
 
         // Porcentaje de avance hacia la meta
         BigDecimal porcentajeAvance = BigDecimal.ZERO;
