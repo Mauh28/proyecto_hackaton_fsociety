@@ -232,8 +232,11 @@
                 return;
             }
 
-            entregasFiltradas.forEach(e => {
+            entregasFiltradas.forEach((e, idx) => {
                 const li = document.createElement('li');
+                if (idx === 0) {
+                    li.classList.add('item-highlight-pulse');
+                }
                 li.innerHTML = `
                     <div>
                         <strong>${e.confirmada ? '✓ Recibido' : '⏳ En Tránsito'}</strong> - ${e.articulo}
