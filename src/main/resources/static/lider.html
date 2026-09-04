@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Líder de Campaña - Centros de Acopio</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+    <!-- Panel Izquierdo: Gestión Estratégica de Campaña -->
+    <div class="left-panel">
+        <h2>Gestión de Campaña</h2>
+        <p class="text-muted mb-2">Controla los objetivos, metas y centros de acopio asignados a tu contingencia.</p>
+
+        <!-- Mensaje de alerta / error -->
+        <div id="alertBox" class="alert-error">
+            <span id="alertText"></span>
+        </div>
+
+        <!-- Selector de Pestañas / Acciones -->
+        <div class="category-grid" id="actionGrid">
+            <div class="category-card active" data-tab="metas">
+                <span>Objetivo y Metas</span>
+                <span>✓</span>
+            </div>
+            <div class="category-card" data-tab="vincular">
+                <span>Vincular Centros</span>
+                <span>✓</span>
+            </div>
+        </div>
+
+        <!-- Formularios Dinámicos -->
+        <div id="dynamicSections">
+
+            <!-- SECCIÓN 1: Ajuste de Meta y Fechas -->
+            <div class="form-section active" id="sec-metas">
+                <div class="mb-1-5">
+                    <label for="metaUnidades" class="font-semibold">Meta de Recolección (Unidades / Artículos)</label>
+                    <input type="number" id="metaUnidades" placeholder="Ej. 5000" min="1" step="1" required>
+                    <small class="text-muted text-sm">Objetivo total esperado para declarar cumplida la misión.</small>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="fechaFin" class="font-semibold">Fecha Estimada de Cierre</label>
+                    <input type="date" id="fechaFin">
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="descripcionCampania" class="font-semibold">Descripción y Enfoque Estratégico</label>
+                    <textarea id="descripcionCampania" rows="3" class="w-full" style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; resize: vertical;" placeholder="Detalles de la contingencia, prioridades de ayuda humanitaria..."></textarea>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="btnActualizarCampania">Actualizar Parámetros</button>
+            </div>
+
+            <!-- SECCIÓN 2: Vincular Centros de Acopio -->
+            <div class="form-section" id="sec-vincular">
+                <div class="mb-1-5">
+                    <label for="selectCentroDisponible" class="font-semibold">Seleccionar Centro de Acopio</label>
+                    <select id="selectCentroDisponible" required>
+                        <option value="">Cargando centros disponibles...</option>
+                    </select>
+                    <small class="text-muted text-sm">Centros de la red que aún no participan en esta campaña.</small>
+                </div>
+
+                <div class="info-card mb-1-5" style="background: #f8fafc; border: 1px dashed var(--border);">
+                    <p class="text-sm text-muted mb-0">
+                        Al vincular un centro de acopio, sus encargados y voluntarios podrán registrar recepciones, transferencias y canalizaciones asignadas directamente a tu campaña.
+                    </p>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="btnVincularCentro">Vincular Centro a Campaña</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Panel Derecho: Métricas Consolidadas y Red de Centros -->
+    <div class="right-panel">
+        <!-- Navegación con Dropdown alineado -->
+        <div class="nav-wrapper">
+            <div class="dropdown dropdown-relative">
+                <button type="button" class="dropbtn" id="dropBtn">Navegación ▾</button>
+                <div class="dropdown-content" id="navDropdown">
+                    <a href="menu.html" data-role="voluntario, encargado, coordinador, lider, institucion">Menú Principal</a>
+                    <a href="recepcion.html" data-role="voluntario, encargado, coordinador">Nueva Recepción</a>
+                    <a href="encargado.html" data-role="encargado, coordinador">Panel de Encargado</a>
+                    <a href="lider.html" data-role="lider, coordinador">Gestión de Campaña (Líder)</a>
+                    <a href="coordinador.html" data-role="coordinador">Dashboard Global</a>
+                    <a href="institucion.html" data-role="institucion, coordinador">Panel de Institución</a>
+                    <a href="index.html" id="btnLogout">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encabezado de Campaña -->
+        <div class="flex-between-end mb-1">
+            <div>
+                <h3 class="mt-0 mb-0" id="campaniaTitulo">Cargando Campaña...</h3>
+                <p class="text-muted text-sm mt-0" id="campaniaSubtitulo">Monitoreo y rendimiento en tiempo real.</p>
+            </div>
+            <div>
+                <span class="legend-item" id="badgeEstadoCampania" style="padding: 0.35rem 0.75rem; border-radius: 99px; background: #e0f2fe; color: #0369a1; font-weight: 600; font-size: 0.85rem;">
+                    Campaña Activa
+                </span>
+            </div>
+        </div>
+
+        <!-- Métricas Maestras de la Campaña -->
+        <div class="dashboard-card mb-1-5">
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <h4>Stock Recaudado</h4>
+                    <p id="statStockCampania">0</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Total Recibido</h4>
+                    <p class="text-success" id="statTotalRecibido">0</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Total Entregado</h4>
+                    <p id="statTotalEntregado">0</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Mermas Reportadas</h4>
+                    <p class="text-danger" id="statTotalMermas">0</p>
+                </div>
+            </div>
+
+            <!-- Barra de Avance hacia la Meta -->
+            <div class="mt-2 pt-1 border-bottom">
+                <div class="flex-between-end">
+                    <strong class="text-sm">Meta de Campaña</strong>
+                    <span class="text-sm text-muted" id="metaAvanceTexto">0 / 0 unidades (0%)</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Centros de Acopio Participantes -->
+        <div class="dashboard-card flex-1 mb-0">
+            <div class="flex-between-end pb-1 border-bottom">
+                <h4 class="mt-0 mb-0">Centros de Acopio Participantes</h4>
+                <span class="text-sm text-muted" id="totalCentrosBadge">0 centros vinculados</span>
+            </div>
+            <ul class="history-list" id="listaCentrosParticipantes">
+                <li>
+                    <span class="text-muted text-sm">Cargando centros vinculados...</span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Notificación Toast -->
+    <div id="toastNotif" class="toast">Operación realizada con éxito</div>
+
+    <script>
+        // 1. Verificación de Seguridad y Sesión
+        const rolActivo = (sessionStorage.getItem('rolActivo') || '').toLowerCase();
+        const emailActivo = sessionStorage.getItem('email') || sessionStorage.getItem('usuarioEmail');
+        const usuarioId = sessionStorage.getItem('usuarioId');
+
+        if (!rolActivo && !emailActivo) {
+            window.location.href = "index.html";
+        } else if (rolActivo && rolActivo !== 'lider' && rolActivo !== 'coordinador') {
+            alert("Acceso restringido: Solo Líderes de Campaña y Coordinadores tienen acceso a este módulo.");
+            window.location.href = "menu.html";
+        }
+
+        // 2. Control de Navegación Dropdown
+        const dropdownEl = document.querySelector('.dropdown');
+        const dropBtn = document.getElementById('dropBtn');
+        const navDropdown = document.getElementById('navDropdown');
+
+        if (dropBtn && dropdownEl && navDropdown) {
+            dropBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdownEl.classList.toggle('open');
+                navDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dropdownEl.contains(e.target)) {
+                    dropdownEl.classList.remove('open');
+                    navDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // Control de roles en los enlaces del menú
+        document.querySelectorAll('#navDropdown a[data-role]').forEach(link => {
+            const rolesPermitidos = (link.getAttribute('data-role') || '').toLowerCase();
+            if (rolActivo && !rolesPermitidos.includes(rolActivo)) {
+                link.style.display = 'none';
+            }
+        });
+
+        // Logout
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', (e) => {
+                sessionStorage.clear();
+            });
+        }
+
+        // 3. Sistema de Tabs en Panel Izquierdo
+        const tabCards = document.querySelectorAll('#actionGrid .category-card');
+        const secMetas = document.getElementById('sec-metas');
+        const secVincular = document.getElementById('sec-vincular');
+
+        tabCards.forEach(card => {
+            card.addEventListener('click', () => {
+                tabCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                const tab = card.getAttribute('data-tab');
+                if (tab === 'metas') {
+                    secMetas.classList.add('active');
+                    secVincular.classList.remove('active');
+                } else {
+                    secMetas.classList.remove('active');
+                    secVincular.classList.add('active');
+                }
+            });
+        });
+
+        // 4. Utilidades de Notificación
+        const alertBox = document.getElementById('alertBox');
+        const alertText = document.getElementById('alertText');
+        const toastNotif = document.getElementById('toastNotif');
+
+        function mostrarError(msg) {
+            if (alertBox && alertText) {
+                alertText.innerText = msg;
+                alertBox.style.display = 'block';
+                setTimeout(() => { alertBox.style.display = 'none'; }, 6000);
+            } else {
+                alert(msg);
+            }
+        }
+
+        function mostrarToast(msg) {
+            if (toastNotif) {
+                toastNotif.innerText = msg;
+                toastNotif.classList.add('show');
+                setTimeout(() => { toastNotif.classList.remove('show'); }, 3500);
+            }
+        }
+
+        // 5. Estado Global del Módulo Líder
+        let dashboardDataActual = null;
+
+        function construirQueryAuth() {
+            let params = [];
+            if (usuarioId) params.push(`usuarioId=${encodeURIComponent(usuarioId)}`);
+            if (emailActivo) params.push(`email=${encodeURIComponent(emailActivo)}`);
+            return params.length > 0 ? `?${params.join('&')}` : '';
+        }
+
+        // 6. Carga y Renderizado del Dashboard
+        async function cargarDashboard() {
+            try {
+                const queryAuth = construirQueryAuth();
+                const res = await fetch(`/api/lider/dashboard${queryAuth}`);
+                
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => null);
+                    const msg = errJson && errJson.mensaje ? errJson.mensaje : `Error al cargar datos (${res.status})`;
+                    mostrarError(msg);
+                    return;
+                }
+
+                const data = await res.json();
+                dashboardDataActual = data;
+                renderizarDashboard(data);
+
+            } catch (err) {
+                console.error("Error de conexión al cargar dashboard:", err);
+                mostrarError("Error al contactar con el servidor. Revisa tu conexión de red.");
+            }
+        }
+
+        function renderizarDashboard(data) {
+            // Títulos y Encabezados
+            document.getElementById('campaniaTitulo').innerText = data.campaniaNombre || 'Campaña Sin Nombre';
+            document.getElementById('campaniaSubtitulo').innerText = data.descripcion || 'Sin descripción estratégica registrada.';
+
+            // Campos del Formulario de Metas
+            if (data.metaUnidades !== undefined) {
+                document.getElementById('metaUnidades').value = data.metaUnidades;
+            }
+            if (data.fechaFin) {
+                document.getElementById('fechaFin').value = data.fechaFin;
+            }
+            if (data.descripcion) {
+                document.getElementById('descripcionCampania').value = data.descripcion;
+            }
+
+            // KPIs Numéricos
+            const stockActual = Number(data.stockActual || 0);
+            const totalRecibido = Number(data.totalRecibido || 0);
+            const totalEntregado = Number(data.totalEntregado || 0);
+            const totalMermas = Number(data.totalMermas || 0);
+            const metaUnidades = Number(data.metaUnidades || 0);
+            const pctAvance = Number(data.porcentajeAvance || 0);
+
+            document.getElementById('statStockCampania').innerText = stockActual.toLocaleString();
+            document.getElementById('statTotalRecibido').innerText = totalRecibido.toLocaleString();
+            document.getElementById('statTotalEntregado').innerText = totalEntregado.toLocaleString();
+            document.getElementById('statTotalMermas').innerText = totalMermas.toLocaleString();
+
+            // Barra de Progreso
+            document.getElementById('metaAvanceTexto').innerText = 
+                `${stockActual.toLocaleString()} / ${metaUnidades.toLocaleString()} unidades (${pctAvance.toFixed(1)}%)`;
+            
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar) {
+                const anchoPorcentaje = Math.min(Math.max(pctAvance, 0), 100);
+                progressBar.style.width = `${anchoPorcentaje}%`;
+                if (anchoPorcentaje >= 100) {
+                    progressBar.style.backgroundColor = 'var(--success)';
+                } else if (anchoPorcentaje >= 50) {
+                    progressBar.style.backgroundColor = '#3b82f6';
+                } else {
+                    progressBar.style.backgroundColor = '#f59e0b';
+                }
+            }
+
+            // Lista de Centros Participantes
+            const listaCentrosEl = document.getElementById('listaCentrosParticipantes');
+            listaCentrosEl.innerHTML = '';
+
+            const participantes = data.centrosParticipantes || [];
+            document.getElementById('totalCentrosBadge').innerText = `${participantes.length} centros vinculados`;
+
+            if (participantes.length === 0) {
+                listaCentrosEl.innerHTML = '<li><span class="text-muted text-sm">No hay centros de acopio vinculados a esta campaña actualmente.</span></li>';
+            } else {
+                participantes.forEach(c => {
+                    const li = document.createElement('li');
+                    li.style.display = 'flex';
+                    li.style.justifyContent = 'space-between';
+                    li.style.alignItems = 'center';
+                    li.style.padding = '0.75rem 0';
+                    li.style.borderBottom = '1px solid var(--border)';
+
+                    li.innerHTML = `
+                        <div style="flex: 1; padding-right: 1rem;">
+                            <strong>${c.nombreCentro}</strong>
+                            <div class="text-muted text-sm">${c.institucion} &bull; ${c.ubicacion}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="text-right">
+                                <span class="font-bold">${Number(c.stockAportado || 0).toLocaleString()}</span>
+                                <div class="text-muted text-sm">arts. en campaña</div>
+                            </div>
+                            <button type="button" class="btn btn-secondary text-danger" 
+                                style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem;" 
+                                onclick="desvincularCentro(${c.idCentro}, '${c.nombreCentro.replace(/'/g, "\\'")}')">
+                                Desvincular
+                            </button>
+                        </div>
+                    `;
+                    listaCentrosEl.appendChild(li);
+                });
+            }
+
+            // Dropdown de Centros Disponibles para Vincular
+            const selectCentro = document.getElementById('selectCentroDisponible');
+            selectCentro.innerHTML = '';
+
+            const disponibles = data.centrosDisponibles || [];
+            if (disponibles.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.innerText = 'Todos los centros ya están vinculados';
+                selectCentro.appendChild(opt);
+                selectCentro.disabled = true;
+                document.getElementById('btnVincularCentro').disabled = true;
+            } else {
+                selectCentro.disabled = false;
+                document.getElementById('btnVincularCentro').disabled = false;
+                const optDefault = document.createElement('option');
+                optDefault.value = '';
+                optDefault.innerText = '-- Seleccione un centro de acopio --';
+                selectCentro.appendChild(optDefault);
+
+                disponibles.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.innerText = c.nombre;
+                    selectCentro.appendChild(opt);
+                });
+            }
+        }
+
+        // 7. Evento: Actualizar Metas de la Campaña
+        document.getElementById('btnActualizarCampania').addEventListener('click', async () => {
+            const metaVal = document.getElementById('metaUnidades').value;
+            const fechaFinVal = document.getElementById('fechaFin').value;
+            const descVal = document.getElementById('descripcionCampania').value;
+
+            if (!metaVal || Number(metaVal) <= 0) {
+                mostrarError("Por favor ingresa una meta válida mayor a cero.");
+                return;
+            }
+
+            const payload = {
+                metaUnidades: parseFloat(metaVal),
+                fechaFin: fechaFinVal ? fechaFinVal : null,
+                descripcion: descVal ? descVal.trim() : ""
+            };
+
+            try {
+                const queryAuth = construirQueryAuth();
+                const res = await fetch(`/api/lider/campania${queryAuth}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => null);
+                    mostrarError(errJson && errJson.mensaje ? errJson.mensaje : "Error al actualizar la campaña.");
+                    return;
+                }
+
+                const dataActualizada = await res.json();
+                renderizarDashboard(dataActualizada);
+                mostrarToast("Parámetros de campaña actualizados con éxito");
+
+            } catch (err) {
+                console.error("Error al actualizar campaña:", err);
+                mostrarError("No se pudo conectar con el servidor para actualizar.");
+            }
+        });
+
+        // 8. Evento: Vincular Nuevo Centro
+        document.getElementById('btnVincularCentro').addEventListener('click', async () => {
+            const selectCentro = document.getElementById('selectCentroDisponible');
+            const centroId = selectCentro.value;
+
+            if (!centroId) {
+                mostrarError("Por favor selecciona un centro de acopio para vincular.");
+                return;
+            }
+
+            const payload = {
+                centroId: parseInt(centroId, 10)
+            };
+
+            try {
+                const queryAuth = construirQueryAuth();
+                const res = await fetch(`/api/lider/centros/asociar${queryAuth}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => null);
+                    mostrarError(errJson && errJson.mensaje ? errJson.mensaje : "Error al vincular el centro.");
+                    return;
+                }
+
+                const dataActualizada = await res.json();
+                renderizarDashboard(dataActualizada);
+                mostrarToast("Centro de acopio vinculado exitosamente");
+
+            } catch (err) {
+                console.error("Error al vincular centro:", err);
+                mostrarError("No se pudo conectar con el servidor para vincular el centro.");
+            }
+        });
+
+        // 9. Evento Global: Desvincular Centro
+        window.desvincularCentro = async function(centroId, nombreCentro) {
+            if (!confirm(`¿Estás seguro de desvincular el centro "${nombreCentro}" de esta campaña?`)) {
+                return;
+            }
+
+            try {
+                const queryAuth = construirQueryAuth();
+                const res = await fetch(`/api/lider/centros/${centroId}${queryAuth}`, {
+                    method: 'DELETE'
+                });
+
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => null);
+                    mostrarError(errJson && errJson.mensaje ? errJson.mensaje : "Error al desvincular el centro.");
+                    return;
+                }
+
+                const dataActualizada = await res.json();
+                renderizarDashboard(dataActualizada);
+                mostrarToast(`Centro "${nombreCentro}" desvinculado de la campaña`);
+
+            } catch (err) {
+                console.error("Error al desvincular centro:", err);
+                mostrarError("No se pudo conectar con el servidor para desvincular.");
+            }
+        };
+
+        // Carga inicial
+        cargarDashboard();
+    </script>
+</body>
+
+</html>

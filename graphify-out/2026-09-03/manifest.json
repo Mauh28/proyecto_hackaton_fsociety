@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "DOCUMENTACION.md": {
-    "mtime": 1788471641.371574,
-    "seen": 1788496991.1533735,
-    "ast_hash": "f81537e375cf6bc8b0661ad4fb8e348a",
+    "mtime": 1788499209.986798,
+    "seen": 1788499241.2863832,
+    "ast_hash": "4db3788f04495ba7825031c6200f9ef7",
     "semantic_hash": ""
   },
   "HELP.md": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1788475970.4414861,
-    "seen": 1788496991.1533735,
-    "ast_hash": "ae46215c39a7392b8cc8520be94ef768",
+    "mtime": 1788499209.9878707,
+    "seen": 1788499241.2863832,
+    "ast_hash": "f30ac90207380e1275727402ee5eb1c7",
     "semantic_hash": ""
   },
   "docs/GUIA_PROCEDIMIENTOS_ALMACENADOS.md": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/coordinador.html": {
-    "mtime": 1788498324.4528015,
-    "seen": 1788498536.2373762,
-    "ast_hash": "d098f95cadb78b48fd8202d017a1b1e4",
+    "mtime": 1788499209.996838,
+    "seen": 1788499241.2863832,
+    "ast_hash": "d59f5132eb0f40ef74c5a9f08d602ca0",
     "semantic_hash": ""
   },
   "src/main/resources/static/encargado.html": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/menu.html": {
-    "mtime": 1788496536.5540402,
-    "seen": 1788496991.1533735,
-    "ast_hash": "9bea80989964c9a6515f8b0434d78ec8",
+    "mtime": 1788499209.9988377,
+    "seen": 1788499241.2863832,
+    "ast_hash": "874ed05824fb237cec0a017567657a9a",
     "semantic_hash": ""
   },
   "src/main/resources/static/recepcion.html": {
@@ -483,6 +483,18 @@
     "mtime": 1788498237.1059685,
     "seen": 1788498536.2237308,
     "ast_hash": "c9202eceed19447f248b392873942069",
+    "semantic_hash": ""
+  },
+  "src/main/resources/static/institucion.html": {
+    "mtime": 1788499209.9978375,
+    "seen": 1788499241.2863832,
+    "ast_hash": "b68840e67c0fd4c2e6fe475fd1d56c4b",
+    "semantic_hash": ""
+  },
+  "docs/img/logo.png": {
+    "mtime": 1788499209.9958377,
+    "seen": 1788499241.2873836,
+    "ast_hash": "2e582d77738df9e53d54bf3909ab297c",
     "semantic_hash": ""
   }
 }

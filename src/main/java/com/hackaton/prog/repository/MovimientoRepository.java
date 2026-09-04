@@ -91,4 +91,58 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
            "GROUP BY m.articulo.id, m.articulo.nombre " +
            "ORDER BY SUM(m.cantidad) DESC LIMIT 1")
     String obtenerNombreArticuloMasDonado();
+
+    /**
+     * Calcula el stock total neto de una campaña en todos sus centros.
+     */
+    @Query("SELECT COALESCE(SUM(CASE " +
+           "  WHEN m.tipo IN (com.hackaton.prog.model.enums.TipoMovimiento.RECEPCION, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.TRANSFERENCIA_ENTRADA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.AJUSTE_POSITIVO) THEN m.cantidad " +
+           "  WHEN m.tipo IN (com.hackaton.prog.model.enums.TipoMovimiento.ENTREGA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.MERMA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.TRANSFERENCIA_SALIDA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.AJUSTE_NEGATIVO) THEN -m.cantidad " +
+           "  ELSE 0 END), 0) " +
+           "FROM Movimiento m " +
+           "WHERE m.campania.id = :campaniaId")
+    BigDecimal calcularStockCampania(@Param("campaniaId") Integer campaniaId);
+
+    /**
+     * Calcula el total de donaciones recibidas para una campaña.
+     */
+    @Query("SELECT COALESCE(SUM(m.cantidad), 0) FROM Movimiento m " +
+           "WHERE m.campania.id = :campaniaId AND m.tipo = com.hackaton.prog.model.enums.TipoMovimiento.RECEPCION")
+    BigDecimal calcularTotalRecibidoCampania(@Param("campaniaId") Integer campaniaId);
+
+    /**
+     * Calcula el total de entregas/canalizaciones canalizadas en una campaña.
+     */
+    @Query("SELECT COALESCE(SUM(m.cantidad), 0) FROM Movimiento m " +
+           "WHERE m.campania.id = :campaniaId AND m.tipo = com.hackaton.prog.model.enums.TipoMovimiento.ENTREGA")
+    BigDecimal calcularTotalEntregadoCampania(@Param("campaniaId") Integer campaniaId);
+
+    /**
+     * Calcula el volumen total de mermas registradas dentro de una campaña.
+     */
+    @Query("SELECT COALESCE(SUM(m.cantidad), 0) FROM Movimiento m " +
+           "WHERE m.campania.id = :campaniaId AND m.tipo = com.hackaton.prog.model.enums.TipoMovimiento.MERMA")
+    BigDecimal calcularTotalMermasCampania(@Param("campaniaId") Integer campaniaId);
+
+    /**
+     * Calcula el stock disponible acumulado de un centro específico dentro de una campaña específica.
+     */
+    @Query("SELECT COALESCE(SUM(CASE " +
+           "  WHEN m.tipo IN (com.hackaton.prog.model.enums.TipoMovimiento.RECEPCION, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.TRANSFERENCIA_ENTRADA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.AJUSTE_POSITIVO) THEN m.cantidad " +
+           "  WHEN m.tipo IN (com.hackaton.prog.model.enums.TipoMovimiento.ENTREGA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.MERMA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.TRANSFERENCIA_SALIDA, " +
+           "                  com.hackaton.prog.model.enums.TipoMovimiento.AJUSTE_NEGATIVO) THEN -m.cantidad " +
+           "  ELSE 0 END), 0) " +
+           "FROM Movimiento m " +
+           "WHERE m.centro.id = :centroId AND m.campania.id = :campaniaId")
+    BigDecimal calcularStockCentroCampania(@Param("centroId") Integer centroId,
+                                           @Param("campaniaId") Integer campaniaId);
 }

@@ -5,7 +5,9 @@ import com.hackaton.prog.exception.AccesoDenegadoException;
 import com.hackaton.prog.exception.CuentaInactivaException;
 import com.hackaton.prog.exception.UsuarioNoEncontradoException;
 import com.hackaton.prog.model.Usuario;
+import com.hackaton.prog.model.Campania;
 import com.hackaton.prog.model.enums.RolUsuario;
+import com.hackaton.prog.repository.CampaniaRepository;
 import com.hackaton.prog.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,15 +15,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 public class MenuService {
 
     private final UsuarioRepository usuarioRepository;
+    private final CampaniaRepository campaniaRepository;
 
-    public MenuService(UsuarioRepository usuarioRepository) {
+    public MenuService(UsuarioRepository usuarioRepository, CampaniaRepository campaniaRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.campaniaRepository = campaniaRepository;
     }
 
     public UsuarioContextoDTO obtenerContextoValidado(String email) {
@@ -44,6 +49,16 @@ public class MenuService {
         Integer institucionId = usuario.getInstitucion() != null ? usuario.getInstitucion().getId() : null;
         String institucionNombre = usuario.getInstitucion() != null ? usuario.getInstitucion().getNombre() : null;
 
+        Integer campaniaId = null;
+        String campaniaNombre = null;
+        if (usuario.getRol() == RolUsuario.LIDER) {
+            Optional<Campania> campaniaOpt = campaniaRepository.findFirstByLiderIdAndActivoTrue(usuario.getId());
+            if (campaniaOpt.isPresent()) {
+                campaniaId = campaniaOpt.get().getId();
+                campaniaNombre = campaniaOpt.get().getNombre();
+            }
+        }
+
         return new UsuarioContextoDTO(
                 usuario.getId(),
                 usuario.getNombre(),
@@ -53,6 +68,8 @@ public class MenuService {
                 centroNombre,
                 institucionId,
                 institucionNombre,
+                campaniaId,
+                campaniaNombre,
                 usuario.isActivo(),
                 modulosPermitidos
         );
@@ -92,12 +109,16 @@ public class MenuService {
                 modulos.add("recepcion");
                 modulos.add("encargado");
                 modulos.add("coordinador");
+                modulos.add("institucion");
+                modulos.add("campanias");
+                modulos.add("lider");
                 break;
             case INSTITUCION:
                 modulos.add("institucion");
                 break;
             case LIDER:
                 modulos.add("campanias");
+                modulos.add("lider");
                 break;
         }
         return Collections.unmodifiableList(modulos);
