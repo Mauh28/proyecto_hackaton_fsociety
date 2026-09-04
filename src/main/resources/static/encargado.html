@@ -39,6 +39,14 @@
             </div>
         </div>
 
+        <!-- Selector de Campaña Activa en Sede -->
+        <div class="mb-1-5">
+            <label for="selectCampaniaEncargado" class="font-semibold">Campaña Activa en Sede</label>
+            <select id="selectCampaniaEncargado" class="w-full" required>
+                <option value="">Cargando campañas activas...</option>
+            </select>
+        </div>
+
         <!-- Campos comunes a todos los movimientos -->
         <div class="mb-1-5">
             <label for="itemSelect" class="font-semibold">Artículo en Stock</label>
@@ -160,7 +168,19 @@
 
         <!-- Tarjeta de Métricas con Barra de Progreso de Campaña -->
         <div class="dashboard-card mb-1-5">
-            <h3 class="mt-0" id="tituloCentro">Dashboard: Sede de Acopio</h3>
+            <div class="flex-between-center mb-1">
+                <div>
+                    <h3 class="mt-0 mb-0" id="tituloCentro">Dashboard: Sede de Acopio</h3>
+                    <p class="text-muted text-sm mt-0" id="subtituloCentro">Monitoreo de inventario y movimientos.</p>
+                </div>
+                <!-- Selector exclusivo de centro para rol COORDINADOR -->
+                <div id="contenedorSelectorCentro" style="display: none; min-width: 240px;">
+                    <label for="selectCentroCoordinador" class="font-semibold text-sm" style="display: block; margin-bottom: 4px;">Sede (Modo Coordinador):</label>
+                    <select id="selectCentroCoordinador" style="width: 100%; padding: 6px 10px; font-size: 0.88rem; border-radius: 6px; border: 1px solid var(--border);">
+                        <option value="1">Cargando sedes...</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="stat-grid mt-2">
                 <div class="stat-box">
@@ -317,15 +337,50 @@
         const instSelect = document.getElementById('instSelect');
         const centroSelect = document.getElementById('centroSelect');
         const inputQuantity = document.getElementById('inputQuantity');
+        const selectCampaniaEncargado = document.getElementById('selectCampaniaEncargado');
+        const selectCentroCoordinador = document.getElementById('selectCentroCoordinador');
+        const contenedorSelectorCentro = document.getElementById('contenedorSelectorCentro');
 
-        async function cargarCatalogos() {
+        async function cargarCatalogos(campaniaIdParam) {
             try {
-                const res = await fetch(`/api/encargado/catalogos?centroId=${centroId}`);
+                const targetCampId = campaniaIdParam || campaniaActivaId;
+                const url = targetCampId 
+                    ? `/api/encargado/catalogos?centroId=${centroId}&campaniaId=${targetCampId}`
+                    : `/api/encargado/catalogos?centroId=${centroId}`;
+
+                const res = await fetch(url);
                 if (!res.ok) throw new Error('Error al consultar catálogos');
                 const data = await res.json();
 
                 campaniaActivaId = data.campaniaId;
                 catalogoArticulos = data.articulos || [];
+
+                // Llenar selector de campañas disponibles en sede
+                if (selectCampaniaEncargado && data.campaniasDisponibles && data.campaniasDisponibles.length > 0) {
+                    selectCampaniaEncargado.innerHTML = '';
+                    data.campaniasDisponibles.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.nombre;
+                        if (c.id === campaniaActivaId) opt.selected = true;
+                        selectCampaniaEncargado.appendChild(opt);
+                    });
+                } else if (data.campaniaNombre && selectCampaniaEncargado) {
+                    selectCampaniaEncargado.innerHTML = `<option value="${data.campaniaId}">${data.campaniaNombre}</option>`;
+                }
+
+                // Llenar selector de sedes para el rol COORDINADOR
+                if (rolActivo === 'coordinador' && contenedorSelectorCentro && data.centrosDisponibles && data.centrosDisponibles.length > 0) {
+                    contenedorSelectorCentro.style.display = 'block';
+                    selectCentroCoordinador.innerHTML = '';
+                    data.centrosDisponibles.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.nombre;
+                        if (c.id === centroId) opt.selected = true;
+                        selectCentroCoordinador.appendChild(opt);
+                    });
+                }
 
                 // Llenar select de artículos
                 itemSelect.innerHTML = '<option value="">Selecciona un artículo en stock...</option>';
@@ -371,9 +426,14 @@
             }
         });
 
-        async function cargarDashboard() {
+        async function cargarDashboard(campaniaIdParam) {
             try {
-                const res = await fetch(`/api/encargado/dashboard?centroId=${centroId}`);
+                const targetCampId = campaniaIdParam || campaniaActivaId;
+                const url = targetCampId 
+                    ? `/api/encargado/dashboard?centroId=${centroId}&campaniaId=${targetCampId}`
+                    : `/api/encargado/dashboard?centroId=${centroId}`;
+
+                const res = await fetch(url);
                 if (!res.ok) throw new Error('Error al cargar dashboard');
                 const data = await res.json();
 
@@ -644,6 +704,29 @@
             };
             enviarMovimiento(payload, e.target);
         });
+
+        // Listeners para los selectores de campaña y sede
+        if (selectCampaniaEncargado) {
+            selectCampaniaEncargado.addEventListener('change', async () => {
+                const selCampId = parseInt(selectCampaniaEncargado.value, 10);
+                if (selCampId) {
+                    campaniaActivaId = selCampId;
+                    await Promise.all([cargarCatalogos(selCampId), cargarDashboard(selCampId)]);
+                }
+            });
+        }
+
+        if (selectCentroCoordinador) {
+            selectCentroCoordinador.addEventListener('change', async () => {
+                const selCentroId = parseInt(selectCentroCoordinador.value, 10);
+                if (selCentroId) {
+                    centroId = selCentroId;
+                    sessionStorage.setItem('centroId', selCentroId);
+                    campaniaActivaId = null;
+                    await Promise.all([cargarCatalogos(), cargarDashboard()]);
+                }
+            });
+        }
 
         // Carga inicial
         cargarCatalogos();

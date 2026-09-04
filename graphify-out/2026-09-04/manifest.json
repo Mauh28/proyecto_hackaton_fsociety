@@ -24,16 +24,16 @@
     "semantic_hash": "e9e0a969269f58197003d2790752fb35"
   },
   "src/main/java/com/hackaton/prog/controller/CoordinadorController.java": {
-    "mtime": 1788498267.149176,
-    "seen": 1788498536.2217355,
-    "ast_hash": "0f57daa32f475e84926307fe2a756c0b",
+    "mtime": 1788506122.4330182,
+    "seen": 1788506270.1928973,
+    "ast_hash": "33f82d781d81634ac4e82601d433d687",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/controller/EncargadoController.java": {
-    "mtime": 1788476782.6908863,
-    "seen": 1788486660.052622,
-    "ast_hash": "1ef466f52f34cc135642c2b1536a7093",
-    "semantic_hash": "1ef466f52f34cc135642c2b1536a7093"
+    "mtime": 1788507055.178924,
+    "seen": 1788507259.6932957,
+    "ast_hash": "0f30df4ef60ff8899d49c4a58ca725f4",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/controller/MenuController.java": {
     "mtime": 1788476300.6805623,
@@ -66,10 +66,10 @@
     "semantic_hash": "06e916703904dcec52ab2a5d8367446b"
   },
   "src/main/java/com/hackaton/prog/dto/CatalogosEncargadoDTO.java": {
-    "mtime": 1788476782.692541,
-    "seen": 1788486660.052622,
-    "ast_hash": "fb81ccade1edf91da9d8b31c2d3780fe",
-    "semantic_hash": "fb81ccade1edf91da9d8b31c2d3780fe"
+    "mtime": 1788507002.8691182,
+    "seen": 1788507259.6952958,
+    "ast_hash": "076ad224780e13e2fac9acd4492b2a10",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/CentroComparativaDTO.java": {
     "mtime": 1788476782.6936352,
@@ -78,16 +78,16 @@
     "semantic_hash": "ef13bc109494fe18365aff1f279f0e1c"
   },
   "src/main/java/com/hackaton/prog/dto/DashboardCentroDTO.java": {
-    "mtime": 1788476782.694194,
-    "seen": 1788486660.052622,
-    "ast_hash": "9cea404722dba2a94f94cb3ad7edff8e",
-    "semantic_hash": "9cea404722dba2a94f94cb3ad7edff8e"
+    "mtime": 1788507019.6293442,
+    "seen": 1788507259.6952958,
+    "ast_hash": "8210acb8e5872397464c512a5f599f68",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/DashboardGlobalDTO.java": {
-    "mtime": 1788476782.694716,
-    "seen": 1788486660.052622,
-    "ast_hash": "336c49c2e29d8ab32e62692f0515c161",
-    "semantic_hash": "336c49c2e29d8ab32e62692f0515c161"
+    "mtime": 1788506080.640363,
+    "seen": 1788506270.1978266,
+    "ast_hash": "6a6b7c0b3963481a59f69c6fb77d3414",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/ErrorResponse.java": {
     "mtime": 1788476300.6811006,
@@ -348,15 +348,15 @@
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/CoordinadorService.java": {
-    "mtime": 1788498251.2119803,
-    "seen": 1788498536.2333887,
-    "ast_hash": "624bea66ad5bd833afa6c11ba743ee93",
+    "mtime": 1788506101.4355633,
+    "seen": 1788506270.2126465,
+    "ast_hash": "f3d4b47ff8639f1ba944fe49043d2b60",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/EncargadoService.java": {
-    "mtime": 1788503136.646849,
-    "seen": 1788503699.2309494,
-    "ast_hash": "5d728bdd7f380f46fd98fb339a4e414d",
+    "mtime": 1788507041.254361,
+    "seen": 1788507259.705033,
+    "ast_hash": "054346fc304e087c00e9031b8e721f41",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/InventarioService.java": {
@@ -450,15 +450,15 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/coordinador.html": {
-    "mtime": 1788503398.7621527,
-    "seen": 1788503699.2329478,
-    "ast_hash": "fb07058e5f65843920ec0eb9ce6acbbb",
+    "mtime": 1788506177.3012865,
+    "seen": 1788506270.2180905,
+    "ast_hash": "3be9c82aac48ce09a583b344461fd35d",
     "semantic_hash": ""
   },
   "src/main/resources/static/encargado.html": {
-    "mtime": 1788503259.2705083,
-    "seen": 1788503699.2329478,
-    "ast_hash": "3ba55c3c3076b6b2d3e3d62a2ace7191",
+    "mtime": 1788507198.4536788,
+    "seen": 1788507259.709547,
+    "ast_hash": "55c5c3c02c5cd1d64f2382d08d382742",
     "semantic_hash": ""
   },
   "src/main/resources/static/index.html": {
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/recepcion.html": {
-    "mtime": 1788503206.9526055,
-    "seen": 1788503699.2329478,
-    "ast_hash": "11132288bba3b36e27e94056d5e859ca",
+    "mtime": 1788505159.187924,
+    "seen": 1788505240.6243827,
+    "ast_hash": "7363638d94f2f694c7f30f87620f8228",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/CentroMapaDTO.java": {
@@ -486,9 +486,9 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/institucion.html": {
-    "mtime": 1788501816.7997947,
-    "seen": 1788503699.2329478,
-    "ast_hash": "bb4b482119db924f4251127fde1f9dc8",
+    "mtime": 1788505159.184835,
+    "seen": 1788505240.6243827,
+    "ast_hash": "8b05a135798bbb971e7696751ec50694",
     "semantic_hash": ""
   },
   "docs/img/logo.png": {
@@ -522,15 +522,15 @@
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/dto/DashboardLiderDTO.java": {
-    "mtime": 1788500168.96042,
-    "seen": 1788500646.103477,
-    "ast_hash": "0c309120590c9506c55ec8b51a6f1e54",
+    "mtime": 1788506573.19104,
+    "seen": 1788507259.6952958,
+    "ast_hash": "c9576db7ebf8de6fda62824682d8c4b9",
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/LiderService.java": {
-    "mtime": 1788500325.3755713,
-    "seen": 1788500646.1135132,
-    "ast_hash": "ba6f773b62ed1a8de2159edfb0532598",
+    "mtime": 1788506872.9947667,
+    "seen": 1788507259.705033,
+    "ast_hash": "00a0ccaa86b8c2ac42e5c27bd8d8049e",
     "semantic_hash": ""
   },
   "src/test/java/com/hackaton/prog/LiderControllerTest.java": {
@@ -540,15 +540,21 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/lider.html": {
-    "mtime": 1788500408.4900033,
-    "seen": 1788500646.1178458,
-    "ast_hash": "2a9dc2d4c0761cc26ffabb47edca8179",
+    "mtime": 1788506964.9142492,
+    "seen": 1788507259.709547,
+    "ast_hash": "26011db3cff979ccc8888f023d03d4cf",
     "semantic_hash": ""
   },
   "src/main/resources/static/logo.png": {
     "mtime": 1788503165.0783107,
     "seen": 1788503699.2329478,
     "ast_hash": "0b7ea1272f6eec56464dd7f43ed6a211",
+    "semantic_hash": ""
+  },
+  "docs/documentacion_amarea.pdf": {
+    "mtime": 1788505159.1772158,
+    "seen": 1788505240.6243827,
+    "ast_hash": "a8fe50b2fb0cbfd88b3eedb997303e8b",
     "semantic_hash": ""
   }
 }

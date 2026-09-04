@@ -25,6 +25,7 @@ public class DashboardLiderDTO {
     // Centros
     private List<CentroAporteCampaniaDTO> centrosParticipantes = new ArrayList<>();
     private List<OpcionSimpleDTO> centrosDisponibles = new ArrayList<>();
+    private List<OpcionSimpleDTO> campaniasDisponibles = new ArrayList<>();
 
     public DashboardLiderDTO() {
     }
@@ -162,5 +163,13 @@ public class DashboardLiderDTO {
 
     public void setCentrosDisponibles(List<OpcionSimpleDTO> centrosDisponibles) {
         this.centrosDisponibles = centrosDisponibles;
+    }
+
+    public List<OpcionSimpleDTO> getCampaniasDisponibles() {
+        return campaniasDisponibles;
+    }
+
+    public void setCampaniasDisponibles(List<OpcionSimpleDTO> campaniasDisponibles) {
+        this.campaniasDisponibles = campaniasDisponibles;
     }
 }

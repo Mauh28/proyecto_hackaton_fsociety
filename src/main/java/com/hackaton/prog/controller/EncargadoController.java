@@ -21,15 +21,27 @@ public class EncargadoController {
     }
 
     @GetMapping("/catalogos")
-    public ResponseEntity<CatalogosEncargadoDTO> obtenerCatalogos(@RequestParam(name = "centroId", defaultValue = "1") Integer centroId) {
-        CatalogosEncargadoDTO catalogos = encargadoService.obtenerCatalogos(centroId);
+    public ResponseEntity<CatalogosEncargadoDTO> obtenerCatalogos(
+            @RequestParam(name = "centroId", defaultValue = "1") Integer centroId,
+            @RequestParam(name = "campaniaId", required = false) Integer campaniaId) {
+        CatalogosEncargadoDTO catalogos = encargadoService.obtenerCatalogos(centroId, campaniaId);
         return ResponseEntity.ok(catalogos);
     }
 
+    public ResponseEntity<CatalogosEncargadoDTO> obtenerCatalogos(Integer centroId) {
+        return obtenerCatalogos(centroId, null);
+    }
+
     @GetMapping("/dashboard")
-    public ResponseEntity<DashboardCentroDTO> obtenerDashboard(@RequestParam(name = "centroId", defaultValue = "1") Integer centroId) {
-        DashboardCentroDTO dashboard = encargadoService.obtenerDashboardCentro(centroId);
+    public ResponseEntity<DashboardCentroDTO> obtenerDashboard(
+            @RequestParam(name = "centroId", defaultValue = "1") Integer centroId,
+            @RequestParam(name = "campaniaId", required = false) Integer campaniaId) {
+        DashboardCentroDTO dashboard = encargadoService.obtenerDashboardCentro(centroId, campaniaId);
         return ResponseEntity.ok(dashboard);
+    }
+
+    public ResponseEntity<DashboardCentroDTO> obtenerDashboard(Integer centroId) {
+        return obtenerDashboard(centroId, null);
     }
 
     @PostMapping("/movimiento")

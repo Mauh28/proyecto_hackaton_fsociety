@@ -97,13 +97,20 @@
             </div>
         </div>
 
-        <!-- Encabezado de Campaña -->
-        <div class="flex-between-end mb-1">
+        <!-- Encabezado de Campaña con Selector -->
+        <div class="flex-between-center mb-1">
             <div>
                 <h3 class="mt-0 mb-0" id="campaniaTitulo">Cargando Campaña...</h3>
                 <p class="text-muted text-sm mt-0" id="campaniaSubtitulo">Monitoreo y rendimiento en tiempo real.</p>
             </div>
-            <div>
+            <!-- Selector de Campaña para Líder y Coordinador -->
+            <div style="min-width: 260px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                <div style="width: 100%;">
+                    <label for="selectCampaniaLider" class="font-semibold text-sm" style="display: block; margin-bottom: 4px;">Campaña en Gestión:</label>
+                    <select id="selectCampaniaLider" style="width: 100%; padding: 6px 10px; font-size: 0.88rem; border-radius: 6px; border: 1px solid var(--border);">
+                        <option value="">Cargando campañas...</option>
+                    </select>
+                </div>
                 <span class="legend-item badge-campania-activa" id="badgeEstadoCampania">
                     Campaña Activa
                 </span>
@@ -256,18 +263,22 @@
 
         // 5. Estado Global del Módulo Líder
         let dashboardDataActual = null;
+        let campaniaSeleccionadaId = null;
+        const selectCampaniaLider = document.getElementById('selectCampaniaLider');
 
-        function construirQueryAuth() {
+        function construirQueryAuth(campaniaIdParam) {
             let params = [];
             if (usuarioId) params.push(`usuarioId=${encodeURIComponent(usuarioId)}`);
             if (emailActivo) params.push(`email=${encodeURIComponent(emailActivo)}`);
+            const targetCampId = campaniaIdParam || campaniaSeleccionadaId;
+            if (targetCampId) params.push(`campaniaId=${encodeURIComponent(targetCampId)}`);
             return params.length > 0 ? `?${params.join('&')}` : '';
         }
 
         // 6. Carga y Renderizado del Dashboard
-        async function cargarDashboard() {
+        async function cargarDashboard(campaniaIdParam) {
             try {
-                const queryAuth = construirQueryAuth();
+                const queryAuth = construirQueryAuth(campaniaIdParam);
                 const res = await fetch(`/api/lider/dashboard${queryAuth}`);
                 
                 if (!res.ok) {
@@ -279,6 +290,7 @@
 
                 const data = await res.json();
                 dashboardDataActual = data;
+                campaniaSeleccionadaId = data.campaniaId;
                 renderizarDashboard(data);
 
             } catch (err) {
@@ -288,6 +300,32 @@
         }
 
         function renderizarDashboard(data) {
+            // Sincronizar y poblar selector de campañas disponibles
+            if (selectCampaniaLider && data.campaniasDisponibles && data.campaniasDisponibles.length > 0) {
+                const idActual = data.campaniaId || campaniaSeleccionadaId;
+                selectCampaniaLider.innerHTML = '';
+                data.campaniasDisponibles.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.nombre;
+                    if (c.id === idActual) opt.selected = true;
+                    selectCampaniaLider.appendChild(opt);
+                });
+                campaniaSeleccionadaId = idActual;
+            }
+
+            // Actualizar estado del badge
+            const badgeEstado = document.getElementById('badgeEstadoCampania');
+            if (badgeEstado) {
+                if (data.activo) {
+                    badgeEstado.className = 'legend-item badge-campania-activa';
+                    badgeEstado.textContent = 'Campaña Activa';
+                } else {
+                    badgeEstado.className = 'legend-item text-danger';
+                    badgeEstado.textContent = 'Campaña Inactiva';
+                }
+            }
+
             // Títulos y Encabezados
             document.getElementById('campaniaTitulo').innerText = data.campaniaNombre || 'Campaña Sin Nombre';
             document.getElementById('campaniaSubtitulo').innerText = data.descripcion || 'Sin descripción estratégica registrada.';
@@ -502,6 +540,17 @@
                 mostrarError("No se pudo conectar con el servidor para desvincular.");
             }
         };
+
+        // Evento Selector de Campaña
+        if (selectCampaniaLider) {
+            selectCampaniaLider.addEventListener('change', () => {
+                const selId = parseInt(selectCampaniaLider.value, 10);
+                if (selId) {
+                    campaniaSeleccionadaId = selId;
+                    cargarDashboard(selId);
+                }
+            });
+        }
 
         // Carga inicial
         cargarDashboard();
