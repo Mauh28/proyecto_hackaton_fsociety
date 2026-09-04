@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>/ — graphify tree viewer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      margin: 20px 0 0 24px;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #1e3a56;
+    }
+    .controls {
+      margin: 20px 0 15px 24px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 8px 18px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:active {
+      background: #004085;
+    }
+    #tree-container {
+      width: calc(100vw - 48px); /* Adjust for body margin/padding */
+      height: 85vh;
+      overflow: auto;
+      border-radius: 8px;
+      background: #fff;
+      margin-left: 24px;
+      margin-right: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 1px solid #ddd;
+    }
+    svg {
+      background: #fff;
+      border-radius: 8px;
+      display: block; /* Important for D3 */
+    }
+    .node circle {
+      stroke-width: 2.5px;
+    }
+    .node text { /* Base style for the <text> container */
+      font: 13px 'Segoe UI', sans-serif;
+      paint-order: stroke fill; /* Ensures text is readable over lines */
+      stroke: #fff; /* White halo */
+      stroke-width: 3px; /* Halo thickness */
+      stroke-linejoin: round;
+      stroke-opacity: 0.85; /* Halo opacity */
+    }
+    .link {
+      fill: none;
+      stroke-opacity: 0.7;
+      stroke-width: 2px;
+    }
+  </style>
+</head>
+<body>
+  <h1>/ — Knowledge Graph</h1>
+  <div class="controls">
+    <button onclick="expandAll()">Expand All</button>
+    <button onclick="collapseAll()">Collapse All</button>
+    <button onclick="resetView()">Reset View</button>
+  </div>
+  <div id="tree-container">
+    <svg id="tree-svg" width="6000" height="8000"></svg>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    const initialJsonData = {"name":"/","total_count":659,"children":[{"name":"mvnw","total_count":9,"children":[{"name":"clean()","total_count":1,"children":[]},{"name":"die()","total_count":1,"children":[]},{"name":"exec_maven()","total_count":1,"children":[]},{"name":"hash_string()","total_count":1,"children":[]},{"name":"mvnw script","total_count":1,"children":[]},{"name":"native_path()","total_count":1,"children":[]},{"name":"set_java_home()","total_count":1,"children":[]},{"name":"trim()","total_count":1,"children":[]},{"name":"verbose()","total_count":1,"children":[]}]},{"name":"pom.xml","total_count":1,"children":[{"name":"com.hackaton:prog","total_count":1,"children":[]}]},{"name":"src","total_count":649,"children":[{"name":"main","total_count":630,"children":[{"name":"java","total_count":630,"children":[{"name":"com","total_count":630,"children":[{"name":"hackaton","total_count":630,"children":[{"name":"prog","total_count":630,"children":[{"name":"controller","total_count":23,"children":[{"name":"AuthController.java","total_count":3,"children":[{"name":".AuthController()","total_count":1,"children":[]},{"name":".login()","total_count":1,"children":[]},{"name":"AuthController","total_count":1,"children":[]}]},{"name":"CoordinadorController.java","total_count":6,"children":[{"name":".CoordinadorController()","total_count":1,"children":[]},{"name":".guardarCampania()","total_count":1,"children":[]},{"name":".obtenerCatalogos()","total_count":1,"children":[]},{"name":".obtenerDashboard()","total_count":1,"children":[]},{"name":".registrarCentro()","total_count":1,"children":[]},{"name":"CoordinadorController","total_count":1,"children":[]}]},{"name":"EncargadoController.java","total_count":5,"children":[{"name":".EncargadoController()","total_count":1,"children":[]},{"name":".obtenerCatalogos()","total_count":1,"children":[]},{"name":".obtenerDashboard()","total_count":1,"children":[]},{"name":".registrarMovimiento()","total_count":1,"children":[]},{"name":"EncargadoController","total_count":1,"children":[]}]},{"name":"MenuController.java","total_count":4,"children":[{"name":".MenuController()","total_count":1,"children":[]},{"name":".obtenerContexto()","total_count":1,"children":[]},{"name":".validarAcceso()","total_count":1,"children":[]},{"name":"MenuController","total_count":1,"children":[]}]},{"name":"RecepcionController.java","total_count":5,"children":[{"name":".listarArticulos()","total_count":1,"children":[]},{"name":".obtenerResumen()","total_count":1,"children":[]},{"name":".RecepcionController()","total_count":1,"children":[]},{"name":".registrarDonacion()","total_count":1,"children":[]},{"name":"RecepcionController","total_count":1,"children":[]}]}]},{"name":"dto","total_count":277,"children":[{"name":"ArticuloItemDTO.java","total_count":10,"children":[{"name":".ArticuloItemDTO()","total_count":1,"children":[]},{"name":".getCategoria()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getUnidad()","total_count":1,"children":[]},{"name":".setCategoria()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setUnidad()","total_count":1,"children":[]},{"name":"ArticuloItemDTO","total_count":1,"children":[]}]},{"name":"ArticuloStockDTO.java","total_count":12,"children":[{"name":".ArticuloStockDTO()","total_count":1,"children":[]},{"name":".getCategoria()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getStock()","total_count":1,"children":[]},{"name":".getUnidad()","total_count":1,"children":[]},{"name":".setCategoria()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setStock()","total_count":1,"children":[]},{"name":".setUnidad()","total_count":1,"children":[]},{"name":"ArticuloStockDTO","total_count":1,"children":[]}]},{"name":"CatalogosCoordinadorDTO.java","total_count":6,"children":[{"name":".CatalogosCoordinadorDTO()","total_count":1,"children":[]},{"name":".getCampanias()","total_count":1,"children":[]},{"name":".getEncargados()","total_count":1,"children":[]},{"name":".setCampanias()","total_count":1,"children":[]},{"name":".setEncargados()","total_count":1,"children":[]},{"name":"CatalogosCoordinadorDTO","total_count":1,"children":[]}]},{"name":"CatalogosEncargadoDTO.java","total_count":14,"children":[{"name":".CatalogosEncargadoDTO()","total_count":1,"children":[]},{"name":".getArticulos()","total_count":1,"children":[]},{"name":".getCampaniaId()","total_count":1,"children":[]},{"name":".getCampaniaNombre()","total_count":1,"children":[]},{"name":".getCentroId()","total_count":1,"children":[]},{"name":".getCentrosDestino()","total_count":1,"children":[]},{"name":".getInstituciones()","total_count":1,"children":[]},{"name":".setArticulos()","total_count":1,"children":[]},{"name":".setCampaniaId()","total_count":1,"children":[]},{"name":".setCampaniaNombre()","total_count":1,"children":[]},{"name":".setCentroId()","total_count":1,"children":[]},{"name":".setCentrosDestino()","total_count":1,"children":[]},{"name":".setInstituciones()","total_count":1,"children":[]},{"name":"CatalogosEncargadoDTO","total_count":1,"children":[]}]},{"name":"CentroComparativaDTO.java","total_count":10,"children":[{"name":".CentroComparativaDTO()","total_count":1,"children":[]},{"name":".getEncargado()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getStock()","total_count":1,"children":[]},{"name":".setEncargado()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setStock()","total_count":1,"children":[]},{"name":"CentroComparativaDTO","total_count":1,"children":[]}]},{"name":"DashboardCentroDTO.java","total_count":18,"children":[{"name":".DashboardCentroDTO()","total_count":1,"children":[]},{"name":".getCampaniaId()","total_count":1,"children":[]},{"name":".getCampaniaNombre()","total_count":1,"children":[]},{"name":".getCentroId()","total_count":1,"children":[]},{"name":".getCentroNombre()","total_count":1,"children":[]},{"name":".getHistorial()","total_count":1,"children":[]},{"name":".getMetaCampania()","total_count":1,"children":[]},{"name":".getStockTotal()","total_count":1,"children":[]},{"name":".getTotalMermasMes()","total_count":1,"children":[]},{"name":".setCampaniaId()","total_count":1,"children":[]},{"name":".setCampaniaNombre()","total_count":1,"children":[]},{"name":".setCentroId()","total_count":1,"children":[]},{"name":".setCentroNombre()","total_count":1,"children":[]},{"name":".setHistorial()","total_count":1,"children":[]},{"name":".setMetaCampania()","total_count":1,"children":[]},{"name":".setStockTotal()","total_count":1,"children":[]},{"name":".setTotalMermasMes()","total_count":1,"children":[]},{"name":"DashboardCentroDTO","total_count":1,"children":[]}]},{"name":"DashboardGlobalDTO.java","total_count":16,"children":[{"name":".DashboardGlobalDTO()","total_count":1,"children":[]},{"name":".getArticuloMasDonado()","total_count":1,"children":[]},{"name":".getCampaniaNombre()","total_count":1,"children":[]},{"name":".getCentros()","total_count":1,"children":[]},{"name":".getCentrosActivos()","total_count":1,"children":[]},{"name":".getMermaTotal()","total_count":1,"children":[]},{"name":".getMetaCampania()","total_count":1,"children":[]},{"name":".getStockGlobal()","total_count":1,"children":[]},{"name":".setArticuloMasDonado()","total_count":1,"children":[]},{"name":".setCampaniaNombre()","total_count":1,"children":[]},{"name":".setCentros()","total_count":1,"children":[]},{"name":".setCentrosActivos()","total_count":1,"children":[]},{"name":".setMermaTotal()","total_count":1,"children":[]},{"name":".setMetaCampania()","total_count":1,"children":[]},{"name":".setStockGlobal()","total_count":1,"children":[]},{"name":"DashboardGlobalDTO","total_count":1,"children":[]}]},{"name":"ErrorResponse.java","total_count":10,"children":[{"name":".ErrorResponse()","total_count":1,"children":[]},{"name":".getError()","total_count":1,"children":[]},{"name":".getMensaje()","total_count":1,"children":[]},{"name":".getStatus()","total_count":1,"children":[]},{"name":".getTimestamp()","total_count":1,"children":[]},{"name":".setError()","total_count":1,"children":[]},{"name":".setMensaje()","total_count":1,"children":[]},{"name":".setStatus()","total_count":1,"children":[]},{"name":".setTimestamp()","total_count":1,"children":[]},{"name":"ErrorResponse","total_count":1,"children":[]}]},{"name":"GuardarCampaniaRequest.java","total_count":14,"children":[{"name":".getActivo()","total_count":1,"children":[]},{"name":".getDescripcion()","total_count":1,"children":[]},{"name":".getFechaFin()","total_count":1,"children":[]},{"name":".getFechaInicio()","total_count":1,"children":[]},{"name":".getMetaUnidades()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".GuardarCampaniaRequest()","total_count":1,"children":[]},{"name":".setActivo()","total_count":1,"children":[]},{"name":".setDescripcion()","total_count":1,"children":[]},{"name":".setFechaFin()","total_count":1,"children":[]},{"name":".setFechaInicio()","total_count":1,"children":[]},{"name":".setMetaUnidades()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":"GuardarCampaniaRequest","total_count":1,"children":[]}]},{"name":"GuardarCentroRequest.java","total_count":18,"children":[{"name":".getActivo()","total_count":1,"children":[]},{"name":".getCampaniaId()","total_count":1,"children":[]},{"name":".getEncargadoId()","total_count":1,"children":[]},{"name":".getInstitucion()","total_count":1,"children":[]},{"name":".getLatitud()","total_count":1,"children":[]},{"name":".getLongitud()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getUbicacion()","total_count":1,"children":[]},{"name":".GuardarCentroRequest()","total_count":1,"children":[]},{"name":".setActivo()","total_count":1,"children":[]},{"name":".setCampaniaId()","total_count":1,"children":[]},{"name":".setEncargadoId()","total_count":1,"children":[]},{"name":".setInstitucion()","total_count":1,"children":[]},{"name":".setLatitud()","total_count":1,"children":[]},{"name":".setLongitud()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setUbicacion()","total_count":1,"children":[]},{"name":"GuardarCentroRequest","total_count":1,"children":[]}]},{"name":"LoginRequest.java","total_count":6,"children":[{"name":".getEmail()","total_count":1,"children":[]},{"name":".getPassword()","total_count":1,"children":[]},{"name":".LoginRequest()","total_count":1,"children":[]},{"name":".setEmail()","total_count":1,"children":[]},{"name":".setPassword()","total_count":1,"children":[]},{"name":"LoginRequest","total_count":1,"children":[]}]},{"name":"LoginResponse.java","total_count":18,"children":[{"name":".getCentroId()","total_count":1,"children":[]},{"name":".getCentroNombre()","total_count":1,"children":[]},{"name":".getEmail()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getInstitucionId()","total_count":1,"children":[]},{"name":".getInstitucionNombre()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getRol()","total_count":1,"children":[]},{"name":".LoginResponse()","total_count":1,"children":[]},{"name":".setCentroId()","total_count":1,"children":[]},{"name":".setCentroNombre()","total_count":1,"children":[]},{"name":".setEmail()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setInstitucionId()","total_count":1,"children":[]},{"name":".setInstitucionNombre()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setRol()","total_count":1,"children":[]},{"name":"LoginResponse","total_count":1,"children":[]}]},{"name":"MovimientoHistorialDTO.java","total_count":18,"children":[{"name":".getArticuloNombre()","total_count":1,"children":[]},{"name":".getAutor()","total_count":1,"children":[]},{"name":".getCantidad()","total_count":1,"children":[]},{"name":".getDetalle()","total_count":1,"children":[]},{"name":".getFecha()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getTipo()","total_count":1,"children":[]},{"name":".getUnidad()","total_count":1,"children":[]},{"name":".MovimientoHistorialDTO()","total_count":1,"children":[]},{"name":".setArticuloNombre()","total_count":1,"children":[]},{"name":".setAutor()","total_count":1,"children":[]},{"name":".setCantidad()","total_count":1,"children":[]},{"name":".setDetalle()","total_count":1,"children":[]},{"name":".setFecha()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setTipo()","total_count":1,"children":[]},{"name":".setUnidad()","total_count":1,"children":[]},{"name":"MovimientoHistorialDTO","total_count":1,"children":[]}]},{"name":"OpcionSimpleDTO.java","total_count":6,"children":[{"name":".getId()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".OpcionSimpleDTO()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":"OpcionSimpleDTO","total_count":1,"children":[]}]},{"name":"RecepcionRequestDTO.java","total_count":24,"children":[{"name":".getArticuloId()","total_count":1,"children":[]},{"name":".getArticuloNombre()","total_count":1,"children":[]},{"name":".getCampaniaId()","total_count":1,"children":[]},{"name":".getCantidad()","total_count":1,"children":[]},{"name":".getCategoria()","total_count":1,"children":[]},{"name":".getCentroId()","total_count":1,"children":[]},{"name":".getDonanteContacto()","total_count":1,"children":[]},{"name":".getDonanteNombre()","total_count":1,"children":[]},{"name":".getEsAnonimo()","total_count":1,"children":[]},{"name":".getUnidad()","total_count":1,"children":[]},{"name":".getUsuarioId()","total_count":1,"children":[]},{"name":".RecepcionRequestDTO()","total_count":1,"children":[]},{"name":".setArticuloId()","total_count":1,"children":[]},{"name":".setArticuloNombre()","total_count":1,"children":[]},{"name":".setCampaniaId()","total_count":1,"children":[]},{"name":".setCantidad()","total_count":1,"children":[]},{"name":".setCategoria()","total_count":1,"children":[]},{"name":".setCentroId()","total_count":1,"children":[]},{"name":".setDonanteContacto()","total_count":1,"children":[]},{"name":".setDonanteNombre()","total_count":1,"children":[]},{"name":".setEsAnonimo()","total_count":1,"children":[]},{"name":".setUnidad()","total_count":1,"children":[]},{"name":".setUsuarioId()","total_count":1,"children":[]},{"name":"RecepcionRequestDTO","total_count":1,"children":[]}]},{"name":"RecepcionResponseDTO.java","total_count":15,"children":[{"name":".error()","total_count":1,"children":[]},{"name":".getCantidadRecibida()","total_count":1,"children":[]},{"name":".getMensaje()","total_count":1,"children":[]},{"name":".getMovimientoId()","total_count":1,"children":[]},{"name":".getStockActual()","total_count":1,"children":[]},{"name":".getTipo()","total_count":1,"children":[]},{"name":".isExito()","total_count":1,"children":[]},{"name":".RecepcionResponseDTO()","total_count":1,"children":[]},{"name":".setCantidadRecibida()","total_count":1,"children":[]},{"name":".setExito()","total_count":1,"children":[]},{"name":".setMensaje()","total_count":1,"children":[]},{"name":".setMovimientoId()","total_count":1,"children":[]},{"name":".setStockActual()","total_count":1,"children":[]},{"name":".setTipo()","total_count":1,"children":[]},{"name":"RecepcionResponseDTO","total_count":1,"children":[]}]},{"name":"RegistroMovimientoRequest.java","total_count":24,"children":[{"name":".getArticuloId()","total_count":1,"children":[]},{"name":".getCampaniaId()","total_count":1,"children":[]},{"name":".getCantidad()","total_count":1,"children":[]},{"name":".getCentroDestinoId()","total_count":1,"children":[]},{"name":".getCentroId()","total_count":1,"children":[]},{"name":".getEsPositivo()","total_count":1,"children":[]},{"name":".getInstitucionId()","total_count":1,"children":[]},{"name":".getMotivo()","total_count":1,"children":[]},{"name":".getMotivoDetalle()","total_count":1,"children":[]},{"name":".getTipo()","total_count":1,"children":[]},{"name":".getUsuarioId()","total_count":1,"children":[]},{"name":".RegistroMovimientoRequest()","total_count":1,"children":[]},{"name":".setArticuloId()","total_count":1,"children":[]},{"name":".setCampaniaId()","total_count":1,"children":[]},{"name":".setCantidad()","total_count":1,"children":[]},{"name":".setCentroDestinoId()","total_count":1,"children":[]},{"name":".setCentroId()","total_count":1,"children":[]},{"name":".setEsPositivo()","total_count":1,"children":[]},{"name":".setInstitucionId()","total_count":1,"children":[]},{"name":".setMotivo()","total_count":1,"children":[]},{"name":".setMotivoDetalle()","total_count":1,"children":[]},{"name":".setTipo()","total_count":1,"children":[]},{"name":".setUsuarioId()","total_count":1,"children":[]},{"name":"RegistroMovimientoRequest","total_count":1,"children":[]}]},{"name":"ResumenRecepcionDTO.java","total_count":16,"children":[{"name":".getCampaniaId()","total_count":1,"children":[]},{"name":".getCampaniaNombre()","total_count":1,"children":[]},{"name":".getCentroId()","total_count":1,"children":[]},{"name":".getCentroNombre()","total_count":1,"children":[]},{"name":".getMetaTotal()","total_count":1,"children":[]},{"name":".getPorcentajeAvance()","total_count":1,"children":[]},{"name":".getStockActual()","total_count":1,"children":[]},{"name":".ResumenRecepcionDTO()","total_count":1,"children":[]},{"name":".setCampaniaId()","total_count":1,"children":[]},{"name":".setCampaniaNombre()","total_count":1,"children":[]},{"name":".setCentroId()","total_count":1,"children":[]},{"name":".setCentroNombre()","total_count":1,"children":[]},{"name":".setMetaTotal()","total_count":1,"children":[]},{"name":".setPorcentajeAvance()","total_count":1,"children":[]},{"name":".setStockActual()","total_count":1,"children":[]},{"name":"ResumenRecepcionDTO","total_count":1,"children":[]}]},{"name":"UsuarioContextoDTO.java","total_count":22,"children":[{"name":".getCentroId()","total_count":1,"children":[]},{"name":".getCentroNombre()","total_count":1,"children":[]},{"name":".getEmail()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getInstitucionId()","total_count":1,"children":[]},{"name":".getInstitucionNombre()","total_count":1,"children":[]},{"name":".getModulosPermitidos()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getRol()","total_count":1,"children":[]},{"name":".isActivo()","total_count":1,"children":[]},{"name":".setActivo()","total_count":1,"children":[]},{"name":".setCentroId()","total_count":1,"children":[]},{"name":".setCentroNombre()","total_count":1,"children":[]},{"name":".setEmail()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setInstitucionId()","total_count":1,"children":[]},{"name":".setInstitucionNombre()","total_count":1,"children":[]},{"name":".setModulosPermitidos()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setRol()","total_count":1,"children":[]},{"name":".UsuarioContextoDTO()","total_count":1,"children":[]},{"name":"UsuarioContextoDTO","total_count":1,"children":[]}]}]},{"name":"exception","total_count":20,"children":[{"name":"AccesoDenegadoException.java","total_count":2,"children":[{"name":".AccesoDenegadoException()","total_count":1,"children":[]},{"name":"AccesoDenegadoException","total_count":1,"children":[]}]},{"name":"CredencialesInvalidasException.java","total_count":2,"children":[{"name":".CredencialesInvalidasException()","total_count":1,"children":[]},{"name":"CredencialesInvalidasException","total_count":1,"children":[]}]},{"name":"CuentaInactivaException.java","total_count":2,"children":[{"name":".CuentaInactivaException()","total_count":1,"children":[]},{"name":"CuentaInactivaException","total_count":1,"children":[]}]},{"name":"GlobalExceptionHandler.java","total_count":8,"children":[{"name":".manejarAccesoDenegado()","total_count":1,"children":[]},{"name":".manejarCredencialesInvalidas()","total_count":1,"children":[]},{"name":".manejarCuentaInactiva()","total_count":1,"children":[]},{"name":".manejarGeneral()","total_count":1,"children":[]},{"name":".manejarIllegalArgument()","total_count":1,"children":[]},{"name":".manejarStockInsuficiente()","total_count":1,"children":[]},{"name":".manejarUsuarioNoEncontrado()","total_count":1,"children":[]},{"name":"GlobalExceptionHandler","total_count":1,"children":[]}]},{"name":"StockInsuficienteException.java","total_count":4,"children":[{"name":".getCantidadRequerida()","total_count":1,"children":[]},{"name":".getStockDisponible()","total_count":1,"children":[]},{"name":".StockInsuficienteException()","total_count":1,"children":[]},{"name":"StockInsuficienteException","total_count":1,"children":[]}]},{"name":"UsuarioNoEncontradoException.java","total_count":2,"children":[{"name":".UsuarioNoEncontradoException()","total_count":1,"children":[]},{"name":"UsuarioNoEncontradoException","total_count":1,"children":[]}]}]},{"name":"model","total_count":214,"children":[{"name":"Articulo.java","total_count":10,"children":[{"name":".Articulo()","total_count":1,"children":[]},{"name":".getCategoria()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getUnidad()","total_count":1,"children":[]},{"name":".setCategoria()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setUnidad()","total_count":1,"children":[]},{"name":"Articulo","total_count":1,"children":[]}]},{"name":"Campania.java","total_count":18,"children":[{"name":".Campania()","total_count":1,"children":[]},{"name":".getActivo()","total_count":1,"children":[]},{"name":".getDescripcion()","total_count":1,"children":[]},{"name":".getFechaFin()","total_count":1,"children":[]},{"name":".getFechaInicio()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getLider()","total_count":1,"children":[]},{"name":".getMetaUnidades()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".setActivo()","total_count":1,"children":[]},{"name":".setDescripcion()","total_count":1,"children":[]},{"name":".setFechaFin()","total_count":1,"children":[]},{"name":".setFechaInicio()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setLider()","total_count":1,"children":[]},{"name":".setMetaUnidades()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":"Campania","total_count":1,"children":[]}]},{"name":"Centro.java","total_count":12,"children":[{"name":".Centro()","total_count":1,"children":[]},{"name":".getActivo()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getInstitucion()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getUbicacion()","total_count":1,"children":[]},{"name":".setActivo()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setInstitucion()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setUbicacion()","total_count":1,"children":[]},{"name":"Centro","total_count":1,"children":[]}]},{"name":"CentroCampania.java","total_count":10,"children":[{"name":".CentroCampania()","total_count":1,"children":[]},{"name":".getActivo()","total_count":1,"children":[]},{"name":".getCampania()","total_count":1,"children":[]},{"name":".getCentro()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".setActivo()","total_count":1,"children":[]},{"name":".setCampania()","total_count":1,"children":[]},{"name":".setCentro()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":"CentroCampania","total_count":1,"children":[]}]},{"name":"CentroCampaniaId.java","total_count":8,"children":[{"name":".CentroCampaniaId()","total_count":1,"children":[]},{"name":".equals()","total_count":1,"children":[]},{"name":".getIdCampania()","total_count":1,"children":[]},{"name":".getIdCentro()","total_count":1,"children":[]},{"name":".hashCode()","total_count":1,"children":[]},{"name":".setIdCampania()","total_count":1,"children":[]},{"name":".setIdCentro()","total_count":1,"children":[]},{"name":"CentroCampaniaId","total_count":1,"children":[]}]},{"name":"converter","total_count":19,"children":[{"name":"EnumsConverters.java","total_count":19,"children":[{"name":".convertToDatabaseColumn()","total_count":1,"children":[]},{"name":".convertToDatabaseColumn()","total_count":1,"children":[]},{"name":".convertToDatabaseColumn()","total_count":1,"children":[]},{"name":".convertToDatabaseColumn()","total_count":1,"children":[]},{"name":".convertToDatabaseColumn()","total_count":1,"children":[]},{"name":".convertToDatabaseColumn()","total_count":1,"children":[]},{"name":".convertToEntityAttribute()","total_count":1,"children":[]},{"name":".convertToEntityAttribute()","total_count":1,"children":[]},{"name":".convertToEntityAttribute()","total_count":1,"children":[]},{"name":".convertToEntityAttribute()","total_count":1,"children":[]},{"name":".convertToEntityAttribute()","total_count":1,"children":[]},{"name":".convertToEntityAttribute()","total_count":1,"children":[]},{"name":"CategoriaArticuloConverter","total_count":1,"children":[]},{"name":"EnumsConverters","total_count":1,"children":[]},{"name":"EstadoTransferenciaConverter","total_count":1,"children":[]},{"name":"MotivoMovimientoConverter","total_count":1,"children":[]},{"name":"RolUsuarioConverter","total_count":1,"children":[]},{"name":"TipoMovimientoConverter","total_count":1,"children":[]},{"name":"UnidadMedidaConverter","total_count":1,"children":[]}]}]},{"name":"Donante.java","total_count":6,"children":[{"name":".Donante()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":"Donante","total_count":1,"children":[]}]},{"name":"enums","total_count":52,"children":[{"name":"CategoriaArticulo.java","total_count":9,"children":[{"name":"CategoriaArticulo","total_count":1,"children":[]},{"name":"desdeValorDb()","total_count":1,"children":[]},{"name":"getValorDb()","total_count":1,"children":[]},{"name":"LIMPIEZA","total_count":1,"children":[]},{"name":"MEDICAMENTO","total_count":1,"children":[]},{"name":"NO_PERECEDERO","total_count":1,"children":[]},{"name":"OTRO","total_count":1,"children":[]},{"name":"PERECEDERO","total_count":1,"children":[]},{"name":"ROPA","total_count":1,"children":[]}]},{"name":"EstadoTransferencia.java","total_count":6,"children":[{"name":"CANCELADA","total_count":1,"children":[]},{"name":"COMPLETADA","total_count":1,"children":[]},{"name":"desdeValorDb()","total_count":1,"children":[]},{"name":"EstadoTransferencia","total_count":1,"children":[]},{"name":"getValorDb()","total_count":1,"children":[]},{"name":"PENDIENTE","total_count":1,"children":[]}]},{"name":"MotivoMovimiento.java","total_count":9,"children":[{"name":"CADUCIDAD","total_count":1,"children":[]},{"name":"CORRECCION_CONTEO","total_count":1,"children":[]},{"name":"DANO","total_count":1,"children":[]},{"name":"desdeValorDb()","total_count":1,"children":[]},{"name":"ERROR_CAPTURA","total_count":1,"children":[]},{"name":"getValorDb()","total_count":1,"children":[]},{"name":"MotivoMovimiento","total_count":1,"children":[]},{"name":"OTRO","total_count":1,"children":[]},{"name":"PERDIDA","total_count":1,"children":[]}]},{"name":"RolUsuario.java","total_count":8,"children":[{"name":"COORDINADOR","total_count":1,"children":[]},{"name":"desdeValorDb()","total_count":1,"children":[]},{"name":"ENCARGADO","total_count":1,"children":[]},{"name":"getValorDb()","total_count":1,"children":[]},{"name":"INSTITUCION","total_count":1,"children":[]},{"name":"LIDER","total_count":1,"children":[]},{"name":"RolUsuario","total_count":1,"children":[]},{"name":"VOLUNTARIO","total_count":1,"children":[]}]},{"name":"TipoMovimiento.java","total_count":12,"children":[{"name":"AJUSTE_NEGATIVO","total_count":1,"children":[]},{"name":"AJUSTE_POSITIVO","total_count":1,"children":[]},{"name":"desdeValorDb()","total_count":1,"children":[]},{"name":"ENTREGA","total_count":1,"children":[]},{"name":"esEntrada()","total_count":1,"children":[]},{"name":"esSalida()","total_count":1,"children":[]},{"name":"getValorDb()","total_count":1,"children":[]},{"name":"MERMA","total_count":1,"children":[]},{"name":"RECEPCION","total_count":1,"children":[]},{"name":"TipoMovimiento","total_count":1,"children":[]},{"name":"TRANSFERENCIA_ENTRADA","total_count":1,"children":[]},{"name":"TRANSFERENCIA_SALIDA","total_count":1,"children":[]}]},{"name":"UnidadMedida.java","total_count":8,"children":[{"name":"BOLSA","total_count":1,"children":[]},{"name":"CAJA","total_count":1,"children":[]},{"name":"desdeValorDb()","total_count":1,"children":[]},{"name":"getValorDb()","total_count":1,"children":[]},{"name":"KG","total_count":1,"children":[]},{"name":"L","total_count":1,"children":[]},{"name":"PIEZA","total_count":1,"children":[]},{"name":"UnidadMedida","total_count":1,"children":[]}]}]},{"name":"InstitucionReceptora.java","total_count":8,"children":[{"name":".getDireccion()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".InstitucionReceptora()","total_count":1,"children":[]},{"name":".setDireccion()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":"InstitucionReceptora","total_count":1,"children":[]}]},{"name":"Movimiento.java","total_count":33,"children":[{"name":".getArticulo()","total_count":1,"children":[]},{"name":".getCampania()","total_count":1,"children":[]},{"name":".getCantidad()","total_count":1,"children":[]},{"name":".getCentro()","total_count":1,"children":[]},{"name":".getDonante()","total_count":1,"children":[]},{"name":".getEntregaConfirmada()","total_count":1,"children":[]},{"name":".getFecha()","total_count":1,"children":[]},{"name":".getFechaConfirmacion()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getInstitucionReceptora()","total_count":1,"children":[]},{"name":".getMotivo()","total_count":1,"children":[]},{"name":".getMotivoDetalle()","total_count":1,"children":[]},{"name":".getTipo()","total_count":1,"children":[]},{"name":".getTransferencia()","total_count":1,"children":[]},{"name":".getUsuario()","total_count":1,"children":[]},{"name":".Movimiento()","total_count":1,"children":[]},{"name":".onCreate()","total_count":1,"children":[]},{"name":".setArticulo()","total_count":1,"children":[]},{"name":".setCampania()","total_count":1,"children":[]},{"name":".setCantidad()","total_count":1,"children":[]},{"name":".setCentro()","total_count":1,"children":[]},{"name":".setDonante()","total_count":1,"children":[]},{"name":".setEntregaConfirmada()","total_count":1,"children":[]},{"name":".setFecha()","total_count":1,"children":[]},{"name":".setFechaConfirmacion()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setInstitucionReceptora()","total_count":1,"children":[]},{"name":".setMotivo()","total_count":1,"children":[]},{"name":".setMotivoDetalle()","total_count":1,"children":[]},{"name":".setTipo()","total_count":1,"children":[]},{"name":".setTransferencia()","total_count":1,"children":[]},{"name":".setUsuario()","total_count":1,"children":[]},{"name":"Movimiento","total_count":1,"children":[]}]},{"name":"Transferencia.java","total_count":19,"children":[{"name":".getArticulo()","total_count":1,"children":[]},{"name":".getCampania()","total_count":1,"children":[]},{"name":".getCantidad()","total_count":1,"children":[]},{"name":".getCentroDestino()","total_count":1,"children":[]},{"name":".getCentroOrigen()","total_count":1,"children":[]},{"name":".getEstado()","total_count":1,"children":[]},{"name":".getFecha()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".onCreate()","total_count":1,"children":[]},{"name":".setArticulo()","total_count":1,"children":[]},{"name":".setCampania()","total_count":1,"children":[]},{"name":".setCantidad()","total_count":1,"children":[]},{"name":".setCentroDestino()","total_count":1,"children":[]},{"name":".setCentroOrigen()","total_count":1,"children":[]},{"name":".setEstado()","total_count":1,"children":[]},{"name":".setFecha()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".Transferencia()","total_count":1,"children":[]},{"name":"Transferencia","total_count":1,"children":[]}]},{"name":"Usuario.java","total_count":19,"children":[{"name":".getActivo()","total_count":1,"children":[]},{"name":".getCentro()","total_count":1,"children":[]},{"name":".getEmail()","total_count":1,"children":[]},{"name":".getId()","total_count":1,"children":[]},{"name":".getInstitucion()","total_count":1,"children":[]},{"name":".getNombre()","total_count":1,"children":[]},{"name":".getPassword()","total_count":1,"children":[]},{"name":".getRol()","total_count":1,"children":[]},{"name":".isActivo()","total_count":1,"children":[]},{"name":".setActivo()","total_count":1,"children":[]},{"name":".setCentro()","total_count":1,"children":[]},{"name":".setEmail()","total_count":1,"children":[]},{"name":".setId()","total_count":1,"children":[]},{"name":".setInstitucion()","total_count":1,"children":[]},{"name":".setNombre()","total_count":1,"children":[]},{"name":".setPassword()","total_count":1,"children":[]},{"name":".setRol()","total_count":1,"children":[]},{"name":".Usuario()","total_count":1,"children":[]},{"name":"Usuario","total_count":1,"children":[]}]}]},{"name":"ProgApplication.java","total_count":2,"children":[{"name":".main()","total_count":1,"children":[]},{"name":"ProgApplication","total_count":1,"children":[]}]},{"name":"repository","total_count":36,"children":[{"name":"ArticuloRepository.java","total_count":3,"children":[{"name":".findByCategoria()","total_count":1,"children":[]},{"name":".findByNombreIgnoreCase()","total_count":1,"children":[]},{"name":"ArticuloRepository","total_count":1,"children":[]}]},{"name":"CampaniaRepository.java","total_count":2,"children":[{"name":".findByActivoTrue()","total_count":1,"children":[]},{"name":"CampaniaRepository","total_count":1,"children":[]}]},{"name":"CentroCampaniaRepository.java","total_count":3,"children":[{"name":".findByCampaniaIdAndActivoTrue()","total_count":1,"children":[]},{"name":".findByCentroIdAndActivoTrue()","total_count":1,"children":[]},{"name":"CentroCampaniaRepository","total_count":1,"children":[]}]},{"name":"CentroRepository.java","total_count":2,"children":[{"name":".findByActivoTrue()","total_count":1,"children":[]},{"name":"CentroRepository","total_count":1,"children":[]}]},{"name":"DonanteRepository.java","total_count":1,"children":[{"name":"DonanteRepository","total_count":1,"children":[]}]},{"name":"InstitucionReceptoraRepository.java","total_count":1,"children":[{"name":"InstitucionReceptoraRepository","total_count":1,"children":[]}]},{"name":"MovimientoRepository.java","total_count":14,"children":[{"name":".calcularMermaGlobal()","total_count":1,"children":[]},{"name":".calcularStock()","total_count":1,"children":[]},{"name":".calcularStockGlobal()","total_count":1,"children":[]},{"name":".calcularStockTotalCentro()","total_count":1,"children":[]},{"name":".calcularTotalMermasCentro()","total_count":1,"children":[]},{"name":".findByCampaniaIdOrderByFechaDesc()","total_count":1,"children":[]},{"name":".findByCentroIdAndCampaniaIdOrderByFechaDesc()","total_count":1,"children":[]},{"name":".findByCentroIdOrderByFechaDesc()","total_count":1,"children":[]},{"name":".findByCentroIdOrderByIdDesc()","total_count":1,"children":[]},{"name":".findByTipo()","total_count":1,"children":[]},{"name":".findTop10ByCentroIdOrderByFechaDesc()","total_count":1,"children":[]},{"name":".findTop10ByCentroIdOrderByIdDesc()","total_count":1,"children":[]},{"name":".obtenerNombreArticuloMasDonado()","total_count":1,"children":[]},{"name":"MovimientoRepository","total_count":1,"children":[]}]},{"name":"TransferenciaRepository.java","total_count":5,"children":[{"name":".findByCampaniaId()","total_count":1,"children":[]},{"name":".findByCentroDestinoId()","total_count":1,"children":[]},{"name":".findByCentroOrigenId()","total_count":1,"children":[]},{"name":".findByEstado()","total_count":1,"children":[]},{"name":"TransferenciaRepository","total_count":1,"children":[]}]},{"name":"UsuarioRepository.java","total_count":5,"children":[{"name":".existsByEmailAndActivoTrue()","total_count":1,"children":[]},{"name":".findByCentroId()","total_count":1,"children":[]},{"name":".findByEmail()","total_count":1,"children":[]},{"name":".findByRol()","total_count":1,"children":[]},{"name":"UsuarioRepository","total_count":1,"children":[]}]}]},{"name":"service","total_count":58,"children":[{"name":"AuthService.java","total_count":3,"children":[{"name":".AuthService()","total_count":1,"children":[]},{"name":".login()","total_count":1,"children":[]},{"name":"AuthService","total_count":1,"children":[]}]},{"name":"CampaniaService.java","total_count":6,"children":[{"name":".buscarPorId()","total_count":1,"children":[]},{"name":".CampaniaService()","total_count":1,"children":[]},{"name":".guardar()","total_count":1,"children":[]},{"name":".listarActivas()","total_count":1,"children":[]},{"name":".listarTodas()","total_count":1,"children":[]},{"name":"CampaniaService","total_count":1,"children":[]}]},{"name":"CentroService.java","total_count":6,"children":[{"name":".buscarPorId()","total_count":1,"children":[]},{"name":".CentroService()","total_count":1,"children":[]},{"name":".guardar()","total_count":1,"children":[]},{"name":".listarActivos()","total_count":1,"children":[]},{"name":".listarTodos()","total_count":1,"children":[]},{"name":"CentroService","total_count":1,"children":[]}]},{"name":"CoordinadorService.java","total_count":6,"children":[{"name":".CoordinadorService()","total_count":1,"children":[]},{"name":".guardarCampania()","total_count":1,"children":[]},{"name":".obtenerCatalogos()","total_count":1,"children":[]},{"name":".obtenerDashboardGlobal()","total_count":1,"children":[]},{"name":".registrarCentro()","total_count":1,"children":[]},{"name":"CoordinadorService","total_count":1,"children":[]}]},{"name":"EncargadoService.java","total_count":8,"children":[{"name":".EncargadoService()","total_count":1,"children":[]},{"name":".mapearHistorial()","total_count":1,"children":[]},{"name":".obtenerCampaniaActivaParaCentro()","total_count":1,"children":[]},{"name":".obtenerCatalogos()","total_count":1,"children":[]},{"name":".obtenerDashboardCentro()","total_count":1,"children":[]},{"name":".parsearMotivo()","total_count":1,"children":[]},{"name":".registrarMovimiento()","total_count":1,"children":[]},{"name":"EncargadoService","total_count":1,"children":[]}]},{"name":"InventarioService.java","total_count":4,"children":[{"name":".InventarioService()","total_count":1,"children":[]},{"name":".obtenerStock()","total_count":1,"children":[]},{"name":".validarStockSuficiente()","total_count":1,"children":[]},{"name":"InventarioService","total_count":1,"children":[]}]},{"name":"MenuService.java","total_count":5,"children":[{"name":".calcularModulosPermitidos()","total_count":1,"children":[]},{"name":".MenuService()","total_count":1,"children":[]},{"name":".obtenerContextoValidado()","total_count":1,"children":[]},{"name":".validarPermisoModulo()","total_count":1,"children":[]},{"name":"MenuService","total_count":1,"children":[]}]},{"name":"MovimientoService.java","total_count":14,"children":[{"name":".listarPorCampania()","total_count":1,"children":[]},{"name":".listarPorCentro()","total_count":1,"children":[]},{"name":".MovimientoService()","total_count":1,"children":[]},{"name":".obtenerArticulo()","total_count":1,"children":[]},{"name":".obtenerCampania()","total_count":1,"children":[]},{"name":".obtenerCentro()","total_count":1,"children":[]},{"name":".obtenerUsuario()","total_count":1,"children":[]},{"name":".registrarAjuste()","total_count":1,"children":[]},{"name":".registrarEntrega()","total_count":1,"children":[]},{"name":".registrarMerma()","total_count":1,"children":[]},{"name":".registrarRecepcion()","total_count":1,"children":[]},{"name":".registrarTransferencia()","total_count":1,"children":[]},{"name":".validarCantidadPositiva()","total_count":1,"children":[]},{"name":"MovimientoService","total_count":1,"children":[]}]},{"name":"RecepcionService.java","total_count":6,"children":[{"name":".listarArticulos()","total_count":1,"children":[]},{"name":".obtenerResumenCentro()","total_count":1,"children":[]},{"name":".RecepcionService()","total_count":1,"children":[]},{"name":".registrarRecepcion()","total_count":1,"children":[]},{"name":".resolverOCrearArticulo()","total_count":1,"children":[]},{"name":"RecepcionService","total_count":1,"children":[]}]}]}]}]}]}]}]},{"name":"test","total_count":19,"children":[{"name":"java","total_count":19,"children":[{"name":"com","total_count":19,"children":[{"name":"hackaton","total_count":19,"children":[{"name":"prog","total_count":19,"children":[{"name":"EncargadoControllerTest.java","total_count":3,"children":[{"name":".testObtenerCatalogos()","total_count":1,"children":[]},{"name":".testObtenerDashboard()","total_count":1,"children":[]},{"name":"EncargadoControllerTest","total_count":1,"children":[]}]},{"name":"MenuControllerTest.java","total_count":7,"children":[{"name":".setUp()","total_count":1,"children":[]},{"name":".testContextoCoordinador()","total_count":1,"children":[]},{"name":".testContextoUsuarioInexistente()","total_count":1,"children":[]},{"name":".testContextoVoluntario()","total_count":1,"children":[]},{"name":".testValidarAccesoDenegado()","total_count":1,"children":[]},{"name":".testValidarAccesoPermitido()","total_count":1,"children":[]},{"name":"MenuControllerTest","total_count":1,"children":[]}]},{"name":"ProgApplicationTests.java","total_count":2,"children":[{"name":".contextLoads()","total_count":1,"children":[]},{"name":"ProgApplicationTests","total_count":1,"children":[]}]},{"name":"RecepcionControllerTest.java","total_count":7,"children":[{"name":".setUp()","total_count":1,"children":[]},{"name":".testListarArticulosCatalogo()","total_count":1,"children":[]},{"name":".testObtenerResumenCentro()","total_count":1,"children":[]},{"name":".testRechazarCantidadInvalida()","total_count":1,"children":[]},{"name":".testRechazarSinArticulo()","total_count":1,"children":[]},{"name":".testRegistrarRecepcionExitoso()","total_count":1,"children":[]},{"name":"RecepcionControllerTest","total_count":1,"children":[]}]}]}]}]}]}]}]}]};
+
+    function transformData(jsonData) {
+        // Helper function to recursively build the children structure
+        function processNode(node, parentL1StageName) {
+            let displayName = node.name;
+            // Append total_count if it exists and is not already in the name
+            if (node.total_count !== undefined) {
+                if (!/\(Total Count: \d+\)$/.test(displayName)) {
+                    displayName += ` (Total Count: ${node.total_count})`;
+                }
+            }
+
+            const newNode = { name: displayName };
+
+            if (parentL1StageName === "Root") {
+                 newNode.originalStageName = node.name;
+            } else {
+                newNode.originalStageName = parentL1StageName;
+            }
+
+            if (node.children && node.children.length > 0) {
+                const stageNameToPass = (parentL1StageName === "Root") ? node.name : parentL1StageName;
+                newNode.children = node.children.map(child => processNode(child, stageNameToPass));
+            }
+
+            return newNode;
+        }
+
+        let rootDisplayName = jsonData.name;
+        if (jsonData.total_count !== undefined && !/\(Total Count: \d+\)$/.test(rootDisplayName)) {
+            rootDisplayName += ` (Total Count: ${jsonData.total_count})`;
+        }
+
+        return {
+            name: rootDisplayName,
+            originalStageName: "Root",
+            children: (jsonData.children || []).map(child => processNode(child, "Root"))
+        };
+    }
+
+    const treeData = transformData(initialJsonData);
+
+    // Auto-populated phaseColors: every depth-1 child of the root gets
+    // a stable colour from a bigger palette so all top-level dirs are
+    // distinguishable.
+    const PALETTE = [
+      ["#3498DB","#2980B9","#AED6F1"], ["#2ECC71","#27AE60","#A9DFBF"],
+      ["#E74C3C","#C0392B","#F5B7B1"], ["#9B59B6","#8E44AD","#D7BDE2"],
+      ["#F39C12","#D68910","#FAD7A0"], ["#1ABC9C","#117864","#A2D9CE"],
+      ["#34495E","#1B2631","#ABB2B9"], ["#E67E22","#BA4A00","#F5CBA7"],
+      ["#16A085","#0E6655","#A2D9CE"], ["#D35400","#A04000","#EDBB99"],
+      ["#7F8C8D","#566573","#D5DBDB"], ["#C0392B","#7B241C","#F5B7B1"],
+      ["#2E86C1","#1B4F72","#A9CCE3"], ["#28B463","#196F3D","#A9DFBF"],
+      ["#AF7AC5","#6C3483","#D2B4DE"],
+    ];
+    const phaseColors = { "Root": { fill: "#4A4A4A", stroke: "#333333", collapsedFill: "#6C757D" },
+                          "Default": { fill: "#BDC3C7", stroke: "#95A5A6", collapsedFill: "#ECF0F1" } };
+    (initialJsonData.children || []).forEach((c, i) => {
+      const pal = PALETTE[i % PALETTE.length];
+      phaseColors[c.name] = { fill: pal[0], stroke: pal[1], collapsedFill: pal[2] };
+    });
+
+    const levelSpecificPalettes = {
+      0: { fill: "#4A4A4A", stroke: "#333333", collapsedFill: "#6C757D" },
+      2: { fill: "#6ab04c", stroke: "#508a38", collapsedFill: "#a3d391" },
+      3: { fill: "#f0932b", stroke: "#d0730f", collapsedFill: "#f6c07e" },
+      4: { fill: "#be2edd", stroke: "#a01cb3", collapsedFill: "#e08bf2" },
+      5: { fill: "#00a8ff", stroke: "#007ac1", collapsedFill: "#74d2ff" },
+      6: { fill: "#e55039", stroke: "#c23620", collapsedFill: "#f09a8d" },
+      default: { fill: "#747d8c", stroke: "#57606f", collapsedFill: "#a4b0be" }
+    };
+
+    const svgElement = d3.select("#tree-svg");
+    const initialSvgWidth = +svgElement.attr("width");
+    const initialSvgHeight = +svgElement.attr("height");
+    const margin = { top: 40, right: 120, bottom: 80, left: 450 };
+    let width = initialSvgWidth - margin.left - margin.right;
+    let height = initialSvgHeight - margin.top - margin.bottom;
+    const duration = 500;
+    let nodeCounter = 0;
+    const g = svgElement.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    const treemap = d3.tree().nodeSize([40, 0]);
+    let rootNode = d3.hierarchy(treeData, d => d.children);
+    rootNode.x0 = 0;
+    rootNode.y0 = 0;
+
+    if (rootNode.children) {
+      rootNode.children.forEach(d_child => {
+        if (d_child.children) { collapseBranch(d_child); }
+      });
+    }
+    updateTree(rootNode);
+
+    function collapseBranch(d) { if (d.children) { d._children = d.children; d._children.forEach(collapseBranch); d.children = null; } }
+    function expandBranch(d) { if (d._children) { d.children = d._children; d._children = null; } if (d.children) { d.children.forEach(expandBranch); } }
+    window.expandAll = () => { expandBranch(rootNode); updateTree(rootNode); };
+    window.collapseAll = () => { if (rootNode.children) { rootNode.children.forEach(collapseBranch); } updateTree(rootNode); };
+    window.resetView = () => { if (rootNode.children) { rootNode.children.forEach(d_child => { if (d_child.children || d_child._children) { collapseBranch(d_child); } }); } if (rootNode._children && !rootNode.children) { rootNode.children = rootNode._children; rootNode._children = null; } updateTree(rootNode); };
+
+    function updateTree(source) {
+      const treeLayoutData = treemap(rootNode);
+      let nodes = treeLayoutData.descendants();
+      let links = treeLayoutData.descendants().slice(1);
+
+      let minX = 0;
+      let maxX = 0;
+      if (nodes.length > 0) {
+        minX = d3.min(nodes, d => d.x);
+        maxX = d3.max(nodes, d => d.x);
+      }
+
+      let neededHeight = Math.max(initialSvgHeight, maxX - minX + margin.top + margin.bottom + 100);
+      svgElement.transition().duration(duration / 2).attr("height", neededHeight);
+      g.transition().duration(duration / 2).attr("transform", `translate(${margin.left},${margin.top - minX + 40})`);
+
+      nodes.forEach(d => { d.y = d.depth * 400; }); // Adjust horizontal separation if needed
+
+      const node = g.selectAll('g.node').data(nodes, d => d.id || (d.id = ++nodeCounter));
+      const nodeEnter = node.enter().append('g')
+        .attr('class', d => "node" + (d.children || d._children ? " node--internal" : " node--leaf") + (d._children ? " _children" : ""))
+        .attr('transform', d => `translate(${source.y0},${source.x0})`)
+        .on('click', (event, d) => { if (d.children) { d._children = d.children; d.children = null; } else if (d._children) { d.children = d._children; d._children = null; } updateTree(d); })
+        .style('cursor', d => (d.children || d._children) ? 'pointer' : 'default');
+
+      nodeEnter.append('circle').attr('r', 1e-6);
+
+      nodeEnter.append('text')
+        .attr('dy', '.35em')
+        .attr('x', d => d.children || d._children ? -14 : 14)
+        .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
+        .style("fill-opacity", 1e-6)
+        .call(wrapText, 380);
+
+      const nodeUpdate = nodeEnter.merge(node);
+      nodeUpdate.transition().duration(duration)
+        .attr('transform', d => `translate(${d.y},${d.x})`)
+        .attr('class', d => "node" + (d.children ? " node--internal" : " node--leaf") + (d._children ? " node--internal _children" : ""));
+
+      nodeUpdate.select('circle').attr('r', 8.5)
+        .style('fill', d => {
+            let palette;
+            if (d.depth === 0) {
+                palette = levelSpecificPalettes[0];
+            } else if (d.depth === 1) {
+                palette = phaseColors[d.data.originalStageName] || phaseColors.Default;
+            } else {
+                palette = levelSpecificPalettes[d.depth] || levelSpecificPalettes.default;
+            }
+            if (d._children) return palette.collapsedFill;
+            if (d.children) return palette.fill;
+            return "#fff";
+        })
+        .style('stroke', d => {
+            let palette;
+            if (d.depth === 0) {
+                palette = levelSpecificPalettes[0];
+            } else if (d.depth === 1) {
+                palette = phaseColors[d.data.originalStageName] || phaseColors.Default;
+            } else {
+                palette = levelSpecificPalettes[d.depth] || levelSpecificPalettes.default;
+            }
+            return palette.stroke;
+        });
+      nodeUpdate.select('text').style("fill-opacity", 1).call(wrapText, 380);
+
+      const nodeExit = node.exit().transition().duration(duration).attr('transform', d => `translate(${source.y},${source.x})`).remove();
+      nodeExit.select('circle').attr('r', 1e-6);
+      nodeExit.select('text').style('fill-opacity', 1e-6);
+
+      const link = g.selectAll('path.link').data(links, d => d.id);
+      const linkEnter = link.enter().insert('path', "g").attr('class', 'link').attr('d', d => { const o = { x: source.x0, y: source.y0 }; return diagonal(o, o); });
+
+      linkEnter.merge(link).transition().duration(duration).attr('d', d => diagonal(d, d.parent))
+        .style('stroke', d => {
+            const sourceNode = d.parent;
+            if (!sourceNode) return phaseColors.Default.stroke;
+            const l1AncestorName = sourceNode.data.originalStageName;
+            const colorPalette = phaseColors[l1AncestorName] || phaseColors.Default;
+            return colorPalette.stroke;
+        });
+      link.exit().transition().duration(duration).attr('d', d => { const o = { x: source.x, y: source.y }; return diagonal(o, o); }).remove();
+      nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
+    }
+
+    function diagonal(s, d) { return `M ${s.y} ${s.x} C ${(s.y + d.y) / 2} ${s.x}, ${(s.y + d.y) / 2} ${d.x}, ${d.y} ${d.x}`; }
+
+    function wrapText(textElements, maxWidth) {
+        const textPartColors = {
+            name: '#343a40',
+            count: '#0056b3'
+        };
+        const countRegex = /(\s\(Total Count: \d+\))$/;
+
+        textElements.each(function () {
+            const textD3 = d3.select(this);
+            const originalNodeText = textD3.datum().data.name;
+            const x = parseFloat(textD3.attr("x") || 0);
+            const initialDy = textD3.attr("dy");
+            const textAnchor = textD3.attr("text-anchor");
+            const lineHeight = 1.1;
+
+            textD3.text(null);
+
+            let namePart = originalNodeText;
+            let countPartText = "";
+
+            const countMatch = originalNodeText.match(countRegex);
+            if (countMatch && originalNodeText.endsWith(countMatch[0])) {
+                namePart = originalNodeText.substring(0, originalNodeText.length - countMatch[0].length).trim();
+                countPartText = countMatch[0].trim();
+            }
+
+            const tokens = [];
+            namePart.split(/\s+/).filter(Boolean).forEach(word => {
+                tokens.push({ text: word, type: 'name' });
+            });
+            if (countPartText) {
+                tokens.push({ text: countPartText, type: 'count' });
+            }
+
+            if (tokens.length === 0 && originalNodeText) {
+                tokens.push({ text: originalNodeText, type: 'name' });
+            }
+
+            let currentTspan = textD3.append("tspan").attr("x", x).attr("dy", initialDy);
+            if (textAnchor === "end") currentTspan.attr("text-anchor", "end");
+
+            let lineTokens = [];
+
+            for (let i = 0; i < tokens.length; i++) {
+                const tokenObj = tokens[i];
+
+                lineTokens.push(tokenObj);
+                currentTspan.text(lineTokens.map(t => t.text).join(" "));
+
+                if (currentTspan.node().getComputedTextLength() > maxWidth && lineTokens.length > 1) {
+                    lineTokens.pop();
+
+                    currentTspan.text(null);
+                    lineTokens.forEach((prevToken, idx) => {
+                        currentTspan.append("tspan")
+                            .text((idx > 0 ? " " : "") + prevToken.text)
+                            .style("fill", textPartColors[prevToken.type] || textPartColors.name)
+                            .style("font-weight", prevToken.type === 'count' ? "bold" : "normal");
+                    });
+
+                    lineTokens = [tokenObj];
+                    currentTspan = textD3.append("tspan").attr("x", x).attr("dy", lineHeight + "em");
+                    if (textAnchor === "end") currentTspan.attr("text-anchor", "end");
+                }
+            }
+
+            currentTspan.text(null);
+            lineTokens.forEach((token, idx) => {
+                currentTspan.append("tspan")
+                    .text((idx > 0 ? " " : "") + token.text)
+                    .style("fill", textPartColors[token.type] || textPartColors.name)
+                    .style("font-weight", token.type === 'count' ? "bold" : "normal");
+            });
+
+            if (textD3.selectAll("tspan > tspan").empty() && textD3.select("tspan").text().length === 0 && originalNodeText) {
+                let t = textD3.select("tspan");
+                let displayText = originalNodeText;
+                t.text(displayText).style("fill", textPartColors.name);
+                if (t.node() && t.node().getComputedTextLength() > maxWidth && displayText.length > 20) {
+                    let estimatedChars = Math.floor(maxWidth / (t.node().getComputedTextLength()/displayText.length) );
+                    displayText = displayText.substring(0, Math.max(0, estimatedChars - 3)) + "...";
+                    t.text(displayText);
+                }
+            }
+        });
+    }
+  </script>
+</body>
+</html>

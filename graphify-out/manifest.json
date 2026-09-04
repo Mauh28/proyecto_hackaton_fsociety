@@ -1,0 +1,434 @@
+{
+  "mvnw": {
+    "mtime": 1788457376.8910313,
+    "seen": 1788486660.052622,
+    "ast_hash": "ab50dd89da7da2346b28003352eeeeeb",
+    "semantic_hash": "ab50dd89da7da2346b28003352eeeeeb"
+  },
+  "pom.xml": {
+    "mtime": 1788461598.5301619,
+    "seen": 1788486660.052622,
+    "ast_hash": "c1617a44b87e4dfdc9a4386aea6f9461",
+    "semantic_hash": "c1617a44b87e4dfdc9a4386aea6f9461"
+  },
+  "src/main/java/com/hackaton/prog/ProgApplication.java": {
+    "mtime": 1788457376.8940337,
+    "seen": 1788486660.052622,
+    "ast_hash": "c146068f4f5a59ef69ecb04a50bc9173",
+    "semantic_hash": "c146068f4f5a59ef69ecb04a50bc9173"
+  },
+  "src/main/java/com/hackaton/prog/controller/AuthController.java": {
+    "mtime": 1788479289.2044144,
+    "seen": 1788486660.052622,
+    "ast_hash": "e9e0a969269f58197003d2790752fb35",
+    "semantic_hash": "e9e0a969269f58197003d2790752fb35"
+  },
+  "src/main/java/com/hackaton/prog/controller/CoordinadorController.java": {
+    "mtime": 1788476782.6898196,
+    "seen": 1788486660.052622,
+    "ast_hash": "4f5fe2376e373fa18defe2b1ce21a014",
+    "semantic_hash": "4f5fe2376e373fa18defe2b1ce21a014"
+  },
+  "src/main/java/com/hackaton/prog/controller/EncargadoController.java": {
+    "mtime": 1788476782.6908863,
+    "seen": 1788486660.052622,
+    "ast_hash": "1ef466f52f34cc135642c2b1536a7093",
+    "semantic_hash": "1ef466f52f34cc135642c2b1536a7093"
+  },
+  "src/main/java/com/hackaton/prog/controller/MenuController.java": {
+    "mtime": 1788476300.6805623,
+    "seen": 1788486660.052622,
+    "ast_hash": "a20282cd95b8d16a33c618f76a20b719",
+    "semantic_hash": "a20282cd95b8d16a33c618f76a20b719"
+  },
+  "src/main/java/com/hackaton/prog/controller/RecepcionController.java": {
+    "mtime": 1788476468.4993298,
+    "seen": 1788486660.052622,
+    "ast_hash": "d48642aabcac1b229e93ee3abdeafec8",
+    "semantic_hash": "d48642aabcac1b229e93ee3abdeafec8"
+  },
+  "src/main/java/com/hackaton/prog/dto/ArticuloItemDTO.java": {
+    "mtime": 1788476438.5227084,
+    "seen": 1788486660.052622,
+    "ast_hash": "b7502d9c5112b14116491b1fc01bdf29",
+    "semantic_hash": "b7502d9c5112b14116491b1fc01bdf29"
+  },
+  "src/main/java/com/hackaton/prog/dto/ArticuloStockDTO.java": {
+    "mtime": 1788476782.6914413,
+    "seen": 1788486660.052622,
+    "ast_hash": "2e29f4f78d70c0b838029b47bb89b254",
+    "semantic_hash": "2e29f4f78d70c0b838029b47bb89b254"
+  },
+  "src/main/java/com/hackaton/prog/dto/CatalogosCoordinadorDTO.java": {
+    "mtime": 1788476782.6919782,
+    "seen": 1788486660.052622,
+    "ast_hash": "06e916703904dcec52ab2a5d8367446b",
+    "semantic_hash": "06e916703904dcec52ab2a5d8367446b"
+  },
+  "src/main/java/com/hackaton/prog/dto/CatalogosEncargadoDTO.java": {
+    "mtime": 1788476782.692541,
+    "seen": 1788486660.052622,
+    "ast_hash": "fb81ccade1edf91da9d8b31c2d3780fe",
+    "semantic_hash": "fb81ccade1edf91da9d8b31c2d3780fe"
+  },
+  "src/main/java/com/hackaton/prog/dto/CentroComparativaDTO.java": {
+    "mtime": 1788476782.6936352,
+    "seen": 1788486660.052622,
+    "ast_hash": "ef13bc109494fe18365aff1f279f0e1c",
+    "semantic_hash": "ef13bc109494fe18365aff1f279f0e1c"
+  },
+  "src/main/java/com/hackaton/prog/dto/DashboardCentroDTO.java": {
+    "mtime": 1788476782.694194,
+    "seen": 1788486660.052622,
+    "ast_hash": "9cea404722dba2a94f94cb3ad7edff8e",
+    "semantic_hash": "9cea404722dba2a94f94cb3ad7edff8e"
+  },
+  "src/main/java/com/hackaton/prog/dto/DashboardGlobalDTO.java": {
+    "mtime": 1788476782.694716,
+    "seen": 1788486660.052622,
+    "ast_hash": "336c49c2e29d8ab32e62692f0515c161",
+    "semantic_hash": "336c49c2e29d8ab32e62692f0515c161"
+  },
+  "src/main/java/com/hackaton/prog/dto/ErrorResponse.java": {
+    "mtime": 1788476300.6811006,
+    "seen": 1788486660.052622,
+    "ast_hash": "ffe4d4e810525c04adbd0f4ca0194b15",
+    "semantic_hash": "ffe4d4e810525c04adbd0f4ca0194b15"
+  },
+  "src/main/java/com/hackaton/prog/dto/GuardarCampaniaRequest.java": {
+    "mtime": 1788476782.6952705,
+    "seen": 1788486660.052622,
+    "ast_hash": "b3079bf981ed54a21c424fcbb29d0614",
+    "semantic_hash": "b3079bf981ed54a21c424fcbb29d0614"
+  },
+  "src/main/java/com/hackaton/prog/dto/GuardarCentroRequest.java": {
+    "mtime": 1788476782.6952705,
+    "seen": 1788486660.052622,
+    "ast_hash": "d471f09267b71caed746a53e583f8bad",
+    "semantic_hash": "d471f09267b71caed746a53e583f8bad"
+  },
+  "src/main/java/com/hackaton/prog/dto/LoginRequest.java": {
+    "mtime": 1788476782.6962762,
+    "seen": 1788486660.052622,
+    "ast_hash": "b14cb1028ca4dfd95ffc6a473ddef504",
+    "semantic_hash": "b14cb1028ca4dfd95ffc6a473ddef504"
+  },
+  "src/main/java/com/hackaton/prog/dto/LoginResponse.java": {
+    "mtime": 1788476782.6972816,
+    "seen": 1788486660.052622,
+    "ast_hash": "696606d1964b66b10000bce493799b9d",
+    "semantic_hash": "696606d1964b66b10000bce493799b9d"
+  },
+  "src/main/java/com/hackaton/prog/dto/MovimientoHistorialDTO.java": {
+    "mtime": 1788476782.6992934,
+    "seen": 1788486660.052622,
+    "ast_hash": "62258de3e6fd1b6664927d6717437ea7",
+    "semantic_hash": "62258de3e6fd1b6664927d6717437ea7"
+  },
+  "src/main/java/com/hackaton/prog/dto/OpcionSimpleDTO.java": {
+    "mtime": 1788476782.700278,
+    "seen": 1788486660.052622,
+    "ast_hash": "c3d0c0e6c3f94e58f67032a2b19f3741",
+    "semantic_hash": "c3d0c0e6c3f94e58f67032a2b19f3741"
+  },
+  "src/main/java/com/hackaton/prog/dto/RecepcionRequestDTO.java": {
+    "mtime": 1788476428.155313,
+    "seen": 1788486660.052622,
+    "ast_hash": "9facafdc829098cb31e33e0800678141",
+    "semantic_hash": "9facafdc829098cb31e33e0800678141"
+  },
+  "src/main/java/com/hackaton/prog/dto/RecepcionResponseDTO.java": {
+    "mtime": 1788476433.604868,
+    "seen": 1788486660.052622,
+    "ast_hash": "d98687f4640c4f2456787c6cedce2915",
+    "semantic_hash": "d98687f4640c4f2456787c6cedce2915"
+  },
+  "src/main/java/com/hackaton/prog/dto/RegistroMovimientoRequest.java": {
+    "mtime": 1788476782.7012804,
+    "seen": 1788486660.052622,
+    "ast_hash": "045cb7a8d48e4646ec175b30b4cee073",
+    "semantic_hash": "045cb7a8d48e4646ec175b30b4cee073"
+  },
+  "src/main/java/com/hackaton/prog/dto/ResumenRecepcionDTO.java": {
+    "mtime": 1788476445.073359,
+    "seen": 1788486660.052622,
+    "ast_hash": "7e063c9e8dd176d5d53f02d3f5293a01",
+    "semantic_hash": "7e063c9e8dd176d5d53f02d3f5293a01"
+  },
+  "src/main/java/com/hackaton/prog/dto/UsuarioContextoDTO.java": {
+    "mtime": 1788476300.6816304,
+    "seen": 1788486660.052622,
+    "ast_hash": "5b19d7901e8b6025eef746ae2c2a4c36",
+    "semantic_hash": "5b19d7901e8b6025eef746ae2c2a4c36"
+  },
+  "src/main/java/com/hackaton/prog/exception/AccesoDenegadoException.java": {
+    "mtime": 1788476300.6827388,
+    "seen": 1788486660.052622,
+    "ast_hash": "c29b9eafb1e73132a374ae3e8ed1909b",
+    "semantic_hash": "c29b9eafb1e73132a374ae3e8ed1909b"
+  },
+  "src/main/java/com/hackaton/prog/exception/CredencialesInvalidasException.java": {
+    "mtime": 1788476782.7022777,
+    "seen": 1788486660.052622,
+    "ast_hash": "54a657a84a9215449850fac3a675e32c",
+    "semantic_hash": "54a657a84a9215449850fac3a675e32c"
+  },
+  "src/main/java/com/hackaton/prog/exception/CuentaInactivaException.java": {
+    "mtime": 1788476300.684862,
+    "seen": 1788486660.052622,
+    "ast_hash": "8b099be321dc8aafa1b3fe9bee1bf6c4",
+    "semantic_hash": "8b099be321dc8aafa1b3fe9bee1bf6c4"
+  },
+  "src/main/java/com/hackaton/prog/exception/GlobalExceptionHandler.java": {
+    "mtime": 1788477038.6577518,
+    "seen": 1788486660.052622,
+    "ast_hash": "e3e6fdd156e52be5716844baf7719368",
+    "semantic_hash": "e3e6fdd156e52be5716844baf7719368"
+  },
+  "src/main/java/com/hackaton/prog/exception/StockInsuficienteException.java": {
+    "mtime": 1788468317.7804666,
+    "seen": 1788486660.052622,
+    "ast_hash": "45e4c7ded81ddddc6da44ff646bfde54",
+    "semantic_hash": "45e4c7ded81ddddc6da44ff646bfde54"
+  },
+  "src/main/java/com/hackaton/prog/exception/UsuarioNoEncontradoException.java": {
+    "mtime": 1788476300.686406,
+    "seen": 1788486660.052622,
+    "ast_hash": "1771201e15cf67730c1ab72278ec0030",
+    "semantic_hash": "1771201e15cf67730c1ab72278ec0030"
+  },
+  "src/main/java/com/hackaton/prog/model/Articulo.java": {
+    "mtime": 1788468317.7824697,
+    "seen": 1788486660.052622,
+    "ast_hash": "191e215d1a444f2e7a879ca6ec831ffe",
+    "semantic_hash": "191e215d1a444f2e7a879ca6ec831ffe"
+  },
+  "src/main/java/com/hackaton/prog/model/Campania.java": {
+    "mtime": 1788476782.7042768,
+    "seen": 1788486660.052622,
+    "ast_hash": "040f9103f819d05dde58ad28797d7ffb",
+    "semantic_hash": "040f9103f819d05dde58ad28797d7ffb"
+  },
+  "src/main/java/com/hackaton/prog/model/Centro.java": {
+    "mtime": 1788468317.7854698,
+    "seen": 1788486660.052622,
+    "ast_hash": "136406ffc65504b5fbd6accec0bbc0cb",
+    "semantic_hash": "136406ffc65504b5fbd6accec0bbc0cb"
+  },
+  "src/main/java/com/hackaton/prog/model/CentroCampania.java": {
+    "mtime": 1788468317.7870018,
+    "seen": 1788486660.052622,
+    "ast_hash": "248dcfdf965621c70090608cdc2bf2b4",
+    "semantic_hash": "248dcfdf965621c70090608cdc2bf2b4"
+  },
+  "src/main/java/com/hackaton/prog/model/CentroCampaniaId.java": {
+    "mtime": 1788468317.789003,
+    "seen": 1788486660.052622,
+    "ast_hash": "323f1ff9e933a3c2bbf4733b331be9c2",
+    "semantic_hash": "323f1ff9e933a3c2bbf4733b331be9c2"
+  },
+  "src/main/java/com/hackaton/prog/model/Donante.java": {
+    "mtime": 1788468317.7910051,
+    "seen": 1788486660.052622,
+    "ast_hash": "3f2e45188c5b9ab47c9e3b920efe2d61",
+    "semantic_hash": "3f2e45188c5b9ab47c9e3b920efe2d61"
+  },
+  "src/main/java/com/hackaton/prog/model/InstitucionReceptora.java": {
+    "mtime": 1788468317.7920063,
+    "seen": 1788486660.052622,
+    "ast_hash": "08fb4dc2a91cbf641912bd0e68d416c0",
+    "semantic_hash": "08fb4dc2a91cbf641912bd0e68d416c0"
+  },
+  "src/main/java/com/hackaton/prog/model/Movimiento.java": {
+    "mtime": 1788468317.7940106,
+    "seen": 1788486660.052622,
+    "ast_hash": "cf0cdf8b4e567886c28500b0a2f24d73",
+    "semantic_hash": "cf0cdf8b4e567886c28500b0a2f24d73"
+  },
+  "src/main/java/com/hackaton/prog/model/Transferencia.java": {
+    "mtime": 1788468317.7950046,
+    "seen": 1788486660.052622,
+    "ast_hash": "e75c203801d5213c3e7ce87aa4d46189",
+    "semantic_hash": "e75c203801d5213c3e7ce87aa4d46189"
+  },
+  "src/main/java/com/hackaton/prog/model/Usuario.java": {
+    "mtime": 1788477026.9102316,
+    "seen": 1788486660.052622,
+    "ast_hash": "3aaa848e872e8da8902255e466d7787e",
+    "semantic_hash": "3aaa848e872e8da8902255e466d7787e"
+  },
+  "src/main/java/com/hackaton/prog/model/converter/EnumsConverters.java": {
+    "mtime": 1788479289.2055092,
+    "seen": 1788486660.052622,
+    "ast_hash": "4a0af321f537154b0b2a52d420938d94",
+    "semantic_hash": "4a0af321f537154b0b2a52d420938d94"
+  },
+  "src/main/java/com/hackaton/prog/model/enums/CategoriaArticulo.java": {
+    "mtime": 1788479289.2065737,
+    "seen": 1788486660.052622,
+    "ast_hash": "20fee5211404c372f9f19038d040fe1e",
+    "semantic_hash": "20fee5211404c372f9f19038d040fe1e"
+  },
+  "src/main/java/com/hackaton/prog/model/enums/EstadoTransferencia.java": {
+    "mtime": 1788479289.2078445,
+    "seen": 1788486660.052622,
+    "ast_hash": "40b889d7e73e03ee7814fe855457a276",
+    "semantic_hash": "40b889d7e73e03ee7814fe855457a276"
+  },
+  "src/main/java/com/hackaton/prog/model/enums/MotivoMovimiento.java": {
+    "mtime": 1788479289.2088962,
+    "seen": 1788486660.052622,
+    "ast_hash": "a8c8bcf543bca751a3f0aa667b612292",
+    "semantic_hash": "a8c8bcf543bca751a3f0aa667b612292"
+  },
+  "src/main/java/com/hackaton/prog/model/enums/RolUsuario.java": {
+    "mtime": 1788479289.2094362,
+    "seen": 1788486660.052622,
+    "ast_hash": "f7315ec44753f9c7f126e29951ee1178",
+    "semantic_hash": "f7315ec44753f9c7f126e29951ee1178"
+  },
+  "src/main/java/com/hackaton/prog/model/enums/TipoMovimiento.java": {
+    "mtime": 1788479289.210578,
+    "seen": 1788486660.052622,
+    "ast_hash": "3c0e78ea31e36f384a573f26ff29fd0b",
+    "semantic_hash": "3c0e78ea31e36f384a573f26ff29fd0b"
+  },
+  "src/main/java/com/hackaton/prog/model/enums/UnidadMedida.java": {
+    "mtime": 1788479289.211107,
+    "seen": 1788486660.052622,
+    "ast_hash": "9c86a130ec2d4aa26d718d905d6af750",
+    "semantic_hash": "9c86a130ec2d4aa26d718d905d6af750"
+  },
+  "src/main/java/com/hackaton/prog/repository/ArticuloRepository.java": {
+    "mtime": 1788486136.571978,
+    "seen": 1788486660.052622,
+    "ast_hash": "bf9edf6fa03b3a38dc9e47990edbd7f8",
+    "semantic_hash": "bf9edf6fa03b3a38dc9e47990edbd7f8"
+  },
+  "src/main/java/com/hackaton/prog/repository/CampaniaRepository.java": {
+    "mtime": 1788468317.8138547,
+    "seen": 1788486660.052622,
+    "ast_hash": "6f628e19fd8198c697ddac9299864842",
+    "semantic_hash": "6f628e19fd8198c697ddac9299864842"
+  },
+  "src/main/java/com/hackaton/prog/repository/CentroCampaniaRepository.java": {
+    "mtime": 1788468317.8148532,
+    "seen": 1788486660.052622,
+    "ast_hash": "2376c57bdfb713ec436b742caa4a1612",
+    "semantic_hash": "2376c57bdfb713ec436b742caa4a1612"
+  },
+  "src/main/java/com/hackaton/prog/repository/CentroRepository.java": {
+    "mtime": 1788468317.8158526,
+    "seen": 1788486660.052622,
+    "ast_hash": "a580b949076edebedc6c4e7e1c50db39",
+    "semantic_hash": "a580b949076edebedc6c4e7e1c50db39"
+  },
+  "src/main/java/com/hackaton/prog/repository/DonanteRepository.java": {
+    "mtime": 1788468317.817371,
+    "seen": 1788486660.052622,
+    "ast_hash": "6ee9c61957acf437bedf6fc880988a41",
+    "semantic_hash": "6ee9c61957acf437bedf6fc880988a41"
+  },
+  "src/main/java/com/hackaton/prog/repository/InstitucionReceptoraRepository.java": {
+    "mtime": 1788468317.81838,
+    "seen": 1788486660.052622,
+    "ast_hash": "83967d8f880004c46e3ce653d6cbe683",
+    "semantic_hash": "83967d8f880004c46e3ce653d6cbe683"
+  },
+  "src/main/java/com/hackaton/prog/repository/MovimientoRepository.java": {
+    "mtime": 1788486136.5731099,
+    "seen": 1788486660.052622,
+    "ast_hash": "7e6a50ea3db209248ccc1f7f29604333",
+    "semantic_hash": "7e6a50ea3db209248ccc1f7f29604333"
+  },
+  "src/main/java/com/hackaton/prog/repository/TransferenciaRepository.java": {
+    "mtime": 1788468317.8213916,
+    "seen": 1788486660.052622,
+    "ast_hash": "bd2012ef88df7fd15a452591b538f11f",
+    "semantic_hash": "bd2012ef88df7fd15a452591b538f11f"
+  },
+  "src/main/java/com/hackaton/prog/repository/UsuarioRepository.java": {
+    "mtime": 1788476300.688408,
+    "seen": 1788486660.052622,
+    "ast_hash": "cdb6ef5be9d69174c348a500fe97e3ad",
+    "semantic_hash": "cdb6ef5be9d69174c348a500fe97e3ad"
+  },
+  "src/main/java/com/hackaton/prog/service/AuthService.java": {
+    "mtime": 1788476782.7062762,
+    "seen": 1788486660.052622,
+    "ast_hash": "be042b2e737d4698e9966bc07e3ee5a7",
+    "semantic_hash": "be042b2e737d4698e9966bc07e3ee5a7"
+  },
+  "src/main/java/com/hackaton/prog/service/CampaniaService.java": {
+    "mtime": 1788468317.8234053,
+    "seen": 1788486660.052622,
+    "ast_hash": "bdeba637f58dc5b4886b222d119a8c43",
+    "semantic_hash": "bdeba637f58dc5b4886b222d119a8c43"
+  },
+  "src/main/java/com/hackaton/prog/service/CentroService.java": {
+    "mtime": 1788468317.8259335,
+    "seen": 1788486660.052622,
+    "ast_hash": "ea5472066c5a2301c7f7bb1cee570c09",
+    "semantic_hash": "ea5472066c5a2301c7f7bb1cee570c09"
+  },
+  "src/main/java/com/hackaton/prog/service/CoordinadorService.java": {
+    "mtime": 1788476782.7072763,
+    "seen": 1788486660.052622,
+    "ast_hash": "394611c9fbc0cfeb9d11ac94a97358aa",
+    "semantic_hash": "394611c9fbc0cfeb9d11ac94a97358aa"
+  },
+  "src/main/java/com/hackaton/prog/service/EncargadoService.java": {
+    "mtime": 1788486136.5741744,
+    "seen": 1788486660.052622,
+    "ast_hash": "eecb1790d6421e4095a28fd528ceabbf",
+    "semantic_hash": "eecb1790d6421e4095a28fd528ceabbf"
+  },
+  "src/main/java/com/hackaton/prog/service/InventarioService.java": {
+    "mtime": 1788468317.8274536,
+    "seen": 1788486660.052622,
+    "ast_hash": "be93085fb48b7dc89079913391d36f70",
+    "semantic_hash": "be93085fb48b7dc89079913391d36f70"
+  },
+  "src/main/java/com/hackaton/prog/service/MenuService.java": {
+    "mtime": 1788476300.6894078,
+    "seen": 1788486660.052622,
+    "ast_hash": "6e9c3ca0b9b9eb7ef020d9a297393469",
+    "semantic_hash": "6e9c3ca0b9b9eb7ef020d9a297393469"
+  },
+  "src/main/java/com/hackaton/prog/service/MovimientoService.java": {
+    "mtime": 1788486136.5752497,
+    "seen": 1788486660.052622,
+    "ast_hash": "ea3bb40cd607d90e36368d35f8488282",
+    "semantic_hash": "ea3bb40cd607d90e36368d35f8488282"
+  },
+  "src/main/java/com/hackaton/prog/service/RecepcionService.java": {
+    "mtime": 1788486136.5758045,
+    "seen": 1788486660.052622,
+    "ast_hash": "8253c2c385a7579aed5c1049e043a249",
+    "semantic_hash": "8253c2c385a7579aed5c1049e043a249"
+  },
+  "src/test/java/com/hackaton/prog/EncargadoControllerTest.java": {
+    "mtime": 1788486136.5778337,
+    "seen": 1788486660.052622,
+    "ast_hash": "5c2e29823edcb99f51b759c5c009286d",
+    "semantic_hash": "5c2e29823edcb99f51b759c5c009286d"
+  },
+  "src/test/java/com/hackaton/prog/MenuControllerTest.java": {
+    "mtime": 1788476300.6914103,
+    "seen": 1788486660.052622,
+    "ast_hash": "fee0c78690cd47e032ce64b753e23623",
+    "semantic_hash": "fee0c78690cd47e032ce64b753e23623"
+  },
+  "src/test/java/com/hackaton/prog/ProgApplicationTests.java": {
+    "mtime": 1788457376.8970313,
+    "seen": 1788486660.052622,
+    "ast_hash": "99796fd0082f9396774bdc7ec82204ab",
+    "semantic_hash": "99796fd0082f9396774bdc7ec82204ab"
+  },
+  "src/test/java/com/hackaton/prog/RecepcionControllerTest.java": {
+    "mtime": 1788486136.5790555,
+    "seen": 1788486660.052622,
+    "ast_hash": "2a37fac3c4916c88f6ec3f6a3a45b8b2",
+    "semantic_hash": "2a37fac3c4916c88f6ec3f6a3a45b8b2"
+  }
+}
