@@ -461,6 +461,10 @@ select:focus {
     text-align: right;
 }
 
+.text-left {
+    text-align: left;
+}
+
 /* ==========================================================================
    11. Animaciones, Barra de Progreso y Toasts
    ========================================================================== */
@@ -520,6 +524,15 @@ select:focus {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     width: 100%;
     max-width: 400px;
+    text-align: center;
+}
+
+.login-logo {
+    width: 110px;
+    height: auto;
+    margin: 0 auto 1.25rem auto;
+    display: block;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
 }
 
 .alert-error {
