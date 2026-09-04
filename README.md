@@ -15,6 +15,16 @@
 <br clear="left"/>
 <br/>
 
+---
+
+## 📄 Documentación del Proyecto
+
+A continuación se pondrá a disposición la documentación formal y técnica solicitada para el programa:
+
+* 📥 **Documentación Oficial del Sistema (PDF):** [Descargar / Ver Documentación](./docs/documentacion_amarea.pdf) *(Espacio reservado — archivo en proceso de integración)*
+
+---
+
 ## 🌐 Acceso a la Aplicación (Despliegue en Vivo)
 
 Puedes acceder a la versión desplegada en producción directamente a través del siguiente enlace:
