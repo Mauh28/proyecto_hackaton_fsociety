@@ -385,10 +385,14 @@
                     const badgeClass = esNegativo ? 'text-danger' : 'text-success';
                     const signo = esNegativo ? '-' : '+';
 
+                    const detalleTexto = (mov.detalle && mov.detalle.trim() !== '')
+                        ? mov.detalle
+                        : ((mov.tipo || '').toLowerCase() === 'recepcion' ? 'Donante: Anonimo' : '');
+
                     li.innerHTML = `
                         <div>
                             <strong>${mov.tipo}</strong> - ${mov.articuloNombre}
-                            <div class="text-muted text-sm">${mov.detalle || ''} (Actor: ${mov.autor || 'N/A'})</div>
+                            <div class="text-muted text-sm">${detalleTexto} (Actor: ${mov.autor || 'N/A'})</div>
                         </div>
                         <strong class="${badgeClass}">${signo}${mov.cantidad} ${mov.unidad || ''}</strong>
                     `;

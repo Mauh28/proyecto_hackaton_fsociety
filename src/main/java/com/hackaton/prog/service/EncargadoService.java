@@ -3,6 +3,7 @@ package com.hackaton.prog.service;
 import com.hackaton.prog.dto.*;
 import com.hackaton.prog.model.*;
 import com.hackaton.prog.model.enums.MotivoMovimiento;
+import com.hackaton.prog.model.enums.TipoMovimiento;
 import com.hackaton.prog.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -228,10 +229,22 @@ public class EncargadoService {
             if (m.getMotivoDetalle() != null && !m.getMotivoDetalle().isEmpty()) {
                 detalle += " (" + m.getMotivoDetalle() + ")";
             }
+        } else if (m.getTipo() == TipoMovimiento.RECEPCION) {
+            if (m.getDonante() != null && m.getDonante().getNombre() != null && !m.getDonante().getNombre().trim().isEmpty()) {
+                String nom = m.getDonante().getNombre().trim();
+                if (nom.equalsIgnoreCase("anonimo") || nom.equalsIgnoreCase("anónimo")
+                        || nom.equalsIgnoreCase("donante anonimo") || nom.equalsIgnoreCase("donante anónimo")) {
+                    detalle = "Donante: Anonimo";
+                } else {
+                    detalle = "Donante: " + nom;
+                }
+            } else {
+                detalle = "Donante: Anonimo";
+            }
         } else if (m.getDonante() != null) {
             String nom = m.getDonante().getNombre();
-            detalle = (nom == null || nom.trim().isEmpty() || nom.equalsIgnoreCase("anonimo"))
-                    ? "Donante Anónimo" : "Donante: " + nom;
+            detalle = (nom == null || nom.trim().isEmpty() || nom.equalsIgnoreCase("anonimo") || nom.equalsIgnoreCase("anónimo"))
+                    ? "Donante: Anonimo" : "Donante: " + nom;
         }
 
         return new MovimientoHistorialDTO(
