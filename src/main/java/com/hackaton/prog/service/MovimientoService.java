@@ -218,7 +218,7 @@ public class MovimientoService {
 
     @Transactional(readOnly = true)
     public List<Movimiento> listarPorCentro(Integer centroId) {
-        return movimientoRepository.findByCentroIdOrderByFechaDesc(centroId);
+        return movimientoRepository.findByCentroIdOrderByIdDesc(centroId);
     }
 
     @Transactional(readOnly = true)

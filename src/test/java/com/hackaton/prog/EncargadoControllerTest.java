@@ -37,5 +37,11 @@ class EncargadoControllerTest {
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
         System.out.println(">>> Dashboard Centro Nombre: " + response.getBody().getCentroNombre());
+        var historial = response.getBody().getHistorial();
+        assertNotNull(historial);
+        if (historial.size() >= 2) {
+            assertTrue(historial.get(0).getId() > historial.get(1).getId(),
+                    "El primer movimiento debe tener un ID mayor que el segundo (orden descendente, más reciente primero)");
+        }
     }
 }

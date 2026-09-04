@@ -121,7 +121,7 @@ public class EncargadoService {
         BigDecimal stockTotal = movimientoRepository.calcularStockTotalCentro(centroId);
         BigDecimal totalMermasMes = movimientoRepository.calcularTotalMermasCentro(centroId);
 
-        List<Movimiento> ultimosMovimientos = movimientoRepository.findTop10ByCentroIdOrderByFechaDesc(centroId);
+        List<Movimiento> ultimosMovimientos = movimientoRepository.findTop10ByCentroIdOrderByIdDesc(centroId);
         List<MovimientoHistorialDTO> historialDto = ultimosMovimientos.stream()
                 .map(this::mapearHistorial)
                 .collect(Collectors.toList());

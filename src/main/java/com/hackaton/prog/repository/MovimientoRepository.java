@@ -15,6 +15,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
 
     List<Movimiento> findByCentroIdOrderByFechaDesc(Integer centroId);
 
+    List<Movimiento> findByCentroIdOrderByIdDesc(Integer centroId);
+
     List<Movimiento> findByCampaniaIdOrderByFechaDesc(Integer campaniaId);
 
     List<Movimiento> findByTipo(TipoMovimiento tipo);
@@ -81,4 +83,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     String obtenerNombreArticuloMasDonado();
 
     List<Movimiento> findTop10ByCentroIdOrderByFechaDesc(Integer centroId);
+
+    List<Movimiento> findTop10ByCentroIdOrderByIdDesc(Integer centroId);
 }
