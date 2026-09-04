@@ -1,6 +1,8 @@
 package com.hackaton.prog.dto;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResumenRecepcionDTO {
 
@@ -11,6 +13,7 @@ public class ResumenRecepcionDTO {
     private BigDecimal stockActual;
     private BigDecimal metaTotal;
     private BigDecimal porcentajeAvance;
+    private List<OpcionSimpleDTO> campaniasActivas = new ArrayList<>();
 
     public ResumenRecepcionDTO() {
     }
@@ -24,6 +27,7 @@ public class ResumenRecepcionDTO {
         this.stockActual = stockActual;
         this.metaTotal = metaTotal;
         this.porcentajeAvance = porcentajeAvance;
+        this.campaniasActivas = new ArrayList<>();
     }
 
     public Integer getCentroId() {
@@ -80,5 +84,13 @@ public class ResumenRecepcionDTO {
 
     public void setPorcentajeAvance(BigDecimal porcentajeAvance) {
         this.porcentajeAvance = porcentajeAvance;
+    }
+
+    public List<OpcionSimpleDTO> getCampaniasActivas() {
+        return campaniasActivas;
+    }
+
+    public void setCampaniasActivas(List<OpcionSimpleDTO> campaniasActivas) {
+        this.campaniasActivas = campaniasActivas;
     }
 }

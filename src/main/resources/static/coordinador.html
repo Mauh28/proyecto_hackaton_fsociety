@@ -35,6 +35,10 @@
                 <span>Gestión de Centros</span>
                 <span>✓</span>
             </div>
+            <div class="category-card" data-type="ajuste">
+                <span>Ajuste de Stock</span>
+                <span>✓</span>
+            </div>
         </div>
 
         <!-- Formularios Dinámicos -->
@@ -130,6 +134,52 @@
                 </div>
 
                 <button type="button" class="btn btn-primary" id="btnRegistrarCentro">Registrar Centro</button>
+            </div>
+
+            <!-- SECCIÓN 3: Ajuste Directo de Stock (Coordinador General - Requisito 6.5) -->
+            <div class="form-section" id="sec-ajuste">
+                <div class="mb-1-5">
+                    <label for="ajusteCentroSelect" class="font-semibold">Centro de Acopio</label>
+                    <select id="ajusteCentroSelect" required>
+                        <option value="">Selecciona el centro a ajustar...</option>
+                    </select>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="ajusteArticuloSelect" class="font-semibold">Artículo</label>
+                    <select id="ajusteArticuloSelect" required>
+                        <option value="">Cargando artículos...</option>
+                    </select>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="ajusteTipo" class="font-semibold">Tipo de Ajuste</label>
+                    <select id="ajusteTipo" required>
+                        <option value="suma">Incrementar Stock (+)</option>
+                        <option value="resta">Reducir Stock (-)</option>
+                    </select>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="ajusteCantidad" class="font-semibold">Cantidad a Ajustar</label>
+                    <input type="number" id="ajusteCantidad" min="0.1" step="any" value="1" required>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="ajusteMotivo" class="font-semibold">Motivo Obligatorio</label>
+                    <select id="ajusteMotivo" required>
+                        <option value="correccion_conteo">Corrección de Conteo Físico</option>
+                        <option value="error_captura">Error en Captura Previa</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="mb-1-5">
+                    <label for="ajusteDetalle" class="font-semibold">Justificación Detallada</label>
+                    <input type="text" id="ajusteDetalle" placeholder="Ej. Auditoría física de inventario central" required>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="btnEjecutarAjuste">Aplicar Ajuste de Coordinación</button>
             </div>
 
         </div>
@@ -541,6 +591,133 @@
             }
         });
 
+        // 5. Módulo de Ajuste Directo de Stock (Coordinador General - Requisito 6.5)
+        const ajusteCentroSelect = document.getElementById('ajusteCentroSelect');
+        const ajusteArticuloSelect = document.getElementById('ajusteArticuloSelect');
+        const btnEjecutarAjuste = document.getElementById('btnEjecutarAjuste');
+        let articulosAjusteCache = [];
+
+        async function poblarCentrosAjuste() {
+            try {
+                const res = await fetch('/api/coordinador/mapa');
+                if (res.ok) {
+                    const centros = await res.json();
+                    ajusteCentroSelect.innerHTML = '<option value="">Selecciona el centro a ajustar...</option>';
+                    centros.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = `${c.nombre} (Stock: ${Number(c.stockTotal || 0).toLocaleString()} u.)`;
+                        ajusteCentroSelect.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.warn('Error al poblar centros para ajuste:', e);
+            }
+        }
+
+        async function cargarArticulosParaAjuste(cid) {
+            if (!cid) {
+                ajusteArticuloSelect.innerHTML = '<option value="">Selecciona primero un centro...</option>';
+                return;
+            }
+            try {
+                const res = await fetch(`/api/encargado/catalogos?centroId=${cid}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    articulosAjusteCache = data.articulos || [];
+                    ajusteArticuloSelect.innerHTML = '<option value="">Selecciona el artículo...</option>';
+                    articulosAjusteCache.forEach(art => {
+                        const opt = document.createElement('option');
+                        opt.value = art.id;
+                        opt.textContent = `${art.nombre} (${art.stock} ${art.unidad} disponibles)`;
+                        ajusteArticuloSelect.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.warn('Error al cargar artículos para ajuste:', e);
+            }
+        }
+
+        if (ajusteCentroSelect) {
+            ajusteCentroSelect.addEventListener('change', () => {
+                cargarArticulosParaAjuste(ajusteCentroSelect.value);
+            });
+        }
+
+        if (btnEjecutarAjuste) {
+            btnEjecutarAjuste.addEventListener('click', async () => {
+                limpiarAlerta();
+                const cid = parseInt(ajusteCentroSelect.value, 10);
+                const artId = parseInt(ajusteArticuloSelect.value, 10);
+                const cant = parseFloat(document.getElementById('ajusteCantidad').value);
+                const tipoAjuste = document.getElementById('ajusteTipo').value;
+                const motivo = document.getElementById('ajusteMotivo').value;
+                const detalle = document.getElementById('ajusteDetalle').value.trim();
+
+                if (!cid) {
+                    mostrarAlerta('Selecciona el centro de acopio a ajustar.');
+                    return;
+                }
+                if (!artId) {
+                    mostrarAlerta('Selecciona el artículo.');
+                    return;
+                }
+                if (!cant || cant <= 0) {
+                    mostrarAlerta('Ingresa una cantidad válida mayor a cero.');
+                    return;
+                }
+                if (!detalle) {
+                    mostrarAlerta('Ingresa una justificación para el ajuste.');
+                    return;
+                }
+
+                const originalTxt = btnEjecutarAjuste.textContent;
+                btnEjecutarAjuste.disabled = true;
+                btnEjecutarAjuste.textContent = 'Aplicando ajuste...';
+
+                try {
+                    const rawUsuario = sessionStorage.getItem('usuarioId');
+                    const coordUsuarioId = (rawUsuario && rawUsuario !== 'null') ? parseInt(rawUsuario, 10) : 1;
+
+                    const res = await fetch('/api/encargado/movimiento', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            tipo: 'AJUSTE',
+                            centroId: cid,
+                            articuloId: artId,
+                            cantidad: cant,
+                            esPositivo: (tipoAjuste === 'suma'),
+                            motivo: motivo,
+                            motivoDetalle: detalle + ' [Autorizado por Coordinación]',
+                            usuarioId: coordUsuarioId
+                        })
+                    });
+
+                    if (!res.ok) {
+                        let msg = 'Error al registrar el ajuste.';
+                        try {
+                            const err = await res.json();
+                            if (err && err.mensaje) msg = err.mensaje;
+                        } catch (_) { }
+                        mostrarAlerta(msg);
+                        return;
+                    }
+
+                    dispararNotificacion('¡Ajuste de inventario aplicado con éxito!');
+                    document.getElementById('ajusteDetalle').value = '';
+                    await Promise.all([cargarDashboardGlobal(), cargarMapaCentros(), poblarCentrosAjuste(), cargarArticulosParaAjuste(cid)]);
+
+                } catch (e) {
+                    console.error('Error al aplicar ajuste:', e);
+                    mostrarAlerta('Error de conexión con el servidor.');
+                } finally {
+                    btnEjecutarAjuste.disabled = false;
+                    btnEjecutarAjuste.textContent = originalTxt;
+                }
+            });
+        }
+
         // 5. Inicialización del Mapa Geográfico Interactivo con Leaflet.js
         let mapaInstancia = null;
         let markersGroup = null;
@@ -641,6 +818,7 @@
         cargarCatalogos();
         cargarDashboardGlobal();
         cargarMapaCentros();
+        poblarCentrosAjuste();
     </script>
 </body>
 

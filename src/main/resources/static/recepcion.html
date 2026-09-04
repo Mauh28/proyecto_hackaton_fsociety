@@ -14,6 +14,14 @@
         <h2>Registrar Donación</h2>
         <p class="text-muted mb-2">Ingresa los datos del artículo recibido en el centro.</p>
 
+        <!-- Selector de Campaña Activa (Requisito 6.1.2) -->
+        <div class="mb-1-5">
+            <label for="selectCampania" class="font-semibold">Campaña Activa de Destino</label>
+            <select id="selectCampania" class="w-full" required>
+                <option value="">Cargando campañas activas...</option>
+            </select>
+        </div>
+
         <!-- Selector de Categoría (Sección 4 del PDF) -->
         <label class="font-semibold mb-1">Categoría del Artículo</label>
         <div class="category-grid" id="categoryGrid">
@@ -180,6 +188,7 @@
         const inputItemName = document.getElementById('inputItemName');
         const inputDonor = document.getElementById('inputDonor');
         const selectUnit = document.getElementById('selectUnit');
+        const selectCampania = document.getElementById('selectCampania');
         const stockActualEl = document.getElementById('stockActual');
         const metaTotalEl = document.getElementById('metaTotal');
         const progressBar = document.getElementById('progressBar');
@@ -217,12 +226,38 @@
                         stockActualEl.textContent = Math.round(stockActual).toLocaleString();
                     }
                     actualizarBarraProgreso();
+
+                    // Rellenar selector de campañas activas (Punto 6.1.2)
+                    if (data.campaniasActivas && data.campaniasActivas.length > 0) {
+                        const seleccionPrevia = selectCampania.value;
+                        selectCampania.innerHTML = '';
+                        data.campaniasActivas.forEach(c => {
+                            const opt = document.createElement('option');
+                            opt.value = c.id;
+                            opt.textContent = c.nombre;
+                            if (c.id === data.campaniaId) opt.selected = true;
+                            selectCampania.appendChild(opt);
+                        });
+                        if (seleccionPrevia) {
+                            selectCampania.value = seleccionPrevia;
+                        }
+                    } else if (data.campaniaId && data.campaniaNombre) {
+                        selectCampania.innerHTML = `<option value="${data.campaniaId}">${data.campaniaNombre}</option>`;
+                    }
                 }
             } catch (e) {
                 console.warn('Backend recepcion no disponible, usando valores por defecto:', e);
+                selectCampania.innerHTML = '<option value="1">Plan de Contingencia Huracán 2026</option>';
                 actualizarBarraProgreso();
             }
         }
+
+        selectCampania.addEventListener('change', () => {
+            const selectedText = selectCampania.options[selectCampania.selectedIndex]?.text;
+            if (selectedText) {
+                campaniaNombreEl.textContent = selectedText;
+            }
+        });
 
         cargarResumen();
 
@@ -241,6 +276,7 @@
             }
             inputQuantity.value = cant;
 
+            const campaniaIdSel = parseInt(selectCampania.value, 10) || 1;
             const donor = inputDonor.value.trim();
             const esAnonimo = (donor === '');
 
@@ -248,13 +284,13 @@
             btnRegistrar.textContent = 'Registrando...';
 
             try {
-                // Intentar registrar en el backend
+                // Registrar en el backend con la campaña activa elegida por el voluntario/encargado
                 const response = await fetch('/api/recepcion', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         centroId: centroId,
-                        campaniaId: 1,
+                        campaniaId: campaniaIdSel,
                         articuloNombre: nombreItem,
                         categoria: categoriaActiva,
                         unidad: selectUnit.value.toUpperCase(),
