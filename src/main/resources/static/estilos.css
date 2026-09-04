@@ -594,3 +594,11 @@ select:focus {
     margin: 12px 14px !important;
     line-height: 1.4 !important;
 }
+
+#mapaCentros {
+    height: 320px;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    z-index: 1;
+}
