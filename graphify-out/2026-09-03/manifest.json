@@ -24,10 +24,10 @@
     "semantic_hash": "e9e0a969269f58197003d2790752fb35"
   },
   "src/main/java/com/hackaton/prog/controller/CoordinadorController.java": {
-    "mtime": 1788476782.6898196,
-    "seen": 1788486660.052622,
-    "ast_hash": "4f5fe2376e373fa18defe2b1ce21a014",
-    "semantic_hash": "4f5fe2376e373fa18defe2b1ce21a014"
+    "mtime": 1788498267.149176,
+    "seen": 1788498536.2217355,
+    "ast_hash": "0f57daa32f475e84926307fe2a756c0b",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/controller/EncargadoController.java": {
     "mtime": 1788476782.6908863,
@@ -204,10 +204,10 @@
     "semantic_hash": "040f9103f819d05dde58ad28797d7ffb"
   },
   "src/main/java/com/hackaton/prog/model/Centro.java": {
-    "mtime": 1788468317.7854698,
-    "seen": 1788486660.052622,
-    "ast_hash": "136406ffc65504b5fbd6accec0bbc0cb",
-    "semantic_hash": "136406ffc65504b5fbd6accec0bbc0cb"
+    "mtime": 1788498231.0279,
+    "seen": 1788498536.228292,
+    "ast_hash": "60c858b8e2887db24e04806d2d8f2d5a",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/model/CentroCampania.java": {
     "mtime": 1788468317.7870018,
@@ -348,10 +348,10 @@
     "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/CoordinadorService.java": {
-    "mtime": 1788476782.7072763,
-    "seen": 1788486660.052622,
-    "ast_hash": "394611c9fbc0cfeb9d11ac94a97358aa",
-    "semantic_hash": "394611c9fbc0cfeb9d11ac94a97358aa"
+    "mtime": 1788498251.2119803,
+    "seen": 1788498536.2333887,
+    "ast_hash": "624bea66ad5bd833afa6c11ba743ee93",
+    "semantic_hash": ""
   },
   "src/main/java/com/hackaton/prog/service/EncargadoService.java": {
     "mtime": 1788495391.2204373,
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "src/main/resources/static/coordinador.html": {
-    "mtime": 1788476782.7092793,
-    "seen": 1788496991.1533735,
-    "ast_hash": "a83231b238bfc30e3a9605add235a7db",
+    "mtime": 1788498324.4528015,
+    "seen": 1788498536.2373762,
+    "ast_hash": "d098f95cadb78b48fd8202d017a1b1e4",
     "semantic_hash": ""
   },
   "src/main/resources/static/encargado.html": {
@@ -477,6 +477,12 @@
     "mtime": 1788496536.5540402,
     "seen": 1788496991.1533735,
     "ast_hash": "072422527f240c71d751108c98fdf7c5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/hackaton/prog/dto/CentroMapaDTO.java": {
+    "mtime": 1788498237.1059685,
+    "seen": 1788498536.2237308,
+    "ast_hash": "c9202eceed19447f248b392873942069",
     "semantic_hash": ""
   }
 }
