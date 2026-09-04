@@ -25,6 +25,7 @@ public class MovimientoService {
     private final InstitucionReceptoraRepository institucionReceptoraRepository;
     private final TransferenciaRepository transferenciaRepository;
     private final InventarioService inventarioService;
+    private final CentroCampaniaRepository centroCampaniaRepository;
 
     public MovimientoService(MovimientoRepository movimientoRepository,
                              CentroRepository centroRepository,
@@ -34,7 +35,8 @@ public class MovimientoService {
                              DonanteRepository donanteRepository,
                              InstitucionReceptoraRepository institucionReceptoraRepository,
                              TransferenciaRepository transferenciaRepository,
-                             InventarioService inventarioService) {
+                             InventarioService inventarioService,
+                             CentroCampaniaRepository centroCampaniaRepository) {
         this.movimientoRepository = movimientoRepository;
         this.centroRepository = centroRepository;
         this.campaniaRepository = campaniaRepository;
@@ -44,6 +46,7 @@ public class MovimientoService {
         this.institucionReceptoraRepository = institucionReceptoraRepository;
         this.transferenciaRepository = transferenciaRepository;
         this.inventarioService = inventarioService;
+        this.centroCampaniaRepository = centroCampaniaRepository;
     }
 
     /**
@@ -76,11 +79,17 @@ public class MovimientoService {
     }
 
     /**
-     * Registra una entrega / canalización a una institución receptora.
+     * Registra una entrega / canalización a una institución receptora o beneficiario directo.
      * Valida estrictamente que haya stock disponible antes de persistir.
      */
     public Movimiento registrarEntrega(Integer centroId, Integer campaniaId, Integer articuloId,
                                        BigDecimal cantidad, Integer usuarioId, Integer institucionId) {
+        return registrarEntrega(centroId, campaniaId, articuloId, cantidad, usuarioId, institucionId, null);
+    }
+
+    public Movimiento registrarEntrega(Integer centroId, Integer campaniaId, Integer articuloId,
+                                       BigDecimal cantidad, Integer usuarioId, Integer institucionId,
+                                       String beneficiarioNombre) {
         validarCantidadPositiva(cantidad);
         inventarioService.validarStockSuficiente(centroId, campaniaId, articuloId, cantidad);
 
@@ -88,8 +97,14 @@ public class MovimientoService {
         Campania campania = obtenerCampania(campaniaId);
         Articulo articulo = obtenerArticulo(articuloId);
         Usuario usuario = obtenerUsuario(usuarioId);
-        InstitucionReceptora institucion = institucionReceptoraRepository.findById(institucionId)
-                .orElseThrow(() -> new IllegalArgumentException("Institución receptora no encontrada con ID: " + institucionId));
+
+        InstitucionReceptora institucion = null;
+        if (institucionId != null && institucionId > 0) {
+            institucion = institucionReceptoraRepository.findById(institucionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Institución receptora no encontrada con ID: " + institucionId));
+        } else if (beneficiarioNombre == null || beneficiarioNombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar una institución receptora o el nombre del beneficiario.");
+        }
 
         Movimiento mov = new Movimiento();
         mov.setTipo(TipoMovimiento.ENTREGA);
@@ -99,6 +114,13 @@ public class MovimientoService {
         mov.setCantidad(cantidad);
         mov.setUsuario(usuario);
         mov.setInstitucionReceptora(institucion);
+
+        if (beneficiarioNombre != null && !beneficiarioNombre.trim().isEmpty()) {
+            mov.setMotivoDetalle("Beneficiario directo: " + beneficiarioNombre.trim());
+            // Para beneficiario directo, la entrega se considera recibida de inmediato
+            mov.setEntregaConfirmada(true);
+            mov.setFechaConfirmacion(java.time.LocalDateTime.now());
+        }
 
         return movimientoRepository.save(mov);
     }
@@ -151,6 +173,14 @@ public class MovimientoService {
         Campania campania = obtenerCampania(campaniaId);
         Articulo articulo = obtenerArticulo(articuloId);
         Usuario usuario = obtenerUsuario(usuarioId);
+
+        // Validar que ambos centros pertenezcan a la misma campaña según el requisito 6.4
+        List<CentroCampania> asignadasDestino = centroCampaniaRepository.findByCentroIdAndActivoTrue(centroDestinoId);
+        boolean destinoEnMismaCampania = asignadasDestino.stream()
+                .anyMatch(cc -> cc.getCampania().getId().equals(campaniaId));
+        if (!asignadasDestino.isEmpty() && !destinoEnMismaCampania) {
+            throw new IllegalArgumentException("El centro destino no participa activamente en la campaña de la transferencia.");
+        }
 
         // 1. Crear registro de Transferencia
         Transferencia transferencia = new Transferencia(

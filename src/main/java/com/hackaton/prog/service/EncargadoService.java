@@ -95,12 +95,23 @@ public class EncargadoService {
                 .map(i -> new OpcionSimpleDTO(i.getId(), i.getNombre()))
                 .collect(Collectors.toList()));
 
-        // Centros Destino (Centros activos excepto el centro propio)
+        // Centros Destino (Centros activos que participen en la misma campaña, excepto el centro propio)
         List<Centro> centrosDb = centroRepository.findByActivoTrue();
-        dto.setCentrosDestino(centrosDb.stream()
+        final Integer activeCampaniaId = (campania != null) ? campania.getId() : null;
+
+        List<OpcionSimpleDTO> centrosDestinoDto = centrosDb.stream()
                 .filter(c -> !c.getId().equals(centroId))
+                .filter(c -> {
+                    if (activeCampaniaId == null) return true;
+                    List<CentroCampania> asignados = centroCampaniaRepository.findByCentroIdAndActivoTrue(c.getId());
+                    // Si el centro destino tiene asignaciones específicas, debe incluir la campaña activa
+                    return asignados.isEmpty() || asignados.stream()
+                            .anyMatch(cc -> cc.getCampania().getId().equals(activeCampaniaId));
+                })
                 .map(c -> new OpcionSimpleDTO(c.getId(), c.getNombre()))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+
+        dto.setCentrosDestino(centrosDestinoDto);
 
         return dto;
     }
@@ -166,12 +177,23 @@ public class EncargadoService {
 
         switch (tipoUpper) {
             case "ENTREGA":
-                if (request.getInstitucionId() == null) {
-                    throw new IllegalArgumentException("Debe seleccionar una institución receptora.");
+                boolean esBeneficiario = "beneficiario".equalsIgnoreCase(request.getTipoEntrega()) ||
+                        (request.getBeneficiarioNombre() != null && !request.getBeneficiarioNombre().trim().isEmpty());
+                if (esBeneficiario) {
+                    if (request.getBeneficiarioNombre() == null || request.getBeneficiarioNombre().trim().isEmpty()) {
+                        throw new IllegalArgumentException("Debe ingresar el nombre o identificación del beneficiario directo.");
+                    }
+                    return movimientoService.registrarEntrega(
+                            centroId, campaniaId, articuloId, cantidad, usuarioId, null, request.getBeneficiarioNombre().trim()
+                    );
+                } else {
+                    if (request.getInstitucionId() == null) {
+                        throw new IllegalArgumentException("Debe seleccionar una institución receptora.");
+                    }
+                    return movimientoService.registrarEntrega(
+                            centroId, campaniaId, articuloId, cantidad, usuarioId, request.getInstitucionId(), null
+                    );
                 }
-                return movimientoService.registrarEntrega(
-                        centroId, campaniaId, articuloId, cantidad, usuarioId, request.getInstitucionId()
-                );
 
             case "TRANSFERENCIA":
                 if (request.getCentroDestinoId() == null) {
@@ -222,6 +244,8 @@ public class EncargadoService {
         String detalle = "";
         if (m.getInstitucionReceptora() != null) {
             detalle = "Hacia " + m.getInstitucionReceptora().getNombre();
+        } else if (m.getTipo() == TipoMovimiento.ENTREGA && m.getMotivoDetalle() != null && !m.getMotivoDetalle().isEmpty()) {
+            detalle = m.getMotivoDetalle();
         } else if (m.getTransferencia() != null && m.getTransferencia().getCentroDestino() != null) {
             detalle = "Hacia " + m.getTransferencia().getCentroDestino().getNombre();
         } else if (m.getMotivo() != null) {

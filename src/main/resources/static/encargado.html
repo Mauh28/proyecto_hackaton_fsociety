@@ -62,11 +62,25 @@
             <!-- Campos para Entrega -->
             <div class="form-section active" id="sec-entrega">
                 <div class="mb-1-5">
+                    <label class="font-semibold">Canalizar Destino</label>
+                    <div class="flex-gap-1 mt-1">
+                        <label class="radio-inline"><input type="radio" name="tipoDestinatario" id="destInstitucion" value="institucion" checked> Institución Receptora</label>
+                        <label class="radio-inline"><input type="radio" name="tipoDestinatario" id="destBeneficiario" value="beneficiario"> Beneficiario Directo</label>
+                    </div>
+                </div>
+
+                <div class="mb-1-5" id="groupInstitucion">
                     <label for="instSelect" class="font-semibold">Institución Receptora</label>
-                    <select id="instSelect" required>
+                    <select id="instSelect">
                         <option value="">Selecciona la institución...</option>
                     </select>
                 </div>
+
+                <div class="mb-1-5" id="groupBeneficiario" style="display: none;">
+                    <label for="inputBeneficiario" class="font-semibold">Nombre / Identificación del Beneficiario</label>
+                    <input type="text" id="inputBeneficiario" placeholder="Ej. Familia Pérez / Juan Gómez (Damnificado)">
+                </div>
+
                 <button type="button" class="btn btn-primary" id="btnEntrega">Registrar Entrega</button>
             </div>
 
@@ -386,11 +400,15 @@
                     return;
                 }
 
-                data.historial.forEach(mov => {
+                data.historial.forEach((mov, idx) => {
                     const li = document.createElement('li');
                     const esNegativo = ['entrega', 'merma', 'transferencia_salida', 'ajuste_negativo'].includes((mov.tipo || '').toLowerCase());
                     const badgeClass = esNegativo ? 'text-danger' : 'text-success';
                     const signo = esNegativo ? '-' : '+';
+
+                    if (idx === 0) {
+                        li.classList.add('item-highlight-pulse');
+                    }
 
                     const detalleTexto = (mov.detalle && mov.detalle.trim() !== '')
                         ? mov.detalle.trim()
@@ -472,21 +490,58 @@
             }
         }
 
+        // Manejo dinámico de tipo de destinatario (Institución vs Beneficiario Directo)
+        const destInstitucionRadio = document.getElementById('destInstitucion');
+        const destBeneficiarioRadio = document.getElementById('destBeneficiario');
+        const groupInstitucion = document.getElementById('groupInstitucion');
+        const groupBeneficiario = document.getElementById('groupBeneficiario');
+        const inputBeneficiario = document.getElementById('inputBeneficiario');
+
+        if (destInstitucionRadio && destBeneficiarioRadio) {
+            destInstitucionRadio.addEventListener('change', () => {
+                if (destInstitucionRadio.checked) {
+                    groupInstitucion.style.display = 'block';
+                    groupBeneficiario.style.display = 'none';
+                }
+            });
+            destBeneficiarioRadio.addEventListener('change', () => {
+                if (destBeneficiarioRadio.checked) {
+                    groupInstitucion.style.display = 'none';
+                    groupBeneficiario.style.display = 'block';
+                }
+            });
+        }
+
         // Botón: Registrar Entrega
         document.getElementById('btnEntrega').addEventListener('click', (e) => {
-            const instId = parseInt(instSelect.value, 10);
-            if (!instId) {
-                mostrarAlerta('Selecciona la institución receptora.');
-                return;
+            const esBeneficiarioDirecto = destBeneficiarioRadio && destBeneficiarioRadio.checked;
+            let instId = null;
+            let beneficiarioNom = null;
+
+            if (esBeneficiarioDirecto) {
+                beneficiarioNom = inputBeneficiario.value.trim();
+                if (!beneficiarioNom) {
+                    mostrarAlerta('Ingresa el nombre o identificación del beneficiario directo.');
+                    return;
+                }
+            } else {
+                instId = parseInt(instSelect.value, 10);
+                if (!instId) {
+                    mostrarAlerta('Selecciona la institución receptora.');
+                    return;
+                }
             }
+
             const payload = {
                 tipo: 'ENTREGA',
+                tipoEntrega: esBeneficiarioDirecto ? 'beneficiario' : 'institucion',
                 centroId: centroId,
                 campaniaId: campaniaActivaId,
                 articuloId: parseInt(itemSelect.value, 10),
                 cantidad: parseFloat(inputQuantity.value),
                 usuarioId: usuarioId,
-                institucionId: instId
+                institucionId: instId,
+                beneficiarioNombre: beneficiarioNom
             };
             enviarMovimiento(payload, e.target);
         });

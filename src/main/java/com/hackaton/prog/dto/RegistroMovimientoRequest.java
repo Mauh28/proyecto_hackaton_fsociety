@@ -13,6 +13,8 @@ public class RegistroMovimientoRequest {
 
     // Específico para ENTREGA
     private Integer institucionId;
+    private String beneficiarioNombre;
+    private String tipoEntrega; // "institucion" o "beneficiario"
 
     // Específico para TRANSFERENCIA
     private Integer centroDestinoId;
@@ -81,6 +83,22 @@ public class RegistroMovimientoRequest {
 
     public void setInstitucionId(Integer institucionId) {
         this.institucionId = institucionId;
+    }
+
+    public String getBeneficiarioNombre() {
+        return beneficiarioNombre;
+    }
+
+    public void setBeneficiarioNombre(String beneficiarioNombre) {
+        this.beneficiarioNombre = beneficiarioNombre;
+    }
+
+    public String getTipoEntrega() {
+        return tipoEntrega;
+    }
+
+    public void setTipoEntrega(String tipoEntrega) {
+        this.tipoEntrega = tipoEntrega;
     }
 
     public Integer getCentroDestinoId() {
