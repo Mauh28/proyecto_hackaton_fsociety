@@ -216,16 +216,6 @@ public class MovimientoService {
         return movimientoRepository.save(mov);
     }
 
-    @Transactional(readOnly = true)
-    public List<Movimiento> listarPorCentro(Integer centroId) {
-        return movimientoRepository.findByCentroIdOrderByIdDesc(centroId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Movimiento> listarPorCampania(Integer campaniaId) {
-        return movimientoRepository.findByCampaniaIdOrderByFechaDesc(campaniaId);
-    }
-
     private void validarCantidadPositiva(BigDecimal cantidad) {
         if (cantidad == null || cantidad.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");

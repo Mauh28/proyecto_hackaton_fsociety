@@ -92,6 +92,17 @@
                         sessionStorage.setItem('rolActivo', contexto.rol.toLowerCase());
                         sessionStorage.setItem('usuarioNombre', contexto.nombre);
                         sessionStorage.setItem('usuarioActivo', JSON.stringify(contexto));
+                        if (contexto.id) {
+                            sessionStorage.setItem('usuarioId', contexto.id);
+                        }
+                        if (contexto.centroId) {
+                            sessionStorage.setItem('centroId', contexto.centroId);
+                            sessionStorage.setItem('centroNombre', contexto.centroNombre || '');
+                        }
+                        if (contexto.institucionId) {
+                            sessionStorage.setItem('institucionId', contexto.institucionId);
+                            sessionStorage.setItem('institucionNombre', contexto.institucionNombre || '');
+                        }
                         aplicarFiltroRol(contexto.rol);
 
                         const parrafoSubtitulo = document.querySelector('.info-card > p.text-muted');

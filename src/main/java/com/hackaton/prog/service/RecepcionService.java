@@ -5,13 +5,13 @@ import com.hackaton.prog.dto.RecepcionRequestDTO;
 import com.hackaton.prog.dto.RecepcionResponseDTO;
 import com.hackaton.prog.dto.ResumenRecepcionDTO;
 import com.hackaton.prog.model.Articulo;
+import com.hackaton.prog.model.Campania;
+import com.hackaton.prog.model.Centro;
+import com.hackaton.prog.model.CentroCampania;
 import com.hackaton.prog.model.Movimiento;
 import com.hackaton.prog.model.enums.CategoriaArticulo;
 import com.hackaton.prog.model.enums.UnidadMedida;
-import com.hackaton.prog.repository.ArticuloRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.hackaton.prog.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,27 +19,34 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
+@Transactional
 public class RecepcionService {
 
-    private static final Logger log = LoggerFactory.getLogger(RecepcionService.class);
-
-    private final JdbcTemplate jdbcTemplate;
     private final MovimientoService movimientoService;
     private final ArticuloRepository articuloRepository;
+    private final CentroRepository centroRepository;
+    private final CampaniaRepository campaniaRepository;
+    private final CentroCampaniaRepository centroCampaniaRepository;
+    private final MovimientoRepository movimientoRepository;
 
-    public RecepcionService(JdbcTemplate jdbcTemplate,
-                            MovimientoService movimientoService,
-                            ArticuloRepository articuloRepository) {
-        this.jdbcTemplate = jdbcTemplate;
+    public RecepcionService(MovimientoService movimientoService,
+                            ArticuloRepository articuloRepository,
+                            CentroRepository centroRepository,
+                            CampaniaRepository campaniaRepository,
+                            CentroCampaniaRepository centroCampaniaRepository,
+                            MovimientoRepository movimientoRepository) {
         this.movimientoService = movimientoService;
         this.articuloRepository = articuloRepository;
+        this.centroRepository = centroRepository;
+        this.campaniaRepository = campaniaRepository;
+        this.centroCampaniaRepository = centroCampaniaRepository;
+        this.movimientoRepository = movimientoRepository;
     }
 
     /**
-     * Registra una recepción de donación con persistencia directa en TiDB Cloud.
+     * Registra una recepción de donación con persistencia directa en TiDB Cloud vía JPA.
      */
     @Transactional
     public RecepcionResponseDTO registrarRecepcion(RecepcionRequestDTO request) {
@@ -82,20 +89,13 @@ public class RecepcionService {
                 donanteNombre
         );
 
-        // 2. Calcular stock acumulado del centro y campaña en vivo
-        BigDecimal stockActual = BigDecimal.ZERO;
-        try {
-            BigDecimal stock = jdbcTemplate.queryForObject(
-                    "SELECT COALESCE(SUM(stock_disponible), 0) FROM v_stock_actual WHERE centro_id = ? AND campania_id = ?",
-                    BigDecimal.class,
-                    centroId,
-                    campaniaId
-            );
-            if (stock != null) {
-                stockActual = stock;
-            }
-        } catch (Exception ex) {
-            log.warn("No se pudo consultar v_stock_actual tras recepcion: {}", ex.getMessage());
+        // Forzar flush para que la consulta de stock total incluya inmediatamente el nuevo movimiento
+        movimientoRepository.flush();
+
+        // 2. Calcular stock total actualizado del centro en tiempo real
+        BigDecimal stockActual = movimientoRepository.calcularStockTotalCentro(centroId);
+        if (stockActual == null) {
+            stockActual = BigDecimal.ZERO;
         }
 
         RecepcionResponseDTO response = new RecepcionResponseDTO();
@@ -146,8 +146,9 @@ public class RecepcionService {
     }
 
     /**
-     * Lista los artículos para el catálogo/selector utilizando ArticuloRepository
+     * Lista los artículos para el catálogo/selector utilizando ArticuloRepository.
      */
+    @Transactional(readOnly = true)
     public List<ArticuloItemDTO> listarArticulos(String categoria) {
         List<Articulo> articulos;
         if (categoria != null && !categoria.trim().isEmpty() && !categoria.equalsIgnoreCase("TODOS")) {
@@ -174,95 +175,59 @@ public class RecepcionService {
     }
 
     /**
-     * Consulta el resumen de la campaña activa y el stock acumulado para el centro:
-     * Utiliza sp_listar_campanias_activas_centro y v_stock_actual.
+     * Consulta el resumen de la campaña activa y el stock acumulado para el centro
+     * mediante repositorios JPA en tiempo real (sin depender de Stored Procedures ni JdbcTemplate).
      */
+    @Transactional(readOnly = true)
     public ResumenRecepcionDTO obtenerResumenCentro(Integer centroId) {
-        if (centroId == null) {
-            centroId = 1; // Centro predeterminado Campus Central
+        if (centroId == null || centroId <= 0) {
+            centroId = 1;
+        }
+
+        Centro centro = centroRepository.findById(centroId).orElse(null);
+        String centroNombre = (centro != null && centro.getNombre() != null)
+                ? centro.getNombre() : "Campus Central - Explanada";
+
+        // Obtener campaña activa del centro o la primera campaña activa global
+        List<CentroCampania> asignadas = centroCampaniaRepository.findByCentroIdAndActivoTrue(centroId);
+        Campania campania = null;
+        if (!asignadas.isEmpty() && Boolean.TRUE.equals(asignadas.get(0).getCampania().getActivo())) {
+            campania = asignadas.get(0).getCampania();
+        } else {
+            campania = campaniaRepository.findByActivoTrue().stream().findFirst().orElse(null);
+        }
+
+        Integer campaniaId = (campania != null) ? campania.getId() : 1;
+        String campaniaNombre = (campania != null && campania.getNombre() != null)
+                ? campania.getNombre() : "Plan de Contingencia Huracán 2026";
+        BigDecimal metaTotal = (campania != null && campania.getMetaUnidades() != null)
+                ? campania.getMetaUnidades() : new BigDecimal("5000.00");
+
+        // Stock actual acumulado en este centro
+        BigDecimal stockActual = movimientoRepository.calcularStockTotalCentro(centroId);
+        if (stockActual == null) {
+            stockActual = BigDecimal.ZERO;
         }
 
         ResumenRecepcionDTO resumen = new ResumenRecepcionDTO();
         resumen.setCentroId(centroId);
-        resumen.setCentroNombre("Campus Central - Explanada");
-        resumen.setCampaniaId(1);
-        resumen.setCampaniaNombre("Plan de Contingencia Huracán 2026");
-        resumen.setMetaTotal(new BigDecimal("5000.00"));
-        resumen.setStockActual(BigDecimal.ZERO);
-        resumen.setPorcentajeAvance(BigDecimal.ZERO);
+        resumen.setCentroNombre(centroNombre);
+        resumen.setCampaniaId(campaniaId);
+        resumen.setCampaniaNombre(campaniaNombre);
+        resumen.setMetaTotal(metaTotal);
+        resumen.setStockActual(stockActual);
 
-        // 1. Consultar campaña activa del centro mediante SP o fallback
-        try {
-            List<Map<String, Object>> campanias = jdbcTemplate.queryForList(
-                    "CALL sp_listar_campanias_activas_centro(?)", centroId
-            );
-            if (!campanias.isEmpty()) {
-                Map<String, Object> c = campanias.get(0);
-                if (c.get("campania_id") != null) {
-                    resumen.setCampaniaId(((Number) c.get("campania_id")).intValue());
-                }
-                if (c.get("nombre") != null) {
-                    resumen.setCampaniaNombre((String) c.get("nombre"));
-                }
-                if (c.get("meta_unidades") != null) {
-                    resumen.setMetaTotal(new BigDecimal(c.get("meta_unidades").toString()));
-                }
-            }
-        } catch (Exception ex) {
-            log.warn("sp_listar_campanias_activas_centro no disponible, usando fallback SQL: {}", ex.getMessage());
-            try {
-                String sqlCampania = "SELECT c.id AS campania_id, c.nombre, c.meta_unidades " +
-                        "FROM campanias c " +
-                        "INNER JOIN centros_campanias cc ON c.id = cc.id_campania " +
-                        "WHERE cc.id_centro = ? AND cc.activo = TRUE AND c.activo = TRUE LIMIT 1";
-                List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlCampania, centroId);
-                if (!rows.isEmpty()) {
-                    Map<String, Object> c = rows.get(0);
-                    if (c.get("campania_id") != null) resumen.setCampaniaId(((Number) c.get("campania_id")).intValue());
-                    if (c.get("nombre") != null) resumen.setCampaniaNombre((String) c.get("nombre"));
-                    if (c.get("meta_unidades") != null) resumen.setMetaTotal(new BigDecimal(c.get("meta_unidades").toString()));
-                }
-            } catch (Exception e2) {
-                log.error("Error en fallback campania: {}", e2.getMessage());
-            }
-        }
-
-        // 2. Consultar nombre del centro
-        try {
-            List<Map<String, Object>> centros = jdbcTemplate.queryForList(
-                    "SELECT nombre FROM centros WHERE id = ?", centroId
-            );
-            if (!centros.isEmpty() && centros.get(0).get("nombre") != null) {
-                resumen.setCentroNombre((String) centros.get(0).get("nombre"));
-            }
-        } catch (Exception ignored) {
-        }
-
-        // 3. Consultar stock actual acumulado en este centro y campaña
-        try {
-            BigDecimal stock = jdbcTemplate.queryForObject(
-                    "SELECT COALESCE(SUM(stock_disponible), 0) FROM v_stock_actual WHERE centro_id = ? AND campania_id = ?",
-                    BigDecimal.class,
-                    centroId,
-                    resumen.getCampaniaId()
-            );
-            if (stock != null) {
-                resumen.setStockActual(stock);
-            }
-        } catch (Exception ex) {
-            log.warn("No se pudo calcular stock desde v_stock_actual: {}", ex.getMessage());
-        }
-
-        // 4. Calcular porcentaje de avance
-        if (resumen.getMetaTotal() != null && resumen.getMetaTotal().compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal porcentaje = resumen.getStockActual()
+        // Porcentaje de avance hacia la meta
+        BigDecimal porcentajeAvance = BigDecimal.ZERO;
+        if (metaTotal.compareTo(BigDecimal.ZERO) > 0) {
+            porcentajeAvance = stockActual
                     .multiply(new BigDecimal("100"))
-                    .divide(resumen.getMetaTotal(), 2, RoundingMode.HALF_UP);
-            if (porcentaje.compareTo(new BigDecimal("100")) > 0) {
-                porcentaje = new BigDecimal("100.00");
+                    .divide(metaTotal, 2, RoundingMode.HALF_UP);
+            if (porcentajeAvance.compareTo(new BigDecimal("100")) > 0) {
+                porcentajeAvance = new BigDecimal("100.00");
             }
-            resumen.setPorcentajeAvance(porcentaje);
         }
+        resumen.setPorcentajeAvance(porcentajeAvance);
 
         return resumen;
     }

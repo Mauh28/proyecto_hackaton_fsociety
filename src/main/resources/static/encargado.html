@@ -187,8 +187,13 @@
     <script>
         // 1. Control y persistencia estricta de sesión desde sessionStorage
         const rolActivo = sessionStorage.getItem('rolActivo');
-        const usuarioId = parseInt(sessionStorage.getItem('usuarioId') || '2', 10);
-        const centroId = parseInt(sessionStorage.getItem('centroId') || '1', 10);
+        const rawUsuario = sessionStorage.getItem('usuarioId');
+        let usuarioId = (rawUsuario && rawUsuario !== 'null' && rawUsuario !== 'undefined') ? parseInt(rawUsuario, 10) : 2;
+        if (isNaN(usuarioId) || usuarioId <= 0) usuarioId = 2;
+
+        const rawCentro = sessionStorage.getItem('centroId');
+        let centroId = (rawCentro && rawCentro !== 'null' && rawCentro !== 'undefined') ? parseInt(rawCentro, 10) : 1;
+        if (isNaN(centroId) || centroId <= 0) centroId = 1;
 
         if (!rolActivo) {
             window.location.href = "index.html";
@@ -386,13 +391,23 @@
                     const signo = esNegativo ? '-' : '+';
 
                     const detalleTexto = (mov.detalle && mov.detalle.trim() !== '')
-                        ? mov.detalle
+                        ? mov.detalle.trim()
                         : ((mov.tipo || '').toLowerCase() === 'recepcion' ? 'Donante: Anonimo' : '');
+
+                    let infoSub = '';
+                    const esAnonimo = detalleTexto.toLowerCase().includes('anonimo') || detalleTexto.toLowerCase().includes('anónimo');
+                    if (esAnonimo) {
+                        infoSub = 'Donante: Anonimo';
+                    } else if (detalleTexto) {
+                        infoSub = `${detalleTexto} (Actor: ${mov.autor || 'N/A'})`;
+                    } else if (mov.autor) {
+                        infoSub = `Actor: ${mov.autor}`;
+                    }
 
                     li.innerHTML = `
                         <div>
                             <strong>${mov.tipo}</strong> - ${mov.articuloNombre}
-                            <div class="text-muted text-sm">${detalleTexto} (Actor: ${mov.autor || 'N/A'})</div>
+                            <div class="text-muted text-sm">${infoSub}</div>
                         </div>
                         <strong class="${badgeClass}">${signo}${mov.cantidad} ${mov.unidad || ''}</strong>
                     `;

@@ -9,5 +9,4 @@ import java.util.List;
 @Repository
 public interface CentroCampaniaRepository extends JpaRepository<CentroCampania, CentroCampaniaId> {
     List<CentroCampania> findByCentroIdAndActivoTrue(Integer centroId);
-    List<CentroCampania> findByCampaniaIdAndActivoTrue(Integer campaniaId);
 }

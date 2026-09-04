@@ -96,14 +96,14 @@
                 <div class="circle-icon">1</div>
                 <div>
                     <strong>Campaña Activa</strong>
-                    <div class="text-muted text-sm" id="resumenCampaniaNombre">Contingencia Huracán 2026</div>
+                    <div class="text-muted text-sm" id="resumenCampaniaNombre">Cargando campaña...</div>
                 </div>
             </div>
 
             <div class="mt-2 pt-1 border-bottom">
                 <div class="flex-between-end">
                     <strong class="text-sm">Meta de Recolección</strong>
-                    <span class="text-sm text-muted"><span id="stockActual">1204</span> / <span id="metaTotal">5000</span></span>
+                    <span class="text-sm text-muted"><span id="stockActual">--</span> / <span id="metaTotal">--</span></span>
                 </div>
                 <div class="progress-container">
                     <div class="progress-fill" id="progressBar"></div>
@@ -183,10 +183,15 @@
         const progressBar = document.getElementById('progressBar');
         const campaniaNombreEl = document.getElementById('resumenCampaniaNombre');
 
-        let stockActual = 1204;
+        let stockActual = 0;
         let metaTotal = 5000;
-        const centroId = parseInt(sessionStorage.getItem('centroId') || '1', 10);
-        const usuarioId = parseInt(sessionStorage.getItem('usuarioId') || '3', 10);
+        const rawCentro = sessionStorage.getItem('centroId');
+        let centroId = (rawCentro && rawCentro !== 'null' && rawCentro !== 'undefined') ? parseInt(rawCentro, 10) : 1;
+        if (isNaN(centroId) || centroId <= 0) centroId = 1;
+
+        const rawUsuario = sessionStorage.getItem('usuarioId');
+        let usuarioId = (rawUsuario && rawUsuario !== 'null' && rawUsuario !== 'undefined') ? parseInt(rawUsuario, 10) : 3;
+        if (isNaN(usuarioId) || usuarioId <= 0) usuarioId = 3;
 
         function actualizarBarraProgreso() {
             let pct = (metaTotal > 0) ? (stockActual / metaTotal) * 100 : 0;
@@ -271,9 +276,8 @@
                     toast.classList.add('show');
                     setTimeout(() => toast.classList.remove('show'), 3000);
 
-                    inputItemName.value = '';
-                    inputQuantity.value = 1;
-                    inputDonor.value = '';
+                    limpiarFormulario();
+                    await cargarResumen();
                 } else {
                     let errMsg = 'No se pudo guardar la donación en la base de datos.';
                     try {

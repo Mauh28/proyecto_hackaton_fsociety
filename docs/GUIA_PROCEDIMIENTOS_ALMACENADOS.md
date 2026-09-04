@@ -1,11 +1,22 @@
-# Guía Técnica de Integración: Procedimientos Almacenados (Fases 1, 2, 3 y 4 - Completo)
+# Guía de Especificación de Operaciones, Parámetros y Validaciones del Backend
 
 > **Proyecto:** Sistema de Registro y Coordinación de Centros de Acopio (`<in>Hack`)  
 > **Equipo:** *fsociety*  
-> **Archivo SQL Fuente:** [`centros_acopio_db.sql`](file:///c:/Users/Adan1/Documents/Hackathon/proyecto_hackaton_fsociety/db/centros_acopio_db.sql)  
-> **Motor:** MySQL 8.0+ / TiDB Cloud Serverless  
+> **Persistencia Activa:** **Spring Boot 3 + Spring Data JPA** en **TiDB Cloud Serverless** (MySQL compatible)  
+> **Rol de este Documento:** Especificación Funcional de Parámetros de Entrada, DTOs y Reglas de Negocio del Backend  
 
-Esta guía documenta los **31 procedimientos almacenados** implementados en las **Fases 1, 2, 3 y 4** (cubriendo el 100% de los requerimientos y módulos de innovación del sistema), detallando a qué módulo y pantalla del sistema corresponden, sus parámetros, reglas de negocio y ejemplos exactos de cómo invocarlos tanto desde SQL como desde Spring Boot.
+---
+
+> [!IMPORTANT]
+> **DIRECTIVA DE ARQUITECTURA: PERSISTENCIA VÍA SPRING DATA JPA**  
+> En este proyecto **NO se utilizan procedimientos almacenados (`CALL sp_...`) en la base de datos**, debido a que la base de datos de producción opera sobre **TiDB Cloud Serverless**.  
+> Toda la lógica de persistencia, cálculo de stock y transacciones se ejecuta a nivel de **Capa de Servicios y Repositorios JPA de Spring Boot**.  
+> 
+> **¿Cómo utilizar esta guía?**  
+> Este documento funge como el **Contrato Maestro de Especificación Funcional**:
+> 1. Define con precisión los **parámetros de entrada**, tipos de datos (`INT`, `VARCHAR`, `DECIMAL`) y campos obligatorios/opcionales que deben recibir los Controllers/Services.
+> 2. Detalla las **reglas de validación de negocio** indispensables (ej. verificación de stock disponible para egresos, validación de cuenta activa, asignación obligatoria de motivos en mermas y ajustes).
+> 3. Especifica los **resultados esperados y estructuras de retorno** para los DTOs y respuestas JSON de la API.
 
 ---
 

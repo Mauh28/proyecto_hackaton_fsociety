@@ -21,7 +21,7 @@ public class RecepcionController {
     }
 
     /**
-     * Endpoint para registrar donación consumiendo sp_registrar_recepcion_donacion.
+     * Endpoint para registrar donación con persistencia atómica vía JPA en TiDB Cloud.
      */
     @PostMapping
     public ResponseEntity<RecepcionResponseDTO> registrarDonacion(@RequestBody RecepcionRequestDTO request) {
@@ -30,7 +30,7 @@ public class RecepcionController {
     }
 
     /**
-     * Endpoint para obtener el catálogo de artículos filtrados por categoría (sp_listar_articulos).
+     * Endpoint para obtener el catálogo de artículos filtrados por categoría.
      */
     @GetMapping("/articulos")
     public ResponseEntity<List<ArticuloItemDTO>> listarArticulos(
