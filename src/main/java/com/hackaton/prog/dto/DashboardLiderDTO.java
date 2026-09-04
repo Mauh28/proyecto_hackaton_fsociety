@@ -31,12 +31,12 @@ public class DashboardLiderDTO {
     }
 
     public DashboardLiderDTO(Integer campaniaId, String campaniaNombre, String descripcion,
-                              LocalDate fechaInicio, LocalDate fechaFin, BigDecimal metaUnidades,
-                              Boolean activo, BigDecimal stockActual, BigDecimal totalRecibido,
-                              BigDecimal totalEntregado, BigDecimal totalMermas,
-                              BigDecimal porcentajeAvance,
-                              List<CentroAporteCampaniaDTO> centrosParticipantes,
-                              List<OpcionSimpleDTO> centrosDisponibles) {
+            LocalDate fechaInicio, LocalDate fechaFin, BigDecimal metaUnidades,
+            Boolean activo, BigDecimal stockActual, BigDecimal totalRecibido,
+            BigDecimal totalEntregado, BigDecimal totalMermas,
+            BigDecimal porcentajeAvance,
+            List<CentroAporteCampaniaDTO> centrosParticipantes,
+            List<OpcionSimpleDTO> centrosDisponibles) {
         this.campaniaId = campaniaId;
         this.campaniaNombre = campaniaNombre;
         this.descripcion = descripcion;
